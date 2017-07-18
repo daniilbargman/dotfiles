@@ -1,0 +1,46 @@
+# Personalized bash settings for Daniil Bargman, daniil.bargman@gmail.com #####
+# ADD THIS TO THE END OF THE .bashrc FILE: source .myBashSettings
+
+#################### powerline settings #######################################
+#powerline-daemon -q
+#POWERLINE_BASH_CONTINUATION=1
+#POWERLINE_BASH_SELECT=1
+#. /usr/local/lib/python3.4/dist-packages/powerline/bindings/bash/powerline.sh
+
+#################### basic terminal settings ##################################
+
+# SET 256-COLOR SUPPORT IN TERMINAL
+export TERM='xterm-256color'
+
+# Set custom prompt
+export PS1="\[\e[30;47m\]\u\[\e[m\]\[\e[47m\] \[\e[m\]\[\e[42m\] \[\e[m\]\[\e[42m\]\W\[\e[m\]\[\e[42m\] \[\e[m\]\[\e[47m\] \[\e[m\]\[\e[30;47m\]>\[\e[m\]\[\e[47m\] \[\e[m\] "
+
+# Make bash behave more like vim
+set editing-mode vi
+
+#################### project management settings ##############################
+
+# project launcher directory
+projectLaunchers=~/Dropbox/project_launchers
+
+# Add dropbox project folder to environment
+PATH=${PATH//:$projectLaunchers/}":$projectLaunchers"
+
+# Make all .bash files in ~/Dropbox/project_launchers directory executable
+for filename in $(echo $projectLaunchers/*.bash)
+do
+    chmod u+x $filename
+done
+
+# When launching project with vim, disable passthrough of ctrl-s
+vim()
+{
+    # launch vim with session
+    local STTYOPTS="$(stty --save)"
+    stty stop '' -ixoff
+    command vim "$@"
+    stty "$STTYOPTS"
+}
+export -f vim
+
+###############################################################################

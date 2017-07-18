@@ -1,0 +1,8 @@
+# Ignore temporary vim files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+.LastVimSession.vim
+.netrwhist
+*~
+TODO
