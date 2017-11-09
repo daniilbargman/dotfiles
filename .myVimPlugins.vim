@@ -106,6 +106,12 @@ filetype plugin indent on    " required
 nnoremap <c-n> :NERDTreeToggle<CR>
  
 
+" ---------------- EasyMotion -------------------------------------------------
+" do not fade out text when quick-jumping
+let g:EasyMotion_do_shade=0
+" use simply <Leader> instead of the default <Leader><Leader>
+map <Leader> <Plug>(easymotion-prefix)
+
 " ---------------- VIMUX ------------------------------------------------------
 
 " Save file and run in tmux
@@ -154,13 +160,18 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 
+" jump to first/previous/next error with <leader>e/p/n
+nnoremap <leader>e :ll<CR>
+nnoremap <leader>n :lnext<CR>
+nnoremap <leader>p :lprev<CR>
+
 
 " ---------------- AIRLINE ----------------------------------------------------
 
 " the separator used on the left side >
-let g:airline_left_sep='>'
+let g:airline_left_sep='}'
 " the separator used on the right side >
-let g:airline_right_sep='<'
+let g:airline_right_sep='{'
 " enable modified detection >
 let g:airline_detect_modified=1
 " enable paste detection >

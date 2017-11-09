@@ -7,15 +7,24 @@
 " -------------------------- Global settings ----------------------------------
 " =============================================================================
 
-let b:blockDelim="^\\s*#\\s%%.*"
-let b:blockLineFG = 16
-let b:blockLineBG=240
-let b:blockBG=0
+" Code block separator text: by default, "# %%" followed by any type of text
+let b:blockDelim='^\s*#\s%%.*'
 
+" background color to highlight lines that separate code blocks
+let b:blockLineBG=240
+
+" text color in lines that separate code blocks
+let b:blockLineFG = 16
+
+" background color to highlight the current active code block
+let b:blockBG=0
 
 " =============================================================================
 " --------- Custom highlighting of code blocks and block separators -----------
 " =============================================================================
+
+" change highlighting for visual mode
+hi Visual ctermbg=white ctermfg=black
 
 " clear block highlighting and initiate list of block lines to an empty object
 sign unplace *
@@ -38,7 +47,7 @@ function! HighlightBlockLines()
     " place new block lines and save their positions
     let b:lineNum=1
     while b:lineNum<=line('$')
-        if getline(b:lineNum)=~#'^\s*#\s%%.*'
+        if getline(b:lineNum) =~# b:blockDelim
             exe ":sign place " . b:lineNum . " line=" . b:lineNum .
                     \ " name=pylineHL file=" . expand("%:p")
             let b:blockLines+=[b:lineNum]
@@ -55,7 +64,7 @@ function! HighlightBlock()
     call HighlightBlockLines()
     " Highlight every line in block with specified background
     let b:lineNum=line('.')
-    while !(getline(b:lineNum)=~#'^\s*#\s%%.*')
+    while !(getline(b:lineNum) =~# b:blockDelim)
         if b:lineNum==line('$')
             break
         endif
@@ -64,7 +73,7 @@ function! HighlightBlock()
         let b:lineNum+=1
     endwhile
     let b:lineNum=line('.')
-    while !(getline(b:lineNum)=~#'^\s*#\s%%.*')
+    while !(getline(b:lineNum) =~# b:blockDelim)
         if b:lineNum==1
             break
         endif
@@ -81,16 +90,25 @@ endfunction
 " Autocommand to highlight block separators
 augroup pyBlockLineHL
     au!
-    au BufEnter,BufNew *.py
+    au BufEnter *.py if line('$')==1&&getline(1)==''
+                \|exe ":normal! idbpy"
+                \|endif
+    au BufEnter,BufRead *.py
         \ | exe ':highlight pyBlockLines cterm=underline ctermbg=' . 
             \ b:blockLineBG . ' ctermfg=' . b:blockLineFG
         \ | sign define pylineHL linehl=pyBlockLines
-    au BufEnter,BufNew *.py
-        \ | exe ':highlight pyBlocks cterm=bold ctermbg=' . b:blockBG
+    au BufEnter,BufRead *.py
+        \ | exe ':highlight pyBlocks ctermbg=' . b:blockBG
         \ | sign define pyBlockHL linehl=pyBlocks
-    au BufEnter,BufNew *.py call HighlightBlockLines()
+    au BufEnter,BufRead *.py
+        \ | call HighlightBlockLines()
         \ | exe 'redraw!'
     au InsertEnter,TextChanged *.py call HighlightBlock()
+    au BufEnter *.py if line('$')==1&&getline(1)=='dbpy'
+                \|exe ":startinsert!"
+                \|call feedkeys("\<C-j>")
+                \|call feedkeys("1\<CR>")
+                \|endif
 augroup END
 
 
@@ -103,9 +121,13 @@ augroup END
 " Jump to current active block with leader-b
 nnoremap <Leader>b 'b
 
+" Highlight block under cursor with leader-x
+nnoremap <Leader>x :call HighlightBlock()<CR>
+
 " Jump to previous/next block with leader-k/leader-j
-nnoremap <Leader>j :exe "/".b:blockDelim<CR>j
-nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj
+nnoremap <Leader>j :exe "/".b:blockDelim<CR>j:call HighlightBlock()<CR>
+nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj:call HighlightBlock()<CR>
+
 
 
 " =============================================================================
@@ -150,5 +172,99 @@ nnoremap <buffer> <Leader>rr 'b:call ExecutePythonBlock()<CR>
 vnoremap <buffer> <Leader>r "1y:call SendToIPython()<CR>
 nnoremap <buffer> <C-x> 'b:call ExePyBlockAndMove()<CR>
                     \:call HighlightBlock()<CR>
+
+" =============================================================================
+" ------------------------- Other python functionality ------------------------
+" =============================================================================
+
+" Expanding or folding a list in brackets with ctrl-e
+function! ExpandBrackets()
+
+    " Check that correct thing is found; otherwise, return
+    let b:brType = getline(".")[col(".")-1]
+    if b:brType != "(" && b:brType != "[" && b:brType != "{"
+        return
+    endif
+
+    " set cursor to save where the bracket starts
+    normal mq
+
+    " Otherwise, find where the bracket ends
+    normal %
+    let b:matchingBr = getline(".")[col(".")-1]
+    let b:bracketEnd = line(".")
+    normal %
+    let b:bracketStart = line(".")
+
+    " if the bracket is single-line, it needs to be semi-expanded
+    if b:bracketStart == b:bracketEnd
+        try
+            exe ':s/\%>' . col(".") . 'c \<\(for\|if\|else\)\> /\r\1 /g'
+        catch
+            exe ':s/\%>' . col(".") . 'c, /,\r/ge'
+        endtry
+        let b:bracketEnd = line(".")
+        let b:i = b:bracketEnd-b:bracketStart
+        exe ':normal ' . b:i . 'k$'
+        exe ':normal F' . b:brType
+        while b:i > 0
+            exe ":normal Jr\<CR>"
+            let b:i -= 1
+        endwhile
+        normal 'q
+        exe ':normal f' . b:brType
+        return
+    endif
+
+    " If we are at the end of the line, the bracket should be made compact
+    if col(".") == col("$")-1
+        normal Jxh%
+        let b:bracketEnd = line(".")
+        normal %$
+        let b:i = b:bracketEnd-b:bracketStart
+        while b:i > 0
+            normal J
+            let b:i -= 1
+        endwhile
+        if getline(".")[col(".")-1] == " "
+            normal xh
+        endif
+        if getline(".")[col(".")-2] == " "
+            normal hx
+        endif
+        if getline(".")[col(".")-1] == ","
+            normal x
+        endif
+        if getline(".")[col(".")-2] == ","
+            normal hx
+        endif
+        exe ':normal F' . b:brType
+        return
+    endif
+
+    " if the bracket is multi-line, it is semi-expanded and should be expanded
+    if b:bracketStart != b:bracketEnd
+        exe ":normal! a\<CR>" 
+        while line(".") <= b:bracketEnd
+            exe ":normal Jr\<CR>"
+        endwhile
+        exe ':normal ' . (line(".")-b:bracketStart) . 'k$'
+        if getline(".")[col(".")-1] == ","
+            exe ':normal F' . b:brType
+            normal %
+            exe ":normal! i,\<CR>"
+            normal %
+        else
+            exe ':normal F' . b:brType
+            normal %
+            exe ":normal! i\<CR>"
+            normal %
+        endif
+        return
+    endif
+
+endfunction
+
+nnoremap <C-e> :call ExpandBrackets()<CR>
 
 " =============================================================================
