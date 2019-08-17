@@ -14,7 +14,7 @@ let mapleader = ','
 
 
 " --------------- Sourcing all my vim plugins ---------------------------------
-source ~/.myVimPlugins.vim
+source ~/.vim/.myplugins.vim
 
 
 " --------------- Basic settings ----------------------------------------------
@@ -45,8 +45,8 @@ end
 " Set highlight group for trailing whitespaces
 au ColorScheme * highlight ExtraWhitespace ctermbg=lightgreen guibg=red
 
-" Display line numbers
-set number
+" Display hybrid line numbers
+set number relativenumber
 
 " Display cursor position
 set ruler
@@ -133,9 +133,11 @@ set splitright
 " Move back one tab with GT
 nnoremap GT gT
 
+" Use <C-b> to preview a file in firefox
+nnoremap <C-b> :!firefox %<CR>
+
 
 " --------------- Search and highlight options --------------------------------
-
 
 " Turn on syntax highlighting
 syntax on

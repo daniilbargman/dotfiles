@@ -117,4 +117,4 @@ if ! shopt -oq posix; then
 fi
 
 # Source my personalized settings
-source ~/.myBashSettings
+source ~/.bashrc_ext

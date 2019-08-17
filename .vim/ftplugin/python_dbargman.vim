@@ -19,6 +19,9 @@ let b:blockLineFG = 16
 " background color to highlight the current active code block
 let b:blockBG=0
 
+" indentLine color to match background color of matched block
+let indentLine_bgcolor_term=0
+
 " =============================================================================
 " --------- Custom highlighting of code blocks and block separators -----------
 " =============================================================================
@@ -62,30 +65,68 @@ function! HighlightBlock()
     sign unplace *
     let b:blockLines=[]
     call HighlightBlockLines()
-    " Highlight every line in block with specified background
+
+    " find current line number
     let b:lineNum=line('.')
-    while !(getline(b:lineNum) =~# b:blockDelim)
-        if b:lineNum==line('$')
+
+    " figure out closest neighbouring code block separators
+    let b:activeBlockStart=1  " start of block at start of file by default
+    let b:activeBlockEnd=line('$')  " end of block at end of file by default
+    for i in b:blockLines  " assume blocklines is a sorted array
+        if i > b:lineNum
+            let b:activeBlockEnd=i-1
             break
         endif
-        exe ":sign place " . b:lineNum .
-            \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
-        let b:lineNum+=1
+        let b:activeBlockStart=i+1
+    endfor
+
+    " loop over block and place sings
+    while b:activeBlockStart <= b:activeBlockEnd
+        exe ":sign place " . b:activeBlockStart .
+            \ " line=" . b:activeBlockStart
+            \ . " name=pyBlockHL file=" . expand("%:p")
+        let b:activeBlockStart+=1
     endwhile
-    let b:lineNum=line('.')
-    while !(getline(b:lineNum) =~# b:blockDelim)
-        if b:lineNum==1
-            break
-        endif
-        exe ":sign place " . b:lineNum .
-            \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
-        let b:lineNum-=1
-    endwhile
+
     " place a marker to save which block is selected
     normal mb
+
     " redraw the editor
     exe 'redraw!'
+
 endfunction
+" OLD AND SLOWER: Create highlight group for lines that separate blocks
+" function! HighlightBlock()
+"     " clear all signs and redraw block lines
+"     sign unplace *
+"     let b:blockLines=[]
+"     call HighlightBlockLines()
+"     " Highlight every line in block with specified background
+"     let b:lineNum=line('.')
+"     while !(getline(b:lineNum) =~# b:blockDelim)
+"         if b:lineNum==line('$')
+"             break
+"         endif
+"         exe ":sign place " . b:lineNum .
+"             \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
+"         let b:lineNum+=1
+"     endwhile
+"     let b:lineNum=line('.')
+"     while !(getline(b:lineNum) =~# b:blockDelim)
+"         if b:lineNum==1
+"             break
+"         endif
+"         exe ":sign place " . b:lineNum .
+"             \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
+"         let b:lineNum-=1
+"     endwhile
+"     " place a marker to save which block is selected
+"     normal mb
+"     " redraw the editor
+"     exe 'redraw!'
+" endfunction
+"
+"
 
 " Autocommand to highlight block separators
 augroup pyBlockLineHL
@@ -266,5 +307,10 @@ function! ExpandBrackets()
 endfunction
 
 nnoremap <C-e> :call ExpandBrackets()<CR>
+
+" Jump between function / method / property definitions with <leader>m/n
+map <buffer> <Leader>m <Plug>(PythonsenseStartOfNextPythonFunction)za
+map <buffer> <Leader>n <Plug>(PythonsenseStartOfPythonFunction)za
+
 
 " =============================================================================

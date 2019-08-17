@@ -1,0 +1,5 @@
+[core]
+	excludesfile = /home/daniilbargman/.gitignore_global
+[user]
+	email = daniil.bargman@gmail.com
+	name = daniilbargman

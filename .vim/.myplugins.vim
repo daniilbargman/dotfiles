@@ -43,23 +43,28 @@ Plugin 'SirVer/ultisnips' " create and manage snippets
 Plugin 'honza/vim-snippets' "snippet library
 Plugin 'vim-syntastic/syntastic' " syntax checker
 Plugin 'tmhedberg/SimpylFold' " fold manager
+Plugin 'Konfekt/FastFold' " faster folding
 Plugin 'Valloric/YouCompleteMe' " autocompletion (has external dependencies)
 Plugin 'easymotion/vim-easymotion' " enhanced motion capabilities
-Plugin 'ctrlpvim/ctrlp.vim' " fuzzy search engine for content
-Plugin 'FelikZ/ctrlp-py-matcher' " speed up CtrlP with python-based matcher
+" Plugin 'ctrlpvim/ctrlp.vim' " fuzzy search engine for content
+" Plugin 'FelikZ/ctrlp-py-matcher' " speed up CtrlP with python-based matcher
 Plugin 'tpope/vim-commentary' " easy comment blocks
 Plugin 'tpope/vim-surround' " edit brackets and surround symbols
 Plugin 'Raimondi/delimitMate' " autocompletion for brackets and quotes
 
+" highlight line indents
+Plugin 'Yggdroot/indentLine'
+
 " Filetype-specific plugins
 Plugin 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
+Plugin 'jeetsukumaran/vim-pythonsense' " easy python file navigation
 
 " Plugins with custom color schemes (HAD TO EDIT .bashrc AND ADD
 "export TERM=xterm-256color" ENABLING 256-COLOR SUPPORT FOR THIS TO WORK)
 Plugin 'tyrannicaltoucan/vim-quantum'
 Plugin 'AlessandroYorba/Despacio'
 Plugin 'jacoborus/tender.vim'
-Plugin 'dfrunza/vim'
+" Plugin 'dfrunza/vim'
 Plugin 'fcpg/vim-fahrenheit'
 Plugin 'pbrisbin/vim-colors-off'
 Plugin 'robertmeta/nofrils'
@@ -139,16 +144,30 @@ let g:UltiSnipsListSnippets='<c-j>'
 let g:UltiSnipsJumpForwardTrigger='<C-l>'
 let g:UltiSnipsJumpBackwardTrigger='<C-h>'
 let g:UltiSnipsEditSplit='horizontal'
-let g:UltiSnipsSnippetDirectories=['UltiSnips', 'mySnippets']
+let g:UltiSnipsSnippetDirectories=[ 'UltiSnips', 'mySnippets']
 
 
 " ---------------- CtrlP ------------------------------------------------------
 
-let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' } " speed up matching
-let g:ctrlp_show_hidden = 1 " also search in dotfiles
-let g:ctrlp_max_files = 0 " scan unlimited number of files
-let g:ctrlp_max_depth = 1000 " set unlimited search recursion depth
+" let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' } " speed up matching
+" let g:ctrlp_show_hidden = 1 " also search in dotfiles
+" let g:ctrlp_max_files = 0 " scan unlimited number of files
+" let g:ctrlp_max_depth = 1000 " set unlimited search recursion depth
 
+" ---------------- DelimitMate ------------------------------------------------
+
+" try to balance matching pairs
+let delimitMate_balance_matchpairs = 1
+
+" do not duplicate spaces
+" let delimitMate_expand_space = 0
+
+" do not auto-fill inside strings
+" let delimitMate_excluded_regions = "Comment"
+
+" ---------------- indentLine -------------------------------------------------
+
+let g:indentLine_char='|'
 
 " ---------------- SYNTASTIC CHECKER ------------------------------------------
 
@@ -159,6 +178,7 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+" let g:syntastic_python_checkers = ['pycodestyle']
 
 " jump to first/previous/next error with <leader>e/p/n
 nnoremap <leader>e :ll<CR>
@@ -210,5 +230,28 @@ let g:airline_symbols.paste = '∥'
 let g:airline_symbols.spell = 'Ꞩ'
 let g:airline_symbols.notexists = '∄'
 let g:airline_symbols.whitespace = 'Ξ'
+
+" ---------------- PYTHONSENSE ------------------------------------------------
+
+""" These settings will be overridden in python_dbargman.vim
+
+" map <buffer> ac <Plug>(PythonsenseOuterClassTextObject)
+" map <buffer> ic <Plug>(PythonsenseInnerClassTextObject)
+" map <buffer> af <Plug>(PythonsenseOuterFunctionTextObject)
+" map <buffer> if <Plug>(PythonsenseInnerFunctionTextObject)
+" map <buffer> ad <Plug>(PythonsenseOuterDocStringTextObject)
+" map <buffer> id <Plug>(PythonsenseInnerDocStringTextObject)
+
+" map <buffer> ]] <Plug>(PythonsenseStartOfNextPythonClass)
+" map <buffer> ][ <Plug>(PythonsenseEndOfPythonClass)
+" map <buffer> [[ <Plug>(PythonsenseStartOfPythonClass)
+" map <buffer> [] <Plug>(PythonsenseEndOfPreviousPythonClass)
+" map <buffer> ]m <Plug>(PythonsenseStartOfNextPythonFunction)
+" map <buffer> ]M <Plug>(PythonsenseEndOfPythonFunction)
+" map <buffer> [m <Plug>(PythonsenseStartOfPythonFunction)
+" map <buffer> [M <Plug>(PythonsenseEndOfPreviousPythonFunction)
+
+" map <buffer> g: <Plug>(PythonsensePyWhere)
+
 
 " =============================================================================
