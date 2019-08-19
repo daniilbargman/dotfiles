@@ -122,7 +122,7 @@ map <Leader> <Plug>(easymotion-prefix)
 " Save file and run in tmux
 au FileType sh nnoremap <buffer> <Leader>r :update<CR>:call VimuxRunCommand('sudo bash ' . expand('%:p'))<CR>
 " Run vim selection as tmux command
-vnoremap <Leader>r :call VimuxRunCommand(@*)<CR>
+vnoremap <Leader>r :<C-U>call VimuxRunCommand(@*)<CR>
 " Prompt for a command to run
 nnoremap <Leader>vp :VimuxPromptCommand<CR>
 " Run last command executed by VimuxRunCommand
