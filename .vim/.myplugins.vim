@@ -57,7 +57,11 @@ Plugin 'Yggdroot/indentLine'
 
 " Filetype-specific plugins
 Plugin 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
-Plugin 'jeetsukumaran/vim-pythonsense' " easy python file navigation
+" Plugin 'jeetsukumaran/vim-pythonsense' " easy python file navigation
+Plugin 'gko/vim-coloresque' " change background in color codes to code value
+" Plugin 'ap/vim-css-color' " change background in color codes to code value
+" Plugin 'chrisbra/Colorizer' " change background in color codes to code value
+" Plugin 'lilydjwg/colorizer' " change background in color codes to code value
 
 " Plugins with custom color schemes (HAD TO EDIT .bashrc AND ADD
 "export TERM=xterm-256color" ENABLING 256-COLOR SUPPORT FOR THIS TO WORK)
@@ -160,10 +164,14 @@ let g:UltiSnipsSnippetDirectories=[ 'UltiSnips', 'mySnippets']
 let delimitMate_balance_matchpairs = 1
 
 " do not duplicate spaces
-" let delimitMate_expand_space = 0
-
-" do not auto-fill inside strings
-" let delimitMate_excluded_regions = "Comment"
+let delimitMate_expand_space = 0
+" duplicate newline
+let delimitMate_expand_cr = 1
+" in python, replicate triple quotes
+au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
+" let delimitMate_expand_inside_quotes = 1
+" jump out of a filled pair with ctrl-l (does not clash with ultisnips)
+imap <expr> <C-l> "<Plug>delimitMateS-Tab"
 
 " ---------------- indentLine -------------------------------------------------
 
@@ -181,9 +189,9 @@ let g:syntastic_check_on_wq = 0
 " let g:syntastic_python_checkers = ['pycodestyle']
 
 " jump to first/previous/next error with <leader>e/p/n
-nnoremap <leader>e :ll<CR>
-nnoremap <leader>n :lnext<CR>
-nnoremap <leader>p :lprev<CR>
+" nnoremap <leader>e :ll<CR>
+nnoremap <leader>e :lnext<CR>
+nnoremap <leader><leader>e :lprev<CR>
 
 
 " ---------------- AIRLINE ----------------------------------------------------

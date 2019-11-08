@@ -36,6 +36,7 @@ else
 end
 
 " Set color scheme
+" set termguicolors
 if has('gui_running')
     colo delek
 else
@@ -141,6 +142,9 @@ nnoremap <C-b> :!firefox %<CR>
 
 " Turn on syntax highlighting
 syntax on
+
+" remove background color in terminal
+hi Normal ctermbg=None
 
 " Set smart (automatic) indentation
 set autoindent

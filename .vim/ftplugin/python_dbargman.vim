@@ -10,6 +10,9 @@
 " Code block separator text: by default, "# %%" followed by any type of text
 let b:blockDelim='^\s*#\s%%.*'
 
+" remove background color by default
+hi Normal ctermbg=None
+
 " background color to highlight lines that separate code blocks
 let b:blockLineBG=240
 
@@ -17,14 +20,16 @@ let b:blockLineBG=240
 let b:blockLineFG = 16
 
 " background color to highlight the current active code block
-let b:blockBG=0
+let b:blockBG="NONE"
 
 " indentLine color to match background color of matched block
-let indentLine_bgcolor_term=0
+let indentLine_bgcolor_term="NONE"
 
 " =============================================================================
 " --------- Custom highlighting of code blocks and block separators -----------
 " =============================================================================
+
+" change highlighting for normal mode
 
 " change highlighting for visual mode
 hi Visual ctermbg=white ctermfg=black
@@ -59,7 +64,7 @@ function! HighlightBlockLines()
     endwhile
 endfunction
 
-" Create highlight group for lines that separate blocks
+" create a highlight group for the active block
 function! HighlightBlock()
     " clear all signs and redraw block lines
     sign unplace *
@@ -95,38 +100,6 @@ function! HighlightBlock()
     exe 'redraw!'
 
 endfunction
-" OLD AND SLOWER: Create highlight group for lines that separate blocks
-" function! HighlightBlock()
-"     " clear all signs and redraw block lines
-"     sign unplace *
-"     let b:blockLines=[]
-"     call HighlightBlockLines()
-"     " Highlight every line in block with specified background
-"     let b:lineNum=line('.')
-"     while !(getline(b:lineNum) =~# b:blockDelim)
-"         if b:lineNum==line('$')
-"             break
-"         endif
-"         exe ":sign place " . b:lineNum .
-"             \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
-"         let b:lineNum+=1
-"     endwhile
-"     let b:lineNum=line('.')
-"     while !(getline(b:lineNum) =~# b:blockDelim)
-"         if b:lineNum==1
-"             break
-"         endif
-"         exe ":sign place " . b:lineNum .
-"             \ " line=" . b:lineNum . " name=pyBlockHL file=" . expand("%:p")
-"         let b:lineNum-=1
-"     endwhile
-"     " place a marker to save which block is selected
-"     normal mb
-"     " redraw the editor
-"     exe 'redraw!'
-" endfunction
-"
-"
 
 " Autocommand to highlight block separators
 augroup pyBlockLineHL
@@ -138,13 +111,14 @@ augroup pyBlockLineHL
         \ | exe ':highlight pyBlockLines cterm=underline ctermbg=' . 
             \ b:blockLineBG . ' ctermfg=' . b:blockLineFG
         \ | sign define pylineHL linehl=pyBlockLines
-    au BufEnter,BufRead *.py
-        \ | exe ':highlight pyBlocks ctermbg=' . b:blockBG
-        \ | sign define pyBlockHL linehl=pyBlocks
+    " au BufEnter,BufRead *.py
+    "     \ | exe ':highlight pyBlocks ctermbg=' . b:blockBG
+    "     \ | sign define pyBlockHL linehl=pyBlocks
     au BufEnter,BufRead *.py
         \ | call HighlightBlockLines()
         \ | exe 'redraw!'
-    au InsertEnter,TextChanged *.py call HighlightBlock()
+    " au InsertEnter,TextChanged *.py call HighlightBlock()
+    au InsertEnter,TextChanged *.py call HighlightBlockLines()
     au BufEnter *.py if line('$')==1&&getline(1)=='dbpy'
                 \|exe ":startinsert!"
                 \|call feedkeys("\<C-j>")
@@ -159,15 +133,17 @@ augroup END
 " ---------------------- Navigation between code blocks -----------------------
 " =============================================================================
 
-" Jump to current active block with leader-b
-nnoremap <Leader>b 'b
+" " Jump to current active block with leader-b
+" nnoremap <Leader>b 'b
 
-" Highlight block under cursor with leader-x
-nnoremap <Leader>x :call HighlightBlock()<CR>
+" " Highlight block under cursor with leader-x
+" nnoremap <Leader>x :call HighlightBlock()<CR>
 
 " Jump to previous/next block with leader-k/leader-j
-nnoremap <Leader>j :exe "/".b:blockDelim<CR>j:call HighlightBlock()<CR>
-nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj:call HighlightBlock()<CR>
+nnoremap <Leader>j :exe "/".b:blockDelim<CR>j
+nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj
+" nnoremap <Leader>j :exe "/".b:blockDelim<CR>j:call HighlightBlock()<CR>
+" nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj:call HighlightBlock()<CR>
 
 
 
@@ -178,9 +154,11 @@ nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj:call HighlightBlock()<CR>
 " Block-wise code execution
 function! SendToIPython()
     " Execute current selection in tmux pane running IPython below
-    call VimuxRunCommand("cpaste -s %%")
-    call VimuxRunCommand(@1)
-    call VimuxRunCommand("%%")
+    sleep 50m
+    call VimuxRunCommand("%cpaste")
+    sleep 50m
+    call VimuxRunCommand(@1 . "--")
+    " call VimuxRunCommand("--\n")
 endfunction
 function! ExecutePythonBlock()
     " Set marker at current cursor position
@@ -208,11 +186,24 @@ function! ExePyBlockAndMove()
     normal 'pj
 endfunction
 
+" function to copy code block to clipboard
+function! CopyPyBlockToClipboard()
+    " Set marker at current cursor position
+    normal mp
+    " Find end of current execution block
+    exe "/".b:blockDelim
+    " Select all of current execution block
+    normal kVNj"+y
+    " go back to original cursor position
+    normal 'p
+endfunction
+
 " Map functions in python files
-nnoremap <buffer> <Leader>rr 'b:call ExecutePythonBlock()<CR>
+nnoremap <buffer> ga :call CopyPyBlockToClipboard()<CR>
+nnoremap <buffer> <Leader>rr :call ExecutePythonBlock()<CR>
 vnoremap <buffer> <Leader>r "1y:call SendToIPython()<CR>
-nnoremap <buffer> <C-x> 'b:call ExePyBlockAndMove()<CR>
-                    \:call HighlightBlock()<CR>
+nnoremap <buffer> <C-x> :call ExePyBlockAndMove()<CR>
+                    " \:call HighlightBlock()<CR>
 
 " =============================================================================
 " ------------------------- Other python functionality ------------------------
@@ -309,8 +300,7 @@ endfunction
 nnoremap <C-e> :call ExpandBrackets()<CR>
 
 " Jump between function / method / property definitions with <leader>m/n
-map <buffer> <Leader>m <Plug>(PythonsenseStartOfNextPythonFunction)za
-map <buffer> <Leader>n <Plug>(PythonsenseStartOfPythonFunction)za
-
+map <buffer> <Leader>m :exe '/^ *def \^ *class '<CR>
+map <buffer> <Leader>m :exe '?^ *def \^ *class '<CR>
 
 " =============================================================================

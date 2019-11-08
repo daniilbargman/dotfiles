@@ -7,3 +7,18 @@ snippet dockerfile "Canvas for an empty dockerfile"
 
 FROM $0
 endsnippet
+
+snippet dbash "Find bash in user environment and add me as author"
+#!/usr/bin/env bash
+# vim: set filetype=sh
+#
+# ${1: Describe what this script is meant to do}
+#
+# Author: Daniil Bargman (daniil.bargman@gmail.com)
+#
+# base directory of this script file
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+###############################################################################
+
+# $0
+endsnippet
