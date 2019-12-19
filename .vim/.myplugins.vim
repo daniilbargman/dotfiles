@@ -189,9 +189,9 @@ let g:syntastic_check_on_wq = 0
 " let g:syntastic_python_checkers = ['pycodestyle']
 
 " jump to first/previous/next error with <leader>e/p/n
-" nnoremap <leader>e :ll<CR>
-nnoremap <leader>e :lnext<CR>
-nnoremap <leader><leader>e :lprev<CR>
+nnoremap <leader>e :ll<CR>
+" nnoremap <leader>e :lnext<CR>
+" nnoremap <leader><leader>e :lprev<CR>
 
 
 " ---------------- AIRLINE ----------------------------------------------------

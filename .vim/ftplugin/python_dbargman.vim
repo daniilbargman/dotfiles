@@ -151,39 +151,12 @@ nnoremap <Leader>k :exe "?".b:blockDelim<CR>nj
 " ------------------------- Blockwise code execution --------------------------
 " =============================================================================
 
-" Block-wise code execution
-function! SendToIPython()
-    " Execute current selection in tmux pane running IPython below
-    sleep 50m
-    call VimuxRunCommand("%cpaste")
-    sleep 50m
-    call VimuxRunCommand(@1 . "--")
-    " call VimuxRunCommand("--\n")
-endfunction
-function! ExecutePythonBlock()
-    " Set marker at current cursor position
-    normal mp
+" select a block of python code in visual mode
+function! SelectPyBlock()
     " Find end of current execution block
     exe "/".b:blockDelim
     " Select all of current execution block
-    normal kVNj"1y
-    " Execute current selection in tmux pane below
-    call SendToIPython()
-    " Go back the original cursor position
-    normal 'p
-endfunction
-
-function! ExePyBlockAndMove()
-    " Find end of current execution block
-    exe "/".b:blockDelim
-    " Set marker at current cursor position
-    normal mp
-    " Select all of current execution block
-    normal kVNj"1y
-    " Execute current selection in tmux pane below
-    call SendToIPython()
-    " Go back the original cursor position
-    normal 'pj
+    normal kVNj
 endfunction
 
 " function to copy code block to clipboard
@@ -191,15 +164,47 @@ function! CopyPyBlockToClipboard()
     " Set marker at current cursor position
     normal mp
     " Find end of current execution block
-    exe "/".b:blockDelim
+    call SelectPyBlock()
     " Select all of current execution block
-    normal kVNj"+y
+    normal "+y
     " go back to original cursor position
     normal 'p
 endfunction
 
+" helper function for sending code to ipython
+function! SendToIPython()
+    " Execute current selection in tmux pane running IPython below
+    " sleep 50m
+    call VimuxRunCommand("%cpaste")
+    sleep 50m
+    call VimuxRunCommand(@1 . "--")
+    " call VimuxRunCommand("--\n")
+endfunction
+
+" execute a block of pyton code
+function! ExecutePythonBlock()
+    " Set marker at current cursor position
+    normal mp
+    " Find end of current execution block
+    call SelectPyBlock()
+    " Select all of current execution block
+    normal "1y
+    " Execute current selection in tmux pane below
+    call SendToIPython()
+    " Go back the original cursor position
+    normal 'p
+endfunction
+
+function! ExePyBlockAndMove()
+    " Execute block
+    call ExecutePythonBlock()
+    " Go back the original cursor position
+    normal nj
+endfunction
+
 " Map functions in python files
-nnoremap <buffer> ga :call CopyPyBlockToClipboard()<CR>
+nnoremap <buffer> <leader>v :call SelectPyBlock()<CR>
+nnoremap <buffer> <leader>c :call CopyPyBlockToClipboard()<CR>
 nnoremap <buffer> <Leader>rr :call ExecutePythonBlock()<CR>
 vnoremap <buffer> <Leader>r "1y:call SendToIPython()<CR>
 nnoremap <buffer> <C-x> :call ExePyBlockAndMove()<CR>
@@ -300,7 +305,7 @@ endfunction
 nnoremap <C-e> :call ExpandBrackets()<CR>
 
 " Jump between function / method / property definitions with <leader>m/n
-map <buffer> <Leader>m :exe '/^ *def \^ *class '<CR>
-map <buffer> <Leader>m :exe '?^ *def \^ *class '<CR>
+map <buffer> <Leader>m :exe '/^ *def \\|^ *class '<CR>
+map <buffer> <Leader>n :exe '?^ *def \\|^ *class '<CR>
 
 " =============================================================================
