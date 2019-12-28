@@ -37,7 +37,6 @@ Plugin 'VundleVim/Vundle.vim'
 ":Plugin 'ascenator/L9', {'name': 'newL9'}
 
 " Global plugins
-Plugin 'benmills/vimux' " talk to tmux from vim
 Plugin 'scrooloose/nerdtree' " file system navigation
 Plugin 'SirVer/ultisnips' " create and manage snippets
 Plugin 'honza/vim-snippets' "snippet library
@@ -63,6 +62,12 @@ Plugin 'gko/vim-coloresque' " change background in color codes to code value
 " Plugin 'chrisbra/Colorizer' " change background in color codes to code value
 " Plugin 'lilydjwg/colorizer' " change background in color codes to code value
 
+" tmux integration
+Plugin 'benmills/vimux' " talk to tmux from vim
+Plugin 'christoomey/vim-tmux-navigator' " easily jump between vim/tmux panes
+Plugin 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
+Plugin 'edkolev/tmuxline.vim' " inherit airline theme in tmux
+
 " Plugins with custom color schemes (HAD TO EDIT .bashrc AND ADD
 "export TERM=xterm-256color" ENABLING 256-COLOR SUPPORT FOR THIS TO WORK)
 Plugin 'tyrannicaltoucan/vim-quantum'
@@ -77,7 +82,6 @@ Plugin 'fxn/vim-monochrome'
 Plugin 'ryanpcmcquen/true-monochrome_vim'
 Plugin 'Blevs/vim-dzo'
 Plugin 'arcticicestudio/nord-vim'
-Plugin 'garybernhardt/dotfiles'
 Plugin 'Lokaltog/vim-distinguished'
 Plugin 'nanotech/jellybeans.vim'
 Plugin 'altercation/vim-colors-solarized'
@@ -87,7 +91,6 @@ Plugin 'jnurmine/Zenburn'
 Plugin 'felixhummel/setcolors.vim' " change color schemes interactively
 Plugin 'vim-airline/vim-airline' " chosen over powerline as simpler version
 Plugin 'vim-airline/vim-airline-themes' " custom airline themes
-Plugin 'edkolev/tmuxline.vim' " inherit airline theme in tmux
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -186,20 +189,31 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+" let g:syntastic_loc_list_height = 3 " smaller error list in location window
 " let g:syntastic_python_checkers = ['pycodestyle']
 
 " jump to first/previous/next error with <leader>e/p/n
 nnoremap <leader>e :ll<CR>
-" nnoremap <leader>e :lnext<CR>
-" nnoremap <leader><leader>e :lprev<CR>
+
+" toggle error window with control-l
+function ToggleErrorList()
+    if g:syntastic_auto_loc_list
+        let g:syntastic_auto_loc_list = 0
+        :exe ':lclose'
+    else
+        let g:syntastic_auto_loc_list = 1
+        :exe ':Errors'
+    endif
+endfunction
+nnoremap <leader>ee :call ToggleErrorList()<CR>
 
 
 " ---------------- AIRLINE ----------------------------------------------------
 
-" the separator used on the left side >
-let g:airline_left_sep='}'
-" the separator used on the right side >
-let g:airline_right_sep='{'
+" " the separator used on the left side >
+" let g:airline_left_sep='}'
+" " the separator used on the right side >
+" let g:airline_right_sep='{'
 " enable modified detection >
 let g:airline_detect_modified=1
 " enable paste detection >
@@ -212,7 +226,7 @@ let g:airline_detect_spell=1
 let g:airline_detect_iminsert=0
 " determine whether inactive windows should have the left section collapsed to
 " only the filename of that buffer.  >
-let g:airline_inactive_collapse=1
+let g:airline_inactive_collapse=0
 " themes are automatically selected based on the matching colorscheme. this
 " can be overridden by defining a value. >
 let g:airline_theme='tender' " 'base16_bright'
@@ -220,24 +234,42 @@ let g:airline_theme='tender' " 'base16_bright'
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
-" unicode symbols
-let g:airline_left_sep = '»'
-let g:airline_left_sep = '▶'
-let g:airline_right_sep = '«'
-let g:airline_right_sep = '◀'
-let g:airline_symbols.crypt = '🔒'
-let g:airline_symbols.linenr = '␊'
-let g:airline_symbols.linenr = '␤'
-let g:airline_symbols.linenr = '¶'
-let g:airline_symbols.maxlinenr = '☰'
-let g:airline_symbols.maxlinenr = ''
-let g:airline_symbols.branch = '⎇'
-let g:airline_symbols.paste = 'ρ'
-let g:airline_symbols.paste = 'Þ'
-let g:airline_symbols.paste = '∥'
-let g:airline_symbols.spell = 'Ꞩ'
-let g:airline_symbols.notexists = '∄'
-let g:airline_symbols.whitespace = 'Ξ'
+" " unicode symbols
+" let g:airline_left_sep = '»'
+" let g:airline_left_sep = '▶'
+" let g:airline_right_sep = '«'
+" let g:airline_right_sep = '◀'
+" let g:airline_symbols.crypt = '🔒'
+" let g:airline_symbols.linenr = '␊'
+" let g:airline_symbols.linenr = '␤'
+" let g:airline_symbols.linenr = '¶'
+" let g:airline_symbols.maxlinenr = '☰'
+" let g:airline_symbols.maxlinenr = ''
+" let g:airline_symbols.branch = '⎇'
+" let g:airline_symbols.paste = 'ρ'
+" let g:airline_symbols.paste = 'Þ'
+" let g:airline_symbols.paste = '∥'
+" let g:airline_symbols.spell = 'Ꞩ'
+" let g:airline_symbols.notexists = '∄'
+" let g:airline_symbols.whitespace = 'Ξ'
+let g:airline_powerline_fonts = 1
+let g:airline_left_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_sep = ''
+let g:airline_right_alt_sep = ''
+" let g:airline_symbols.branch = ''
+" let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = '☰'
+" let g:airline_symbols.maxlinenr = ''
+" let g:airline_symbols.dirty=⚡
+
+" YCM integration
+let g:airline#extensions#ycm#enabled = 1
+
+
+" disable tmuxline extension as a snapshot has been created and exists as
+" .tmux/tmuxline_snapshot
+let g:airline#extensions#tmuxline#enabled = 0
 
 " ---------------- PYTHONSENSE ------------------------------------------------
 

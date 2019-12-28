@@ -134,7 +134,12 @@ set splitright
 " Move back one tab with GT
 nnoremap GT gT
 
-" Use <C-b> to preview a file in firefox
+" yank selection in visual mode with leader-c
+vnoremap <leader>c "+y
+
+" --------------- Browser preview ---------------------------------------------
+
+" Use <C-b> to preview a file or a selection in firefox
 nnoremap <C-b> :!firefox %<CR>
 
 
@@ -181,7 +186,7 @@ augroup myvimrc " {
     au!
     au BufWritePost .vimrc,_vimrc,vimrc
              \ | so $MYVIMRC
-             \ | let b:backupname = '~/.backups/vimrc/vimrc_'
+             \ | let b:backupname = '~/.backups/vim/.vimrc/'
                                            \ . strftime('%Y%m%d_%H-%M-%S')
              \ | exe 'silent w!' b:backupname
              \ | exe 'redraw'
@@ -191,10 +196,10 @@ augroup END " }
 " Auto-source plugin settings and make backup when saving changes
 augroup myvimplugins " {
     au!
-    au BufWritePost .myVimPlugins.vim
+    au BufWritePost ~/.myplugins.vim
              \ | so $MYVIMRC
-             \ | let b:backupname = '~/.backups/myVimPlugins/myVimPlugins_'
-                                           \ . strftime('%Y%m%d_%H-%M-%S')
+             \ | let b:backupname = '~/.backups/vim/.myplugins.vim/'
+                                               \ . strftime('%Y%m%d_%H-%M-%S')
              \ | exe 'silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
@@ -202,20 +207,20 @@ augroup END " }
 " Make backup when saving changes to ftplugins
 augroup myftplugin " {
     au!
-    au BufWritePost ~/.vim/ftplugin/python_dbargman.vim
-             \ | let b:backupname = '~/.backups/ftplugins/'
+    au BufWritePost ~/.vim/ftplugin*.vim
+             \ | let b:backupname = '~/.backups/vim/ftplugin/'
                                            \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe '!mkdir' b:backupname
-             \ | exe '!cp -r ~/.vim/ftplugin/*' b:backupname
+             \ | exe ':!mkdir -p' b:backupname
+             \ | exe ':!cp -r ~/.vim/ftplugin/*' b:backupname . "/"
              \ | exe 'redraw'
 augroup END " }
 
 " Back up and source .myBashSettings (called by .bashrc) when making changes
 augroup bash_settings " {
     au!
-    au BufWritePost .myBashSettings
-             \ | exe 'silent !source ' . $HOME . '/.myBashSettings'
-             \ | let b:backupname = '~/.backups/myBashSettings/myBashSettings_'
+    au BufWritePost ~/.bashrc_ext
+             \ | exe 'silent !source ' . $HOME . '/.bashrc'
+             \ | let b:backupname = '~/.backups/bash/.bashrc_ext/'
                                           \ . strftime('%Y%m%d_%H-%M-%S')
              \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
@@ -224,9 +229,9 @@ augroup END " }
 " Back up and source .tmux.conf when making changes
 augroup tmux_conf " {
     au!
-    au BufWritePost .tmux.conf
+    au BufWritePost ~/.tmux.conf
              \ | exe 'silent !tmux source-file ~/.tmux.conf'
-             \ | let b:backupname = '~/.backups/tmux_conf/tmux_conf_'
+             \ | let b:backupname = '~/.backups/tmux/.tmux.conf/'
                                           \ . strftime('%Y%m%d_%H-%M-%S')
              \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
@@ -236,7 +241,15 @@ augroup END " }
 augroup gitignore " {
     au!
     au BufWritePost ~/.gitignore
-             \ | let b:backupname = '~/.backups/gitignore_global/gitignore_'
+             \ | let b:backupname = '~/.backups/git/.gitignore/'
+                                          \ . strftime('%Y%m%d_%H-%M-%S')
+             \ | exe ':silent w!' b:backupname
+             \ | exe 'redraw'
+augroup END " }
+augroup gitignore_global " {
+    au!
+    au BufWritePost ~/.gitignore_global
+             \ | let b:backupname = '~/.backups/git/.gitignore_global/'
                                           \ . strftime('%Y%m%d_%H-%M-%S')
              \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
@@ -245,7 +258,7 @@ augroup END " }
 " --------------- Handling of project-specific and session-specific settings --
 
 " Set settion options (things that a saved session will contain)
-set sessionoptions=blank,folds,help,winsize
+set sessionoptions=blank,winsize,tabpages
 
 
 " Function: switch to project directory, load project settings and last session
@@ -284,7 +297,7 @@ nnoremap :WQ :mksession!<space>.LastVimSession.vim<CR>:wa<CR>:qa
 
 " -------------- Removing old swap files after crashed sessions ---------------
 
-function! DeleteFileSwaps()
+function! DeleteSwapfiles()
     write
     let l:output = ''
     redir => l:output 
@@ -304,7 +317,7 @@ function! DeleteFileSwaps()
     set swf! | set swf!
     echo "Reset swap file extension for file: ".expand('%')
 endfunction
-com! DeleteFileSwaps :call DeleteFileSwaps()
+com! Delswap :bufdo exe "call DeleteSwapfiles()"
 
 " -----------------------------------------------------------------------------
 " -----------------------------------------------------------------------------

@@ -174,11 +174,9 @@ endfunction
 " helper function for sending code to ipython
 function! SendToIPython()
     " Execute current selection in tmux pane running IPython below
-    " sleep 50m
-    call VimuxRunCommand("%cpaste")
-    sleep 50m
-    call VimuxRunCommand(@1 . "--")
-    " call VimuxRunCommand("--\n")
+    call VimuxRunCommand("%cpaste") " this triggers copy-paste mode
+    sleep 50m  " this prevents IPython queue from overflowing
+    call VimuxRunCommand(@1 . "\n--")  " newline allows us to run single lines
 endfunction
 
 " execute a block of pyton code
