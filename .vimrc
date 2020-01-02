@@ -317,7 +317,7 @@ function! DeleteSwapfiles()
     set swf! | set swf!
     echo "Reset swap file extension for file: ".expand('%')
 endfunction
-com! Delswap :bufdo exe "call DeleteSwapfiles()"
+com! Swapdel :bufdo exe "call DeleteSwapfiles()"
 
 " -----------------------------------------------------------------------------
 " -----------------------------------------------------------------------------

@@ -1,0 +1,35 @@
+# Ignore all files...
+/*
+
+# ... except the following dotfiles:
+!.gitignore
+!.gitignore_global
+!.gitconfig
+!.bashrc_ext
+!.vim
+!.tmux.conf
+!.vim/
+!.vimrc
+!initial_setup.sh
+
+# ignore vim's undo directory and bundles except Vundle itself
+.vim/undodir/
+.vim/view/
+.vim/bundle/*
+!.vim/bundle/Vundle.vim/
+
+# back up tmux statusline config file
+!.tmux/
+.tmux/*
+!.tmux/tmuxline_snapshot
+
+# back up in XFCE and herbstluftwm config
+!.config/
+.config/*
+!.config/xfce4/
+!.config/herbstluftwm/
+
+# back up active XFCE theme
+!.themes/
+.themes/*
+!.themes/Adapta-Teal-Nokto-Eta/
