@@ -3,114 +3,128 @@
 " -----------------------------------------------------------------------------
 
 " --------------- Vundle initialization script --------------------------------
-" source: https://github.com/VundleVim/Vundle.vim
 
-set nocompatible              " be iMproved, required
-filetype off                  " required
-
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin('~/.vim/bundle') " INSTALL PLUGINS IN DROPBOX FOR VC
-
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
-" let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
-
-" The following are examples of different formats supported.
-" Keep Plugin commands between vundle#begin/end.
-" plugin on GitHub repo
-":Plugin 'tpope/vim-fugitive'
-" plugin from http://vim-scripts.org/vim/scripts.html
-":Plugin 'L9'
-" Git plugin not hosted on GitHub
-":Plugin 'git://git.wincent.com/command-t.git'
-" git repos on your local machine (i.e. when working on your own plugin)
-":Plugin 'file:///home/gmarik/path/to/plugin'
-" The sparkup vim script is in a subdirectory of this repo called vim.
-" Pass the path to set the runtimepath properly.
-":Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
-" Install L9 and avoid a Naming conflict if you've already installed a
-" different version somewhere else.
-":Plugin 'ascenator/L9', {'name': 'newL9'}
+" manage plugins with vim-plug (installed externally)
+call plug#begin()
 
 " Global plugins
-Plugin 'scrooloose/nerdtree' " file system navigation
-Plugin 'SirVer/ultisnips' " create and manage snippets
-Plugin 'honza/vim-snippets' "snippet library
-Plugin 'vim-syntastic/syntastic' " syntax checker
-Plugin 'tmhedberg/SimpylFold' " fold manager
-Plugin 'Konfekt/FastFold' " faster folding
-Plugin 'Valloric/YouCompleteMe' " autocompletion (has external dependencies)
-Plugin 'easymotion/vim-easymotion' " enhanced motion capabilities
-" Plugin 'ctrlpvim/ctrlp.vim' " fuzzy search engine for content
-" Plugin 'FelikZ/ctrlp-py-matcher' " speed up CtrlP with python-based matcher
-Plugin 'tpope/vim-commentary' " easy comment blocks
-Plugin 'tpope/vim-surround' " edit brackets and surround symbols
-Plugin 'Raimondi/delimitMate' " autocompletion for brackets and quotes
+Plug 'scrooloose/nerdtree' " file system navigation
+Plug 'SirVer/ultisnips' " create and manage snippets
+Plug 'honza/vim-snippets' "snippet library
+Plug 'tmhedberg/SimpylFold' " fold manager
+Plug 'Konfekt/FastFold' " faster folding
+Plug 'easymotion/vim-easymotion' " enhanced motion capabilities
+Plug 'tpope/vim-commentary' " easy comment blocks
+Plug 'tpope/vim-surround' " edit brackets and surround symbols
+Plug 'Raimondi/delimitMate' " autocompletion for brackets and quotes
 
 " highlight line indents
-Plugin 'Yggdroot/indentLine'
+Plug 'Yggdroot/indentLine'
 
 " Filetype-specific plugins
-Plugin 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
-" Plugin 'jeetsukumaran/vim-pythonsense' " easy python file navigation
-Plugin 'gko/vim-coloresque' " change background in color codes to code value
-" Plugin 'ap/vim-css-color' " change background in color codes to code value
-" Plugin 'chrisbra/Colorizer' " change background in color codes to code value
-" Plugin 'lilydjwg/colorizer' " change background in color codes to code value
+Plug 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
+Plug 'gko/vim-coloresque' " change background in color codes to code value
+
+" language server protocol
+Plug 'prabirshrestha/async.vim' " asynchronous operations - required
+Plug 'prabirshrestha/vim-lsp' " actual LSP plugin
+Plug 'prabirshrestha/asyncomplete.vim' " autocompletion
+Plug 'prabirshrestha/asyncomplete-lsp.vim' " autocompletion integratio with LSP
+Plug 'mattn/vim-lsp-settings' " easy load of LSP settings
+Plug 'thomasfaingnaert/vim-lsp-snippets' " LSP integration with snippets
+Plug 'thomasfaingnaert/vim-lsp-ultisnips' " LSP integration with snippets
+Plug 'prabirshrestha/asyncomplete-ultisnips.vim' " ultisnips in asyncomplete
+Plug 'prabirshrestha/asyncomplete-file.vim' " autocomplete file paths
 
 " tmux integration
-Plugin 'benmills/vimux' " talk to tmux from vim
-Plugin 'christoomey/vim-tmux-navigator' " easily jump between vim/tmux panes
-Plugin 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
-Plugin 'edkolev/tmuxline.vim' " inherit airline theme in tmux
+Plug 'benmills/vimux' " talk to tmux from vim
+Plug 'christoomey/vim-tmux-navigator' " easily jump between vim/tmux panes
+Plug 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
+Plug 'edkolev/tmuxline.vim' " inherit airline theme in tmux
+" Plug 'wellle/tmux-complete.vim'  " asyncomplete from tmux panes
 
 " Plugins with custom color schemes (HAD TO EDIT .bashrc AND ADD
-"export TERM=xterm-256color" ENABLING 256-COLOR SUPPORT FOR THIS TO WORK)
-Plugin 'tyrannicaltoucan/vim-quantum'
-Plugin 'AlessandroYorba/Despacio'
-Plugin 'jacoborus/tender.vim'
-" Plugin 'dfrunza/vim'
-Plugin 'fcpg/vim-fahrenheit'
-Plugin 'pbrisbin/vim-colors-off'
-Plugin 'robertmeta/nofrils'
-Plugin 'bruth/vim-newsprint-theme'
-Plugin 'fxn/vim-monochrome'
-Plugin 'ryanpcmcquen/true-monochrome_vim'
-Plugin 'Blevs/vim-dzo'
-Plugin 'arcticicestudio/nord-vim'
-Plugin 'Lokaltog/vim-distinguished'
-Plugin 'nanotech/jellybeans.vim'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'jnurmine/Zenburn'
+Plug 'jacoborus/tender.vim'
 
 " Other cosmetic plugins
-Plugin 'felixhummel/setcolors.vim' " change color schemes interactively
-Plugin 'vim-airline/vim-airline' " chosen over powerline as simpler version
-Plugin 'vim-airline/vim-airline-themes' " custom airline themes
+Plug 'felixhummel/setcolors.vim' " change color schemes interactively
+Plug 'vim-airline/vim-airline' " chosen over powerline as simpler version
+Plug 'vim-airline/vim-airline-themes' " custom airline themes
 
-" All of your Plugins must be added before the following line
-call vundle#end()            " required
-filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-"PluginList       -lists configured plugins
-"PluginInstall    -installs plugins; append `!` to update or just :PluginUpdate
-"PluginSearch foo -searches for foo; append `!` to refresh local cache
-"PluginClean -confirms removal of unused plugins; append `!` to auto-approve
-"
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
+" end plugin load
+call plug#end()
+
 
 " -----------------------------------------------------------------------------
 " --------------- Plugin settings ---------------------------------------------
 " -----------------------------------------------------------------------------
 
+" --------------- vim-lsp -----------------------------------------------------
+
+" do not use default folding method
+let g:lsp_fold_enabled = 0
+
+" enable autocompletion preview window
+let g:asyncomplete_auto_popup = 1
+set completeopt+=preview
+
+" register snippets
+if has('python3')
+    call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+        \ 'name': 'ultisnips',
+        \ 'priority': 0,
+        \ 'whitelist': ['*'],
+        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+        \ }))
+endif
+
+" register files
+au User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
+    \ 'name': 'file',
+    \ 'whitelist': ['*'],
+    \ 'priority': 10,
+    \ 'completor': function('asyncomplete#sources#file#completor')
+    \ }))
+
+" autocompletion
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <c-l>    pumvisible() ? "\<C-y>" : "\<c-l>"
+
+" auto-close preview window when completion is done
+autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+
+" navigate between diagnostice with <leader>(<leader>)e
+nnoremap <leader>e :LspNextDiagnostic<cr>
+nnoremap <leader><leader>e :LspPreviousDiagnostic<cr>
+
+" enable highlighting
+let g:lsp_highlights_enabled = 1
+let g:lsp_textprop_enabled = 0
+" highlight LspErrorHighlight ctermfg=red guifg=red ctermbg=green guibg=green
+
+" diagnostic signs
+let g:lsp_signs_enabled = 1         " enable signs
+let g:lsp_diagnostics_echo_cursor = 1 " enable echo under cursor when in normal mode
+
+" error highlighting
+let g:lsp_signs_error = {'text': '✗'}
+let g:lsp_signs_warning = {'text': '!'}
+let g:lsp_signs_information = {'text': 'i'}
+let g:lsp_signs_hint = {'text': 'h'}
+
+" enable references under cursor
+let g:lsp_highlight_references_enabled = 1
+highlight lspReference ctermfg=black guifg=red ctermbg=white guibg=green
+
+" ---------------- UltiSnips --------------------------------------------------
+
+let g:UltiSnipsExpandTrigger='<c-e>'
+" let g:UltiSnipsListSnippets='<c-j>'
+let g:UltiSnipsJumpForwardTrigger='<C-l>'
+let g:UltiSnipsJumpBackwardTrigger='<C-h>'
+let g:UltiSnipsEditSplit='horizontal'
+let g:UltiSnipsSnippetDirectories=['plugged/ultisnips', 'mySnippets']
 
 " ---------------- NERDTree ---------------------------------------------------
 
@@ -123,6 +137,28 @@ nnoremap <c-n> :NERDTreeToggle<CR>
 let g:EasyMotion_do_shade=0
 " use simply <Leader> instead of the default <Leader><Leader>
 map <Leader> <Plug>(easymotion-prefix)
+
+
+" ---------------- DelimitMate ------------------------------------------------
+
+" try to balance matching pairs
+let delimitMate_balance_matchpairs = 1
+
+" do not duplicate spaces
+let delimitMate_expand_space = 0
+" duplicate newline
+let delimitMate_expand_cr = 1
+" in python, replicate triple quotes
+au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
+" let delimitMate_expand_inside_quotes = 1
+" jump out of a filled pair with ctrl-l (does not clash with ultisnips)
+imap <expr> <C-l> "<Plug>delimitMateS-Tab"
+
+
+" ---------------- indentLine -------------------------------------------------
+
+let g:indentLine_char='|'
+
 
 " ---------------- VIMUX ------------------------------------------------------
 
@@ -142,70 +178,6 @@ nnoremap <Leader>vq :VimuxCloseRunner<CR>
 nnoremap <Leader>vx :VimuxInterruptRunner<CR>
 " Zoom the runner pane (use <bind-key> z to restore runner pane)
 nnoremap <Leader>vz :call VimuxZoomRunner()<CR>
-
-
-" ---------------- UltiSnips --------------------------------------------------
-
-let g:UltiSnipsExpandTrigger='<c-Space>'
-let g:UltiSnipsListSnippets='<c-j>'
-let g:UltiSnipsJumpForwardTrigger='<C-l>'
-let g:UltiSnipsJumpBackwardTrigger='<C-h>'
-let g:UltiSnipsEditSplit='horizontal'
-let g:UltiSnipsSnippetDirectories=[ 'UltiSnips', 'mySnippets']
-
-
-" ---------------- CtrlP ------------------------------------------------------
-
-" let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' } " speed up matching
-" let g:ctrlp_show_hidden = 1 " also search in dotfiles
-" let g:ctrlp_max_files = 0 " scan unlimited number of files
-" let g:ctrlp_max_depth = 1000 " set unlimited search recursion depth
-
-" ---------------- DelimitMate ------------------------------------------------
-
-" try to balance matching pairs
-let delimitMate_balance_matchpairs = 1
-
-" do not duplicate spaces
-let delimitMate_expand_space = 0
-" duplicate newline
-let delimitMate_expand_cr = 1
-" in python, replicate triple quotes
-au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
-" let delimitMate_expand_inside_quotes = 1
-" jump out of a filled pair with ctrl-l (does not clash with ultisnips)
-imap <expr> <C-l> "<Plug>delimitMateS-Tab"
-
-" ---------------- indentLine -------------------------------------------------
-
-let g:indentLine_char='|'
-
-" ---------------- SYNTASTIC CHECKER ------------------------------------------
-
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-" let g:syntastic_loc_list_height = 3 " smaller error list in location window
-" let g:syntastic_python_checkers = ['pycodestyle']
-
-" jump to first/previous/next error with <leader>e/p/n
-nnoremap <leader>e :ll<CR>
-
-" toggle error window with control-l
-function ToggleErrorList()
-    if g:syntastic_auto_loc_list
-        let g:syntastic_auto_loc_list = 0
-        :exe ':lclose'
-    else
-        let g:syntastic_auto_loc_list = 1
-        :exe ':Errors'
-    endif
-endfunction
-nnoremap <leader>ee :call ToggleErrorList()<CR>
 
 
 " ---------------- AIRLINE ----------------------------------------------------
@@ -270,28 +242,6 @@ let g:airline#extensions#ycm#enabled = 1
 " disable tmuxline extension as a snapshot has been created and exists as
 " .tmux/tmuxline_snapshot
 let g:airline#extensions#tmuxline#enabled = 0
-
-" ---------------- PYTHONSENSE ------------------------------------------------
-
-""" These settings will be overridden in python_dbargman.vim
-
-" map <buffer> ac <Plug>(PythonsenseOuterClassTextObject)
-" map <buffer> ic <Plug>(PythonsenseInnerClassTextObject)
-" map <buffer> af <Plug>(PythonsenseOuterFunctionTextObject)
-" map <buffer> if <Plug>(PythonsenseInnerFunctionTextObject)
-" map <buffer> ad <Plug>(PythonsenseOuterDocStringTextObject)
-" map <buffer> id <Plug>(PythonsenseInnerDocStringTextObject)
-
-" map <buffer> ]] <Plug>(PythonsenseStartOfNextPythonClass)
-" map <buffer> ][ <Plug>(PythonsenseEndOfPythonClass)
-" map <buffer> [[ <Plug>(PythonsenseStartOfPythonClass)
-" map <buffer> [] <Plug>(PythonsenseEndOfPreviousPythonClass)
-" map <buffer> ]m <Plug>(PythonsenseStartOfNextPythonFunction)
-" map <buffer> ]M <Plug>(PythonsenseEndOfPythonFunction)
-" map <buffer> [m <Plug>(PythonsenseStartOfPythonFunction)
-" map <buffer> [M <Plug>(PythonsenseEndOfPreviousPythonFunction)
-
-" map <buffer> g: <Plug>(PythonsensePyWhere)
 
 
 " =============================================================================

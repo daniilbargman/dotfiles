@@ -9,6 +9,9 @@
 " (https://www.youtube.com/watch?v=YhqsjUUHj6g)
 
 
+" Use vim settings and not vi settings
+set nocompatible
+
 " --------------- Overriding the leader key -----------------------------------
 let mapleader = ','
 
@@ -18,9 +21,6 @@ source ~/.vim/.myplugins.vim
 
 
 " --------------- Basic settings ----------------------------------------------
-
-" Use vim settings and not vi settings
-set nocompatible
 
 " Set zero hold time on switch to normal mode, quarter-second for bindings
 set ttimeoutlen=0

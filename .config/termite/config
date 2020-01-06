@@ -50,7 +50,7 @@ hyperlinks = true
 #foreground_bold = #ffffff
 # background = #3f3f3f
 
-# 20% background transparency (requires a compositor)
+# 5% background transparency (requires a compositor)
 background = rgba(30, 35, 40, 0.95)
 
 # If unset, will reverse foreground and background

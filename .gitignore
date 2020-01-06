@@ -12,18 +12,18 @@
 !.vimrc
 !initial_setup.sh
 
-# ignore vim's undo directory and bundles except Vundle itself
+# ignore vim's undo directory and plugins, except vim-plug itself
 .vim/undodir/
 .vim/view/
-.vim/bundle/*
-!.vim/bundle/Vundle.vim/
+.vim/plugged/*
+!.vim/autoload/
 
 # back up tmux statusline config file
 !.tmux/
 .tmux/*
 !.tmux/tmuxline_snapshot
 
-# back up in XFCE and herbstluftwm config
+# back up in XFCE and herbstluftwm-related config files
 !.config/
 .config/*
 !.config/xfce4/
