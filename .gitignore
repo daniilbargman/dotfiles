@@ -17,6 +17,7 @@
 .vim/view/
 .vim/plugged/*
 !.vim/autoload/
+.vim/autoload/plug.vim.old
 
 # back up tmux statusline config file
 !.tmux/

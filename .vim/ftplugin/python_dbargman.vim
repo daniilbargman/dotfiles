@@ -24,6 +24,7 @@ let b:blockBG="NONE"
 
 " indentLine color to match background color of matched block
 let indentLine_bgcolor_term="NONE"
+let indentLine_bgcolor_gui="NONE"
 
 " =============================================================================
 " --------- Custom highlighting of code blocks and block separators -----------
@@ -32,7 +33,7 @@ let indentLine_bgcolor_term="NONE"
 " change highlighting for normal mode
 
 " change highlighting for visual mode
-hi Visual ctermbg=white ctermfg=black
+hi Visual ctermbg=white ctermfg=black guibg=white guifg=black
 
 " clear block highlighting and initiate list of block lines to an empty object
 sign unplace *
@@ -121,7 +122,7 @@ augroup pyBlockLineHL
     au InsertEnter,TextChanged *.py call HighlightBlockLines()
     au BufEnter *.py if line('$')==1&&getline(1)=='dbpy'
                 \|exe ":startinsert!"
-                \|call feedkeys("\<C-j>")
+                \|call feedkeys("\<C-u>")
                 \|call feedkeys("1\<CR>")
                 \|endif
 augroup END

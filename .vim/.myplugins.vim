@@ -23,7 +23,8 @@ Plug 'Yggdroot/indentLine'
 
 " Filetype-specific plugins
 Plug 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
-Plug 'gko/vim-coloresque' " change background in color codes to code value
+" Plug 'gko/vim-coloresque' " change background in color codes to code value
+Plug 'chrisbra/Colorizer' " conform with PEP-8 when auto-indenting
 
 " language server protocol
 Plug 'prabirshrestha/async.vim' " asynchronous operations - required
@@ -120,11 +121,11 @@ highlight lspReference ctermfg=black guifg=red ctermbg=white guibg=green
 " ---------------- UltiSnips --------------------------------------------------
 
 let g:UltiSnipsExpandTrigger='<c-e>'
-" let g:UltiSnipsListSnippets='<c-j>'
+let g:UltiSnipsListSnippets='<c-u>'
 let g:UltiSnipsJumpForwardTrigger='<C-l>'
 let g:UltiSnipsJumpBackwardTrigger='<C-h>'
 let g:UltiSnipsEditSplit='horizontal'
-let g:UltiSnipsSnippetDirectories=['plugged/ultisnips', 'mySnippets']
+let g:UltiSnipsSnippetDirectories=['plugged/ultisnips', 'mySnippets', 'plugged/vim-snippets/UltiSnips']
 
 " ---------------- NERDTree ---------------------------------------------------
 
@@ -244,4 +245,9 @@ let g:airline#extensions#ycm#enabled = 1
 let g:airline#extensions#tmuxline#enabled = 0
 
 
+" ---------------- Colorizer --------------------------------------------------
+"
+let g:colorizer_auto_filetype='css,html'
+
 " =============================================================================
+
