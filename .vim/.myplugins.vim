@@ -158,8 +158,15 @@ imap <expr> <C-l> "<Plug>delimitMateS-Tab"
 
 " ---------------- indentLine -------------------------------------------------
 
-let g:indentLine_char='|'
-
+let g:indentLine_char = '┊'
+let g:indentLine_showFirstIndentLevel=1
+" let g:indentLine_char_list = ['|', '¦', '┆', '┊']
+" let g:indentLine_leadingSpaceEnabled=1
+" let g:indentLine_leadingSpaceChar='·'
+" let g:indentLine_conceallevel=0
+" let g:vim_json_syntax_conceal=0
+" let g:vim_markdown_conceal=0
+let g:indentLine_fileTypeExclude = ['json', 'markdown']
 
 " ---------------- VIMUX ------------------------------------------------------
 

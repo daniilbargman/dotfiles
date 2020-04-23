@@ -15,6 +15,8 @@ set nocompatible
 " --------------- Overriding the leader key -----------------------------------
 let mapleader = ','
 
+" --------------- Do not conceal any symbols ----------------------------------
+" set conceallevel=0
 
 " --------------- Sourcing all my vim plugins ---------------------------------
 source ~/.vim/.myplugins.vim

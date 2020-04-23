@@ -13,12 +13,22 @@
 export TERM='xterm-256color'
 
 # Set custom prompt
+function get_virtualenv {
+    envname=$(basename "$CONDA_PREFIX")
+    [ "$envname" = "" ] && echo "base" || echo "$envname"
+}
+function get_k8s_context {
+    # [ "$KUBECONFIG" = "" ] && echo "" \
+    #   || echo " | k8s-context:$(kubectl config current-context)"
+    k8s_context=$(kubectl config current-context 2&>1)
+    [ "$k8s_context" = "" ] && echo "no-k8s" || echo "$k8s_context"
+}
 FG=("\[\033[38;5;74m\]" "\[\033[38;5;79m\]" "\[\033[38;5;136m\]" "\[\033[38;5;142m\]" "\[\033[38;5;220m\]" "\[\033[38;5;250m\]")
 BG=("\[\033[48;5;236m\]" "\[\033[48;5;237m\]" "\[\033[48;5;238m\]" "\[\033[48;5;239m\]" "\[\033[48;5;240m\]")
 BOLD="\[$(tput bold)\]"
 RESET="\[$(tput sgr0)\]"
 
-export PS1="${FG[3]}[\t] ${FG[-1]}${FG[1]}\h: ${FG[-2]}\w\n\n${BG[2]}${FG[-1]}(\$?) ${BOLD}${FG[0]}\u${FG[-1]}${FG[-1]} => \\$""${RESET} "
+export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_context)${FG[-1]} : ${FG[3]}\w\n${BG[2]}${FG[4]}[\t] ${BOLD}${FG[0]}\u ${FG[-1]}=> \\$""${RESET} "
 
 # Make bash behave more like vim
 set -o vi
@@ -53,7 +63,7 @@ export -f vim
 alias vimsession='[[ -e .LastVimSession.vim ]] && vim -S .LastVimSession.vim || vim'
 
 # shortcut to start secure connection
-alias lock='sudo ufw enable && sudo -b openvpn --config ~/vpn/statosphere-vpn-client-dbargman.ovpn --auth-nocache'
+alias lock='sudo ufw enable && sudo -b openvpn --config ~/vpn/dbargman-server2.ovpn --auth-nocache'
 alias unlock='sudo ufw disable && sudo killall openvpn '
 
 # use -la flag by default with the ls command

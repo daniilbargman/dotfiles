@@ -34,3 +34,11 @@
 !.themes/
 .themes/*
 !.themes/Adapta-Teal-Nokto-Eta/
+
+# back up a subset of executables
+!executables/
+executables/*
+!executables/projectLaunchers
+!executables/IDEconfig
+!executables/tmux-project-template
+!executables/brightness

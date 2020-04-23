@@ -1,18 +1,7 @@
-snippet dockerfile "Canvas for an empty dockerfile"
-
-#
-# Dockerfile for ${1: Container description}
-#
-# Author: Daniil Bargman (daniil.bargman@gmail.com)
-
-FROM $0
-endsnippet
-
-snippet dbash "Template for well-organized bash scripts"
 #!/usr/bin/env bash
 # vim: set filetype=sh
 #
-# ${1: Describe what this script is meant to do}
+# Set screen brightness
 #
 # Author: Daniil Bargman (daniil.bargman@gmail.com)
 #
@@ -38,7 +27,7 @@ trap append_error ERR
 # manual error handler: refer to help flag, and exit (use in place of echo)
 function error_exit {
     echo
-    echo \$1
+    echo $1
     append_error
 }
 
@@ -50,12 +39,15 @@ cat << EOF
 ===============================================================================
 ==============================================================================
 
-${2: Short description of this script or command}
+Set screen brightness. If no SCREEN argument is provided explicitly, the first
+connected screen will be chosen using:
+
+    xrandr -q | grep -Po ".* connected"
 
 
 Usage:
 
-  ${3: Use cases}
+  brightness <value between 0 and 1> [SCREEN=<screen>]
 
 
 Help on this command:
@@ -70,14 +62,21 @@ EOF
 }
 
 # define argument defaults
-allowed_args=( ${4: Allowed arguments, including <ARG> for ARG=<VALUE> types} )
+allowed_args=( SCREEN )
 help_flags=( "-h" "--help" )
 
 # extract all script arguments provided
 all_args=("$@")
 
+# brightness value
+[ "$(echo $1 | grep -Px "[01](\.0)?|(0\.[1-9])?")" = "" ] \
+    && error_exit "Brightness level must be 0, 1 or 0.<1-9>"
+value=$1
+
+
 # parse and validate arguments
-for i in "${all_args[@]}"; do
+screen=$(xrandr -q | grep -Po ".* connected" | sed "s% connected%%g")
+for i in "${all_args[@]:1}"; do
 
     # parse argument into name and value, if it has the form "NAME=VALUE"
     IFS='=' read -r argn argv <<< "$i"
@@ -93,12 +92,11 @@ for i in "${all_args[@]}"; do
 
     # apply actual logic to parsed argument
     else
-        error_exit "Logic for this argument is not implemented yet."
+        screen=$argv
     fi
 done
 
 # actual code ...
-$0
+xrandr --output $screen --brightness $value
 
 # done.
-endsnippet
