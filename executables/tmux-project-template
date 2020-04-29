@@ -7,14 +7,17 @@
 
 # session name and base directory
 session="new-tmux-session"
+conda_env=
 cd ~
 
 # function for h-split window
 function hsplit {
     tmux split-window -v -p 20
     tmux send-keys "cd $1" C-m
+    [ "$conda_env" = "" ] || tmux send-keys "source activate $conda_env" C-m
     tmux select-pane -U
     tmux send-keys "cd $1" C-m
+    [ "$conda_env" = "" ] || tmux send-keys "source activate $conda_env" C-m
     tmux send-keys "sleep 2 && vimsession" C-m
 }
 
@@ -22,8 +25,10 @@ function hsplit {
 function vsplit {
     tmux split-window -h
     tmux send-keys "cd $1" C-m
+    [ "$conda_env" = "" ] || tmux send-keys "source activate $conda_env" C-m
     tmux select-pane -U
     tmux send-keys "cd $1" C-m
+    [ "$conda_env" = "" ] || tmux send-keys "source activate $conda_env" C-m
     tmux send-keys "sleep 2 && vimsession" C-m
 }
 

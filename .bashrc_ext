@@ -20,7 +20,7 @@ function get_virtualenv {
 function get_k8s_context {
     # [ "$KUBECONFIG" = "" ] && echo "" \
     #   || echo " | k8s-context:$(kubectl config current-context)"
-    k8s_context=$(kubectl config current-context 2&>1)
+    k8s_context=$(kubectl config current-context 2> /dev/null)
     [ "$k8s_context" = "" ] && echo "no-k8s" || echo "$k8s_context"
 }
 FG=("\[\033[38;5;74m\]" "\[\033[38;5;79m\]" "\[\033[38;5;136m\]" "\[\033[38;5;142m\]" "\[\033[38;5;220m\]" "\[\033[38;5;250m\]")

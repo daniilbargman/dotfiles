@@ -25,6 +25,8 @@ Plug 'Yggdroot/indentLine'
 Plug 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
 " Plug 'gko/vim-coloresque' " change background in color codes to code value
 Plug 'chrisbra/Colorizer' " conform with PEP-8 when auto-indenting
+" better python syntax highlighting
+Plug 'vim-python/python-syntax'
 
 " language server protocol
 Plug 'prabirshrestha/async.vim' " asynchronous operations - required
@@ -69,6 +71,17 @@ let g:lsp_fold_enabled = 0
 let g:asyncomplete_auto_popup = 1
 set completeopt+=preview
 
+" register language servers
+let g:lsp_settings = {
+\   'pyls': {
+\     'workspace_config': {
+\       'pyls': {
+\         'configurationSources': ['flake8']
+\       }
+\     }
+\   },
+\}
+
 " register snippets
 if has('python3')
     call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
@@ -95,9 +108,13 @@ inoremap <expr> <c-l>    pumvisible() ? "\<C-y>" : "\<c-l>"
 " auto-close preview window when completion is done
 autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
 
-" navigate between diagnostice with <leader>(<leader>)e
+" navigate between diagnostice with <leader>e
 nnoremap <leader>e :LspNextDiagnostic<cr>
-nnoremap <leader><leader>e :LspPreviousDiagnostic<cr>
+nnoremap <leader>p :LspNextDiagnostic<cr>
+
+" toggle location window with <leader><leader>{e,q}
+nnoremap <leader><leader>e :LspDocumentDiagnostics<cr><c-w><c-p>
+nnoremap <leader><leader>q :lclose<cr>
 
 " enable highlighting
 let g:lsp_highlights_enabled = 1
@@ -117,6 +134,12 @@ let g:lsp_signs_hint = {'text': 'h'}
 " enable references under cursor
 let g:lsp_highlight_references_enabled = 1
 highlight lspReference ctermfg=black guifg=red ctermbg=white guibg=green
+
+" " debug
+" let g:lsp_log_verbose = 1
+" let g:lsp_log_file = expand('~/vim-lsp.log')
+" let g:asyncomplete_log_file = expand('~/asyncomplete.log')
+
 
 " ---------------- UltiSnips --------------------------------------------------
 

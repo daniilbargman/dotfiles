@@ -26,6 +26,18 @@ let b:blockBG="NONE"
 let indentLine_bgcolor_term="NONE"
 let indentLine_bgcolor_gui="NONE"
 
+" Syntax highlighting options for vim-python/python-syntax plugin
+let g:python_highlight_string_formatting=1
+let g:python_highlight_string_format=1
+let g:python_highlight_space_errors=1
+let g:python_highlight_indent_errors=1
+let g:python_highlight_class_vars=1
+let g:python_highlight_exceptions=1
+let g:python_highlight_builtin_objs=1
+let g:python_highlight_builtin_types=1
+let g:python_highlight_doctests=1
+let g:python_highlight_operators=0
+
 " =============================================================================
 " --------- Custom highlighting of code blocks and block separators -----------
 " =============================================================================
@@ -65,42 +77,42 @@ function! HighlightBlockLines()
     endwhile
 endfunction
 
-" create a highlight group for the active block
-function! HighlightBlock()
-    " clear all signs and redraw block lines
-    sign unplace *
-    let b:blockLines=[]
-    call HighlightBlockLines()
+" " create a highlight group for the active block
+" function! HighlightBlock()
+"     " clear all signs and redraw block lines
+"     sign unplace *
+"     let b:blockLines=[]
+"     call HighlightBlockLines()
 
-    " find current line number
-    let b:lineNum=line('.')
+"     " find current line number
+"     let b:lineNum=line('.')
 
-    " figure out closest neighbouring code block separators
-    let b:activeBlockStart=1  " start of block at start of file by default
-    let b:activeBlockEnd=line('$')  " end of block at end of file by default
-    for i in b:blockLines  " assume blocklines is a sorted array
-        if i > b:lineNum
-            let b:activeBlockEnd=i-1
-            break
-        endif
-        let b:activeBlockStart=i+1
-    endfor
+"     " figure out closest neighbouring code block separators
+"     let b:activeBlockStart=1  " start of block at start of file by default
+"     let b:activeBlockEnd=line('$')  " end of block at end of file by default
+"     for i in b:blockLines  " assume blocklines is a sorted array
+"         if i > b:lineNum
+"             let b:activeBlockEnd=i-1
+"             break
+"         endif
+"         let b:activeBlockStart=i+1
+"     endfor
 
-    " loop over block and place sings
-    while b:activeBlockStart <= b:activeBlockEnd
-        exe ":sign place " . b:activeBlockStart .
-            \ " line=" . b:activeBlockStart
-            \ . " name=pyBlockHL file=" . expand("%:p")
-        let b:activeBlockStart+=1
-    endwhile
+"     " loop over block and place sings
+"     while b:activeBlockStart <= b:activeBlockEnd
+"         exe ":sign place " . b:activeBlockStart .
+"             \ " line=" . b:activeBlockStart
+"             \ . " name=pyBlockHL file=" . expand("%:p")
+"         let b:activeBlockStart+=1
+"     endwhile
 
-    " place a marker to save which block is selected
-    normal mb
+"     " place a marker to save which block is selected
+"     normal mb
 
-    " redraw the editor
-    exe 'redraw!'
+"     " redraw the editor
+"     exe 'redraw!'
 
-endfunction
+" endfunction
 
 " Autocommand to highlight block separators
 augroup pyBlockLineHL
