@@ -26,6 +26,9 @@ BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 SCRIPT_NAME="${0##*/}"
 ###############################################################################
 
+# error-safe script settings
+set -Eeuo pipefail
+
 # default message appendix on errors
 function append_error {
     echo "run '$BASE_DIR/$SCRIPT_NAME -h' for help on '$SCRIPT_NAME'."
@@ -48,7 +51,7 @@ cat << EOF
 
 ===============================================================================
 ===============================================================================
-==============================================================================
+===============================================================================
 
 ${2: Short description of this script or command}
 
@@ -58,26 +61,24 @@ Usage:
   ${3: Use cases}
 
 
-Help on this command:
+Print this help text:
 
-  $SCRIPT_NAME ( -h | --help )
+  $SCRIPT_NAME ( --help | -h )
 
 
 ===============================================================================
 ===============================================================================
 ===============================================================================
 EOF
+exit 0
 }
 
 # define argument defaults
 allowed_args=( ${4: Allowed arguments, including <ARG> for ARG=<VALUE> types} )
 help_flags=( "-h" "--help" )
 
-# extract all script arguments provided
-all_args=("$@")
-
 # parse and validate arguments
-for i in "${all_args[@]}"; do
+for i in "${@:1}"; do
 
     # parse argument into name and value, if it has the form "NAME=VALUE"
     IFS='=' read -r argn argv <<< "$i"

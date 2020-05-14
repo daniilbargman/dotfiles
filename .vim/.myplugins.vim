@@ -189,7 +189,8 @@ let g:indentLine_showFirstIndentLevel=1
 " let g:indentLine_conceallevel=0
 " let g:vim_json_syntax_conceal=0
 " let g:vim_markdown_conceal=0
-let g:indentLine_fileTypeExclude = ['json', 'markdown']
+" let g:indentLine_fileTypeExclude = ['json', 'markdown']
+let g:indentLine_concealcursor = ""
 
 " ---------------- VIMUX ------------------------------------------------------
 
