@@ -27,6 +27,10 @@ Plug 'vim-scripts/indentpython.vim' " conform with PEP-8 when auto-indenting
 Plug 'chrisbra/Colorizer' " conform with PEP-8 when auto-indenting
 " better python syntax highlighting
 Plug 'vim-python/python-syntax'
+" better JSON syntax highlighting
+Plug 'elzr/vim-json'
+" better Markdown handling
+Plug 'plasticboy/vim-markdown'
 
 " language server protocol
 Plug 'prabirshrestha/async.vim' " asynchronous operations - required
@@ -46,8 +50,9 @@ Plug 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
 Plug 'edkolev/tmuxline.vim' " inherit airline theme in tmux
 " Plug 'wellle/tmux-complete.vim'  " asyncomplete from tmux panes
 
-" Plugins with custom color schemes (HAD TO EDIT .bashrc AND ADD
+" Plugins with custom color schemes
 Plug 'jacoborus/tender.vim'
+Plug 'NLKNguyen/papercolor-theme' 
 
 " Other cosmetic plugins
 Plug 'felixhummel/setcolors.vim' " change color schemes interactively
@@ -233,7 +238,7 @@ let g:airline_detect_iminsert=0
 let g:airline_inactive_collapse=0
 " themes are automatically selected based on the matching colorscheme. this
 " can be overridden by defining a value. >
-let g:airline_theme='tender' " 'base16_bright'
+" let g:airline_theme='tender' " 'base16_bright'
 " airline symbol array
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}

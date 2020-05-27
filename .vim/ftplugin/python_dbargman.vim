@@ -13,11 +13,14 @@ let b:blockDelim='^\s*#\s%%.*'
 " remove background color by default
 hi Normal ctermbg=None
 
+" remove background color in sign column as well
+hi clear SignColumn
+
 " background color to highlight lines that separate code blocks
-let b:blockLineBG=240
+let b:blockLineBG=238
 
 " text color in lines that separate code blocks
-let b:blockLineFG = 16
+let b:blockLineFG = 6
 
 " background color to highlight the current active code block
 let b:blockBG="NONE"
@@ -44,8 +47,8 @@ let g:python_highlight_operators=0
 
 " change highlighting for normal mode
 
-" change highlighting for visual mode
-hi Visual ctermbg=white ctermfg=black guibg=white guifg=black
+" " change highlighting for visual mode
+" hi Visual ctermbg=white ctermfg=black guibg=white guifg=black
 
 " clear block highlighting and initiate list of block lines to an empty object
 sign unplace *
@@ -121,7 +124,7 @@ augroup pyBlockLineHL
                 \|exe ":normal! idbpy"
                 \|endif
     au BufEnter,BufRead *.py
-        \ | exe ':highlight pyBlockLines cterm=underline ctermbg=' . 
+        \ | exe ':highlight pyBlockLines ctermbg=' . 
             \ b:blockLineBG . ' ctermfg=' . b:blockLineFG
         \ | sign define pylineHL linehl=pyBlockLines
     " au BufEnter,BufRead *.py

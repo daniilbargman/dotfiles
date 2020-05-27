@@ -42,7 +42,36 @@ set termguicolors
 if has('gui_running')
     colo delek
 else
-    colo tender " fahrenheit, sialoquent, distinguished, monochrome, dzo
+
+    " settings for papercolor theme
+    " let g:airline_theme='papercolor'
+    set background=dark
+    colorscheme PaperColor
+    let g:PaperColor_Theme_Options = {
+      \   'theme': {
+      \     'default.dark': {
+      \       'transparent_background': 1,
+      \       'allow_bold': 0,
+      \       'override' : {
+      \         'color07' : ['#FFFFFF', '15'],
+      \         'folded_bg' : ['#1C1C1C', '234'],
+      \         'folded_fg' : ['#008080', '6'],
+      \         'color05' : ['#808080', '244'],
+      \         'matchparen_fg' : ['#AF005F', '125'],
+      \         'matchparen_bg' : ['#303030', '237'],
+      \         'error_bg' : ['#303030', '237']
+      \       }
+      \     }
+      \   },
+      \   'language': {
+      \     'python': {
+      \       'highlight_builtins' : 1
+      \     }
+      \   }
+      \ }
+
+    " colo tender " fahrenheit, sialoquent, distinguished, monochrome, dzo
+    let g:airline_theme='tender'
 end
 
 " Set highlight group for trailing whitespaces
