@@ -27,13 +27,13 @@
 # back up in XFCE and herbstluftwm-related config files
 !.config/
 .config/*
-!.config/xfce4/
+# !.config/xfce4/
 !.config/herbstluftwm/
 
-# back up active XFCE theme
-!.themes/
-.themes/*
-!.themes/Adapta-Teal-Nokto-Eta/
+# # back up active XFCE theme
+# !.themes/
+# .themes/*
+# !.themes/Adapta-Teal-Nokto-Eta/
 
 # back up a subset of executables
 !executables/

@@ -54,8 +54,8 @@ else
       \       'allow_bold': 0,
       \       'override' : {
       \         'color07' : ['#FFFFFF', '15'],
-      \         'folded_bg' : ['#1C1C1C', '234'],
       \         'folded_fg' : ['#008080', '6'],
+      \         'folded_bg' : ['#000000', '16'],
       \         'color05' : ['#808080', '244'],
       \         'matchparen_fg' : ['#AF005F', '125'],
       \         'matchparen_bg' : ['#303030', '237'],

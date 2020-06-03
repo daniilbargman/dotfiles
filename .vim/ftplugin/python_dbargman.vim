@@ -17,10 +17,10 @@ hi Normal ctermbg=None
 hi clear SignColumn
 
 " background color to highlight lines that separate code blocks
-let b:blockLineBG=238
+let b:blockLineBG=235
 
 " text color in lines that separate code blocks
-let b:blockLineFG = 6
+let b:blockLineFG = 117
 
 " background color to highlight the current active code block
 let b:blockBG="NONE"
