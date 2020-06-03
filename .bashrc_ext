@@ -70,7 +70,7 @@ alias unlock='sudo ufw disable && sudo killall openvpn '
 alias la="ls -lahF --color=always"
 
 # alias update commands
-alias update="sudo apt-get update && sudo apt-get upgrade; sudo apt-get clean && sudo apt-get autoremove"
+alias update="sudo apt-get update && sudo apt-get -y upgrade; sudo apt-get clean && sudo apt-get -y autoremove"
 
 # alias nmcli d wifi with "wifi"
 alias wifi="nmcli d wifi"
