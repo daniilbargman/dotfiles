@@ -22,7 +22,10 @@ sudo apt-get update && sudo apt-get -y upgrade
 # NOTE: need to install Termite from source - may be distro-dependent
 
 # git
-sudo apt-get install git
+sudo apt-get install -y git
+
+# tmux (and xclip to copy from tmux to clipboard)
+sudo apt-get install -y tmux xclip
 
 # create folders integrated with .vimrc and .bashrc
 mkdir -p ~/executables  # for storing executable bash scripts

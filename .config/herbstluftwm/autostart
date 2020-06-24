@@ -13,7 +13,8 @@ hc() {
 hc emit_hook reload
 
 # replacing background with own bg image in .xinitrc
-feh --bg-scale ~/.config/herbstluftwm/background.jpg
+# feh --bg-scale ~/.config/herbstluftwm/background.jpg
+feh --bg-scale /usr/share/backgrounds/mx_blue.jpg
 
 # exec compton -b
 # frame_bg_transparent = true

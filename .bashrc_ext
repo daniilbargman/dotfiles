@@ -62,18 +62,23 @@ export -f vim
 # open vim with a session file if one exists
 alias vimsession='[[ -e .LastVimSession.vim ]] && vim -S .LastVimSession.vim || vim'
 
-# shortcut to start secure connection
+# shortcut to open a VPN connection
 alias lock='sudo ufw enable && sudo -b openvpn --config ~/.vpn/dbargman-server2.ovpn --auth-nocache'
 alias unlock='sudo ufw disable && sudo killall openvpn '
 
-# use -la flag by default with the ls command
-alias la="ls -lahF --color=always"
+# use human-readable, reverse-chronological directory lists
+alias la="ls -lahFtr --color=always"
 
 # alias update commands
 alias update="sudo apt-get update && sudo apt-get -y upgrade; sudo apt-get clean && sudo apt-get -y autoremove"
 
 # alias nmcli d wifi with "wifi"
 alias wifi="nmcli d wifi"
+
+# alias poweroff / reboot to automatically envoke sudo
+alias off="sudo poweroff"
+alias poweroff="sudo poweroff"
+alias reboot="sudo reboot"
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {

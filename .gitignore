@@ -42,3 +42,4 @@ executables/*
 !executables/IDEconfig
 !executables/tmux-project-template
 !executables/brightness
+!executables/decrypt-and-mount

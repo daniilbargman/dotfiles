@@ -108,7 +108,8 @@ au User asyncomplete_setup call asyncomplete#register_source(asyncomplete#source
 " autocompletion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <expr> <c-l>    pumvisible() ? "\<C-y>" : "\<c-l>"
+inoremap <expr> <c-l>   pumvisible() ? "\<C-y>" : "\<c-l>"
+imap     <expr> <cr>    pumvisible() ? "\<Esc>a<cr>" : "\<Plug>delimitMateCR"
 
 " auto-close preview window when completion is done
 autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
@@ -153,7 +154,7 @@ let g:UltiSnipsListSnippets='<c-u>'
 let g:UltiSnipsJumpForwardTrigger='<C-l>'
 let g:UltiSnipsJumpBackwardTrigger='<C-h>'
 let g:UltiSnipsEditSplit='horizontal'
-let g:UltiSnipsSnippetDirectories=['plugged/ultisnips', 'mySnippets', 'plugged/vim-snippets/UltiSnips']
+let g:UltiSnipsSnippetDirectories=['mySnippets', 'plugged/vim-snippets/UltiSnips']
 
 " ---------------- NERDTree ---------------------------------------------------
 
@@ -177,6 +178,7 @@ let delimitMate_balance_matchpairs = 1
 let delimitMate_expand_space = 0
 " duplicate newline
 let delimitMate_expand_cr = 1
+let delimitMate_jump_expansion = 1
 " in python, replicate triple quotes
 au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
 " let delimitMate_expand_inside_quotes = 1

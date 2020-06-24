@@ -10,7 +10,7 @@ endsnippet
 
 snippet dbash "Template for well-organized bash scripts"
 #!/usr/bin/env bash
-# vim: set filetype=sh
+# vim: set filetype=sh :
 #
 # ${1: Describe what this script is meant to do}
 #
@@ -73,23 +73,24 @@ EOF
 exit 0
 }
 
-# define argument defaults
+# allowed arguments and flags
 allowed_args=( ${4: Allowed arguments, including <ARG> for ARG=<VALUE> types} )
 help_flags=( "-h" "--help" )
 
 # parse and validate arguments
 for i in "${@:1}"; do
 
-    # parse argument into name and value, if it has the form "NAME=VALUE"
-    IFS='=' read -r argn argv <<< "$i"
-
     # print help if requested
     if [[ " ${help_flags[@]} " =~ "$i" ]]; then
         print_help
         exit 0
+	fi
+
+    # parse argument into name and value, if it has the form "NAME=VALUE"
+    IFS='=' read -r argn argv <<< "$i"
 
     # catch illegal arguments and throw error
-    elif [[ ! " ${allowed_args[@]} " =~ "$argn" ]]; then
+    if [[ ! " ${allowed_args[@]} " =~ "$argn" ]]; then
         error_exit "Illegal argument or flag: $argn."
 
     # apply actual logic to parsed argument

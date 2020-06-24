@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# vim: set filetype=sh
+#
+# mount the project partition
+#
+# Author: Daniil Bargman (daniil.bargman@gmail.com)
+#
+###############################################################################
+
+function print_help {
+cat << EOF
+
+===============================================================================
+===============================================================================
+===============================================================================
+
+Convenience script for mounting an encrypted disk partition into /mnt/...
+
+Requires the name of the encrypted device (i.e. /dev/<something>), and the name
+of a (new or existing) directory under /mnt/ to which it should be mounted.
+
+
+Usage:
+
+  ${0##*/} <partition> <target-directory>
+
+
+Arguments:
+
+  <partition> name of the encrypted partition, as in '/dev/<partition>'
+  <target-directory> target folder, e.g. 'secrets' to mount to /mnt/secrets
+
+
+Print this help text:
+
+  ${0##*/} ( --help | -h )
+
+
+One-time steps to set up an encrypted partition from an empty partition on an
+internal or external drive:
+
+  sudo apt-get install cryptsetup-bin
+  sudo fdisk -l  # to list all available partitions and select the right one
+  sudo umount <path-where-partition-is-currently-mounted-if-any>
+  sudo cryptsetup luksFormat /dev/<partition>  # encrypt the partition
+  sudo cryptsetup luksOpen /dev/<partition> <somename>  # make decrypted alias
+  sudo mkfs.ext4 /dev/mapper/<somename>  # format decrypted alias to ext4
+
+NOTE: It is advisable to check /etc/fstab for auto-generated entries referring
+to the new encrypted partition and comment them out. Otherwise, systemd-powered
+system boots may fail.
+
+This script can then be used after each reboot to unencrypt the partition and
+mount it to /mnt/<target-directory>.
+
+
+Example (assuming the user wishes to encrypt an unmounted, empty disk
+partitition called 'sdb1' to '/mnt/mysecrets'):
+
+Setup the encrypted drive:
+
+  sudo apt-get install cryptsetup-bin  # install encryption utility
+  sudo cryptsetup luksFormat /dev/sdb1  # encrypt the partition
+  sudo cryptsetup luksOpen /dev/sdb1 mysecrets  # unencrypt for formatting
+  sudo mkfs.ext4 /dev/mapper/mysecrets  # format contents to ext4
+  sudo sed -in 's/^.*sdb1/# &/g' /etc/fstab  # prevent auto-mounting on boot
+
+Mount the encrypted drive:
+
+ ${0##*/} sdb1 mysecrets
+
+
+===============================================================================
+===============================================================================
+===============================================================================
+EOF
+exit 0
+}
+
+# error-safe script
+set -Eeuo pipefail
+
+# check if the user has requested help
+help_flags=( "-h" "--help" )
+
+# print help if running with no arguments
+if [[ -z "${1:-}" || " ${help_flags[@]} " =~ "${1:-}" ]]; then
+    print_help
+    exit 0
+fi
+
+# make sure that a target directory has been provided
+if [[ -z "${2:-}" || " ${help_flags[@]} " =~ "${2:-}" ]]; then
+    print_help
+    exit 0
+fi
+
+# use cryptsetup to decrypt the partition (if not decrypted already)
+if [ ! "$(ls -A /mnt/$2/)" ]; then
+
+    # create unencrypted mapping
+    sudo cryptsetup luksOpen /dev/$1 $2 2> /dev/null || true
+
+    # make sure that the mount directory exists
+    sudo mkdir -p /mnt/$2
+    sudo chown $(id -u $(logname)):$(id -g $(logname)) /mnt/$2
+
+    # mount project partition to the project directory
+    sudo mount /dev/mapper/$2 /mnt/$2
+
+    # print success
+    echo "mounted"
+
+else
+
+    echo "The folder '/mnt/$2' already has contents."
+
+fi
+#
