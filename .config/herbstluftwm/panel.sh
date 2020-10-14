@@ -180,5 +180,5 @@ hc pad $monitor $panel_height
 
 } 2> /dev/null | dzen2 -w $panel_width -x $x -y $y -fn "$font" -h $panel_height \
     -e 'button3=;button4=exec:herbstclient use_index -1;button5=exec:herbstclient use_index +1' \
-    -ta l -bg "$bgcolor" -fg '#efefef' -title-name dzentop
-transset-df .8 -n dzentop
+    -ta l -bg "$bgcolor" -fg '#efefef' &
+transset 0.9 & sleep 1 ; xdotool mousemove 5 5; xdotool click 1; xdotool mousemove 50 50

@@ -242,33 +242,65 @@ function! ExpandBrackets()
 
     " Otherwise, find where the bracket ends
     normal %
-    let b:matchingBr = getline(".")[col(".")-1]
     let b:bracketEnd = line(".")
+    let b:bracketEndCol = col(".")-1
+    let b:matchingBr = getline(".")[b:bracketEndCol]
     normal %
     let b:bracketStart = line(".")
+    let b:bracketStartCol = col(".")
 
-    " if the bracket is single-line, it needs to be semi-expanded
+    " case 1: bracket is single-line
     if b:bracketStart == b:bracketEnd
-        try
-            exe ':s/\%>' . col(".") . 'c \<\(for\|if\|else\)\> /\r\1 /g'
-        catch
-            exe ':s/\%>' . col(".") . 'c, /,\r/ge'
-        endtry
-        let b:bracketEnd = line(".")
-        let b:i = b:bracketEnd-b:bracketStart
-        exe ':normal ' . b:i . 'k$'
-        exe ':normal F' . b:brType
-        while b:i > 0
-            exe ":normal Jr\<CR>"
-            let b:i -= 1
-        endwhile
-        normal 'q
-        exe ':normal f' . b:brType
+
+        " if line length is less than 80, it needs to be expanded
+        if col("$") <= 80
+            try
+                exe ':s/\%>' . col(".") . 'c \<\(for\|if\|else\)\> /\r\1 /g'
+            catch
+                exe ':s/\%>' . col(".") . 'c, /,\r/ge'
+            endtry
+            let b:bracketEnd = line(".")
+            let b:i = b:bracketEnd-b:bracketStart
+            exe ':normal ' . b:i . 'k$'
+            exe ':normal F' . b:brType
+            while b:i > 0
+                exe ":normal Jr\<CR>"
+                let b:i -= 1
+            endwhile
+            normal 'q
+            exe ':normal f' . b:brType
+            return
+        endif
+
+        " otherwise, align to fit line length standards
+        exe ':normal vi' . b:matchingBr . 'gq%'
         return
+
     endif
 
-    " If we are at the end of the line, the bracket should be made compact
+    " If we are at the end of the line
     if col(".") == col("$")-1
+
+        " check if next line contains ', ' pattern
+        if match(getline(line(".") + 1), ", ") > -1
+
+            " switch to next line and save indent
+            normal j^
+            let b:indent = col(".")-1
+
+            " expand for bracket to contain one element per line
+            exe ':' . (b:bracketStart+1) . ',' . (b:bracketEnd-1)
+                \ . 's/, /,\r' . repeat(' ', b:indent) . '/g'
+
+            " go back to mark
+            exe ':normal ' . b:bracketStart . 'G$'
+
+            " we are done
+            return
+
+        endif
+
+        " otherwise, make the brackets compact again
         normal Jxh%
         let b:bracketEnd = line(".")
         normal %$
@@ -293,24 +325,25 @@ function! ExpandBrackets()
         return
     endif
 
-    " if the bracket is multi-line, it is semi-expanded and should be expanded
+    " if the bracket is multi-line
     if b:bracketStart != b:bracketEnd
-        exe ":normal! a\<CR>" 
-        while line(".") <= b:bracketEnd
-            exe ":normal Jr\<CR>"
-        endwhile
-        exe ':normal ' . (line(".")-b:bracketStart) . 'k$'
-        if getline(".")[col(".")-1] == ","
-            exe ':normal F' . b:brType
-            normal %
-            exe ":normal! i,\<CR>"
-            normal %
-        else
-            exe ':normal F' . b:brType
-            normal %
-            exe ":normal! i\<CR>"
-            normal %
+
+        " check if there are multiple entries per line inside brackets
+        if search(', ', '', b:bracketEnd) > 0
+            if col('.')-1 < b:bracketEndCol
+                exe ':normal! vi' . b:brType . 'J%'
+                exe ':s/\%>' . col('.') . 'c, /,\r'
+                    \ . repeat(' ', b:bracketStartCol) . '/ge'
+                exe ':normal ' . b:bracketStart . 'G$F' . b:brType
+                return
+            endif
         endif
+
+        " otherwise, expand further
+        exe ":normal! a\<CR>"
+        exe ":normal! vi" . b:brType . "gq"
+        exe ":normal! %%i\<CR>"
+        normal %
         return
     endif
 

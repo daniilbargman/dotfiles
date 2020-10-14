@@ -62,9 +62,10 @@ export -f vim
 # open vim with a session file if one exists
 alias vimsession='[[ -e .LastVimSession.vim ]] && vim -S .LastVimSession.vim || vim'
 
-# shortcut to open a VPN connection
+# shortcut to open/close VPN connections and enable/disable UFW
 alias lock='sudo ufw enable && sudo -b openvpn --config ~/.vpn/dbargman-server2.ovpn --auth-nocache'
-alias unlock='sudo ufw disable && sudo killall openvpn '
+alias novpn='sudo killall openvpn'
+alias unlock='sudo ufw disable && novpn'
 
 # use human-readable, reverse-chronological directory lists
 alias la="ls -lahFtr --color=always"
@@ -79,6 +80,9 @@ alias wifi="nmcli d wifi"
 alias off="sudo poweroff"
 alias poweroff="sudo poweroff"
 alias reboot="sudo reboot"
+
+# alias pg to ping google 5 times
+alias pg="ping -c 5 google.com"
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {

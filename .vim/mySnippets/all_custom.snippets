@@ -23,7 +23,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until file is no longer a symlink
   SOURCE="$(readlink "$SOURCE")"
 done
 BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
-SCRIPT_NAME="${0##*/}"
+[ -z "${SCRIPT_NAME:-}" ] && export SCRIPT_NAME="${0##*/}"
 ###############################################################################
 
 # error-safe script settings
@@ -31,7 +31,8 @@ set -Eeuo pipefail
 
 # default message appendix on errors
 function append_error {
-    echo "run '$BASE_DIR/$SCRIPT_NAME -h' for help on '$SCRIPT_NAME'."
+    bl=${BASH_LINENO[$((${#BASH_LINENO[@]} - 2))]}
+    echo line $bl in $BASE_DIR/$SCRIPT_NAME
     exit 1
 }
 

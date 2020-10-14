@@ -13,8 +13,8 @@ hc() {
 hc emit_hook reload
 
 # replacing background with own bg image in .xinitrc
-# feh --bg-scale ~/.config/herbstluftwm/background.jpg
-feh --bg-scale /usr/share/backgrounds/mx_blue.jpg
+feh --bg-scale ~/.config/herbstluftwm/background.jpg
+# feh --bg-scale /usr/share/backgrounds/mx_blue.jpg
 
 # exec compton -b
 # frame_bg_transparent = true
@@ -29,7 +29,7 @@ Mod=Mod4   # Use the super key as the main modifier
 
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
-hc keybind $Mod-Shift-c close_or_remove
+hc keybind $Mod-Shift-x close_or_remove
 hc keybind $Mod-Return spawn xfce4-terminal
 hc keybind $Mod-b spawn firefox
 
@@ -88,10 +88,11 @@ done
 
 # cycle through tags
 hc keybind $Mod-w use_index +1 --skip-visible
+hc keybind $Mod-Tab use_index +1 --skip-visible
 hc keybind $Mod-q  use_index -1 --skip-visible
+hc keybind $Mod-Shift-Tab  use_index -1 --skip-visible
 
 # layouting
-hc keybind $Mod-r remove
 hc keybind $Mod-s floating toggle
 hc keybind $Mod-f fullscreen toggle
 hc keybind $Mod-p pseudotile toggle
@@ -111,24 +112,24 @@ hc mousebind $Mod-Button3 resize
 
 # focus
 hc keybind $Mod-BackSpace   cycle_monitor
-hc keybind $Mod-Tab         cycle_all +1
-hc keybind $Mod-Shift-Tab   cycle_all -1
-hc keybind $Mod-c cycle
-hc keybind $Mod-i jumpto urgent
+# hc keybind $Mod-Tab         cycle_all +1
+# hc keybind $Mod-Shift-Tab   cycle_all -1
+# hc keybind $Mod-c cycle
+# hc keybind $Mod-i jumpto urgent
 
 # theme
 # hc attr theme.tiling.reset 1
 # hc attr theme.floating.reset 1
 hc set frame_border_active_color '#2290B5'  # also active text color in top panel
 hc set frame_border_normal_color '#909090'  # also plain text color in top panel
-hc set frame_bg_normal_color '#303030'      # also background color in top panel
+hc set frame_bg_normal_color '#101010'      # also background color in top panel
 hc set frame_bg_active_color '#222222'
 hc set frame_border_width 2
 hc set always_show_frame 0
 hc set frame_bg_transparent 1
 # hc set frame_transparent_width 1
 hc set frame_gap 0
-hc set frame_normal_opacity .5
+hc set frame_normal_opacity 0
 hc set frame_active_opacity .5
 
 hc attr theme.active.color '#EBEBEB'
@@ -145,8 +146,8 @@ hc attr theme.active.outer_color '#ebebeb'
 hc attr theme.background_color '#141414'
 
 hc set window_gap 0
-hc set frame_padding 0
-hc set smart_window_surroundings 0
+hc set frame_padding 1
+hc set smart_window_surroundings 1
 hc set smart_frame_surroundings 0
 hc set mouse_recenter_gap 0
 

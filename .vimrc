@@ -158,6 +158,9 @@ nnoremap <c-w><c-j> <c-w><s-j>
 nnoremap <c-w><c-k> <c-w><s-k>
 nnoremap <c-w><c-l> <c-w><s-l>
 
+" Re-align window sizes with w
+nnoremap <c-w><c-w> <c-w>=
+
 " New split windows should appear below / on the right
 set splitbelow
 set splitright
