@@ -9,6 +9,9 @@
 
 #################### basic terminal settings ##################################
 
+# Add snap directory to path
+PATH=$PATH:/snap/bin
+
 # SET 256-COLOR SUPPORT IN TERMINAL
 export TERM='xterm-256color'
 
@@ -28,7 +31,11 @@ BG=("\[\033[48;5;235m\]" "\[\033[48;5;237m\]" "\[\033[48;5;238m\]" "\[\033[48;5;
 BOLD="\[$(tput bold)\]"
 RESET="\[$(tput sgr0)\]"
 
-export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_context)${FG[-1]} : ${FG[3]}\w\n${BG[0]}${FG[4]}[\t] ${BOLD}${FG[0]}\u ${FG[-1]}=> \\$""${RESET} "
+# prompt with background shading and bold font
+# export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_context)${FG[-1]} : ${FG[3]}\w\n${BG[0]}${FG[4]}[\t] ${BOLD}${FG[0]}\u ${FG[-1]}=> \\$""${RESET} "
+
+# prompt without background shading and bold font
+export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_context)${FG[-1]} : ${FG[3]}\w\n${FG[4]}[\t] ${FG[0]}\u ${FG[-1]}=> \\$\e[0;97;m "
 
 # Make bash behave more like vim
 set -o vi
@@ -38,7 +45,7 @@ set -o vi
 # project launcher directory
 executables=~/executables
 
-# Add dropbox project folder to environment
+# Add custom folder with executables to environment
 PATH=${PATH//:$executables/}":$executables"
 
 # Make all files in $executables directory executable
@@ -46,6 +53,9 @@ for filename in $(echo $executables/*)
 do
     chmod u+x $filename
 done
+
+# alias herbstclient to hc
+alias hc='herbstclient'
 
 # When launching project with vim, disable passthrough of ctrl-s
 vim()

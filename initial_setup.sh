@@ -9,10 +9,15 @@
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 ###############################################################################
 
-# Note: initial steps:
+# Initial steps:
 #   1. cd ~
 #   2. git init
 #   3. git pull https://github.com/daniilbargman/dotfiles.git
+#
+# NOTES:
+#
+#   1. HLWM autostart file assumes Emacs is installed using snap
+#   2. Emacs configuration requires version 27+
 
 set -Eeuo pipefail
 

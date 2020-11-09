@@ -11,6 +11,16 @@
 !.vim/
 !.vimrc
 !initial_setup.sh
+!.emacs.d/
+
+# in the emacs configuration folder, ignore auto-generated files and all subfolders
+.emacs.d/custom-file.el
+.emacs.d/recentf
+.emacs.d/tramp
+.emacs.d/*/*
+.emacs.d/*~
+.emacs.d/.*
+.emacs.d/\#*
 
 # ignore vim's undo directory and plugins, except vim-plug itself
 .vim/undodir/

@@ -1,0 +1,138 @@
+#-*- mode: org -*-
+#+TODO: TESTING(t@/!) SCHEDULED(s@/!) PONDERING(p@/!) | DISCARDED(c@/!) DONE(d@/!)
+
+* Improvement ideas for Emacs configuration
+
+** TESTING Session management
+   - State "TESTING"    from "SCHEDULED"  [2020-11-08 Sun 00:31] \\
+     Session management should be sufficient between Emacs 27's built-in
+     tab-bar-mode and session persistence.
+
+** SCHEDULED treemacs integration
+   - State "SCHEDULED"  from              [2020-11-09 Mon 01:25] \\
+     NerdTree in Vim was never particularly useful, but Emacs is more dynamic
+     when it comes to dynamically combining buffers from different workflows
+     within a single session.
+*** SCHEDULED evil mode for treemacs
+    - State "SCHEDULED"  from              [2020-11-09 Mon 01:25] \\
+      treemacs can be navigated using vim keybindings
+*** SCHEDULED lsp-treemacs integration
+    - State "SCHEDULED"  from              [2020-11-09 Mon 01:24] \\
+      lsp-treemacs exists but need to read up on functionality first.
+*** SCHEDULED check interaction between treemacs workspaces and built in tab-bar mode
+    - State "SCHEDULED"  from              [2020-11-09 Mon 01:23] \\
+      treemacs comes with its own notion of workspaces, but those are already
+      integrated within the window management configuration file.
+
+** SCHEDULED Python customisations: see emacswiki python programming in emacs
+*** SCHEDULED iPython shell
+*** SCHEDULED Talk to editor
+*** SCHEDULED Use K8S pod as runtime
+*** SCHEDULED Highlighting and traversing code blocks
+
+** PONDERING Evil plugin for Org mode
+   - State "PONDERING"  from              [2020-11-07 Sat 15:15] \\
+     Check out evil-org and weigh pros and cons between using vim keybindings
+     for Org mode commands.
+
+** PONDERING Try out exwm as tiling window manager
+
+** DONE Figure out a way to toggle full screen for a window
+   - State "DONE"       from "SCHEDULED"  [2020-11-08 Sun 00:25] \\
+     Works with help from tab-bar-history-mode
+
+** DONE Open new buffers in splits using "C-w h,j,k,l"
+   - State "DONE"       from "PONDERING"  [2020-11-08 Sun 00:32] \\
+     Implemented with the help of ivy and some custom functions.
+
+   - State "PONDERING"  from              [2020-11-06 Fri 19:40] \\
+
+     There seems to be no easy way to re-map vim's usual ":[e|vs|sp] <file>"
+     commands to emacs functions, but the evil functionality for opening
+     files and buffers is lacking. Completion for buffers is much better with
+     Ivy, and completion for files is better with the built-in "C-x C-f"
+     followed by "C-j" which opens an entire file system browsing window.
+     
+     Proposal is to map buffer-opening window splits to "C-w h,j,k,l" which
+     is not used for any Vim functions after window movements were remapped.
+
+** DONE Code completion
+   - State "DONE"       from "TESTING"    [2020-11-08 Sun 00:25]
+*** DISCARDED add completion backend using files from local directory
+    - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:24] \\
+      Mode is enabled but files only auto-filled when prefixed by path.
+*** DONE completion of code snippets
+*** DONE Unmap return from autocompletion; see [[https://emacs.stackexchange.com/questions/13286/how-can-i-stop-the-enter-key-from-triggering-a-completion-in-company-mode][here]]
+*** DONE toggle completion popup with C-a
+    - State "DONE"       from "TESTING"    [2020-11-06 Fri 18:51] \\
+      Done and mapped for normal and visual states. Will not work outside evil mode.
+*** DISCARDED add completion backend using function definitions in active file
+    - State "DISCARDED"  from "SCHEDULED"  [2020-11-06 Fri 18:54] \\
+      completions work in emacs lisp but only after file has been reloaded and re-compiled.
+*** DISCARDED Try out company-capf backend; see [[https://github.com/emacs-lsp/lsp-mode/issues/1442][here]]
+    - State "DISCARDED"  from "DISCARDED"  [2020-11-06 Fri 18:42] \\
+      turns out this is the default in lsp-mode
+
+** DONE Finish system-commands.el
+*** TESTING Customisation options take hold if defined in
+**** DONE buffer
+**** SCHEDULED dir-locals
+**** PONDERING file header
+*** DONE switch-to argument in function for creating buffers should override the hop-back value and keep cursor in newly created window, or hop to existing window with target buffer using "select-window (get-buffer-window))" function
+*** DONE Try switching from hop logic to "select-window (get-buffer-window) logic altogether by recording name of source buffer at the beginning
+*** DONE Finish other functions using a more modular approach
+*** DONE Move openvpn config to other module and rename this one into something like "interactive-shell.el"
+
+** DONE Line number column
+
+** DONE Better status line
+
+** DONE Ivy
+
+** DONE Configure keybindings for flycheck (possibly via LSP)
+
+** DONE K8S support
+
+** DONE Configure and port code snippets
+
+** DONE LSP
+
+** DONE Bracket manipulation
+
+** DONE Refactor config files
+   
+** DISCARDED map evil-ex file opening commands to counsel commands
+   - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:26] \\
+     Came up with different mappings instead as evil-ex command not easily
+     customizable. Buffers and splits can now be opened with "C-w w,j,l"
+     as per another TODO item.
+
+** DISCARDED map "+p to paste-with-replacement in visual state
+   - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:28] \\
+     This seems to work out of the box now. Before was a glitch.
+
+** DISCARDED Try out ivy-push-view
+   - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:29] \\
+     Discarded as option for sessions because views cannot be easily
+     persisted. Upgrading to Emacs 27 and using tab-bar-mode instead.
+
+** DISCARDED Use ivy-hydra for vim-like bindings
+   - State "DISCARDED"  from "PONDERING"  [2020-11-07 Sat 15:31] \\
+     It seems Hydra is a package that amis to improve on Emacs keybindings
+     rather than provide a vim-style interface. Not doing this for the time being.
+
+* Topics for reading
+
+** Org mode
+*** category tags
+*** best approaches to organizing multiple file
+*** dynamically linking org files when opening projects
+
+** Treemacs
+*** available customizations
+*** LSP integration package
+*** workflow management
+
+** EXWM / StumpWM as alternatives to HLWM
+
+** Ivy / swiper / counsel package
