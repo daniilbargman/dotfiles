@@ -33,9 +33,42 @@
 ;;; Code:
 
 
+;;; Define variables for this customization
+
+;; group under "bind-terminal-shell"
+(defgroup windows-and-tabs nil
+  "Variables for setting behaviour of windows and tabs, including buffer
+groups and filters"
+  :group 'External
+  :prefix 'windows-and-tabs
+  :version '0.1.0)
+
+;: alist mapping buffer name prefixes to tab groups
+(defcustom windows-and-tabs-buffer-groups-by-name-regex nil
+  "Alist mapping buffer name regexp expressions to buffer group names."
+  :group 'windows-and-tabs
+  :type '(alist :key-type regexp :value-type string)
+  :safe (lambda (x) t))
+
+;; alist mapping buffer major modes to tab groups
+(defcustom windows-and-tabs-buffer-groups-by-major-mode nil
+  "Alist mapping buffer major modes to buffer group names."
+  :group 'windows-and-tabs
+  :type '(alist :key-type sexp :value-type string)
+  :safe (lambda (x) t))
+
+;; list of buffer names to filter out from awesome-tab
+(defcustom windows-and-tabs-buffer-filter-regexp-list nil
+  "Alist mapping buffer major modes to buffer group names."
+  :group 'windows-and-tabs
+  :type '(repeat regexp)
+  :safe (lambda (x) t))
+
+
 ;;; Support for preserving and toggling views (tab-bar-mode)
 (tab-bar-mode 1)
 (tab-bar-history-mode 1)
+
 
 ;; customize tab bar design
 (setq tab-bar-position t)
@@ -76,10 +109,17 @@
 ;; customize tab bar keybindings
 (global-set-key (kbd "M-<tab>") 'tab-bar-switch-to-next-tab)
 (global-set-key (kbd "M-S-<iso-lefttab>") 'tab-bar-switch-to-prev-tab)
-(global-set-key (kbd "M-j") 'tab-bar-select-tab-by-name)
+(global-set-key (kbd "M-j") 'tab-bar-select-tab)
 
 
 ;;; Support creating / maximizing / destroying windows
+(window-list)
+
+;; keybindings for resizing windows (M-<arrows>)
+(global-set-key (kbd "M-<left>") 'shrink-window-horizontally)
+(global-set-key (kbd "M-<right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "M-<down>") 'shrink-window)
+(global-set-key (kbd "M-<up>") 'enlarge-window)
 
 ;; function to toggle single-window view
 (defun view-single-window-toggle ()
@@ -111,6 +151,7 @@ Uses evil commands."
   ;; make empty split below current window and switch to new buffer there
   (evil-window-split)
   (next-buffer))
+
 
 ;; create new window right of current and open switch-buffer prompt
 (defun view-new-buffer-right ()
@@ -159,12 +200,12 @@ Uses evil commands."
   (awesome-tab-mode t))
 
 ;; default function for defining buffer groups
-(defun awesome-tab-buffer-groups ()
+(defun default-awesome-tab-buffer-groups ()
   "`awesome-tab-buffer-groups' control buffers' group rules.
 
 Group awesome-tab with mode if buffer is derived from
 `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-All buffer name start with * will group to \"Emacs\".
+All buffer name start with * will group to \"Systema\".
 Other buffer group by `awesome-tab-get-group-name' with project name."
   (list
    (cond
@@ -177,11 +218,11 @@ Other buffer group by `awesome-tab-get-group-name' with project name."
                             magit-blob-mode
                             magit-blame-mode
                             )))
-     "Emacs")
+     "*System*")
     ((derived-mode-p 'eshell-mode)
      "EShell")
     ((derived-mode-p 'emacs-lisp-mode)
-     "Elisp")
+     "Emacs-config")
     ((derived-mode-p 'dired-mode)
      "Dired")
     ((memq major-mode '(org-mode org-agenda-mode diary-mode))
@@ -189,10 +230,102 @@ Other buffer group by `awesome-tab-get-group-name' with project name."
     (t
      (awesome-tab-get-group-name (current-buffer))))))
 
-;; bind C-x C-h for previous tab, C-x C-l for next tab, C-x C-u to jump
+
+;; custom function for defining buffer groups in awesome tab
+(defun awesome-tab-buffer-groups ()
+  "Define awesome tab buffer groups based on custom variables.
+
+Variables are `windows-and-tabs-buffer-groups-by-name-regex' and
+`windows-and-tabs-buffer-groups-by-major-mode'.  Both are alists mapping
+buffer attributes (name regex / major mode) to buffer group names.
+
+The final result is the name derived from the name regex match, followed
+by the name derived from the major mode match, separated by a dash.
+Only the first valid match from each alist is used.  If no matches have
+been found, \"unmatched\" is used for the name regex component and
+\"other\" is used for the major mode component.
+
+If one of the alists is nil, only the other alist is used for grouping.
+
+If both alists are nil, `default-awesome-tab-buffer-groups' is applied."
+
+  ;; pre-allocate buffer name output
+  (defvar buffer-name-list)
+  (setq buffer-name-list (list))
+
+  ;; if name regex mapping is defined, apply it
+  (unless (null windows-and-tabs-buffer-groups-by-name-regex)
+    (add-to-list 'buffer-name-list
+	    (cl-loop
+	     for (regex-value . group-name)
+		in windows-and-tabs-buffer-groups-by-name-regex
+	      if (string-match regex-value (buffer-name))
+		  return group-name
+	      finally
+		;; return "unmatched")
+		(awesome-tab-get-group-name (current-buffer)))
+	    t))
+
+  ;; if major mode mapping is defined, apply it
+  (unless (null windows-and-tabs-buffer-groups-by-major-mode)
+    (add-to-list 'buffer-name-list
+	    (cl-loop
+	     for (major-mode-value . group-name)
+		in windows-and-tabs-buffer-groups-by-major-mode
+	      if (derived-mode-p major-mode-value)
+		  return group-name
+	      finally
+		;; return "other")
+		(awesome-tab-get-group-name (current-buffer)))
+	    t))
+
+  ;; return final value or the output of the fallback function
+  (if (null buffer-name-list) (default-awesome-tab-buffer-groups)
+	  (list (mapconcat 'identity buffer-name-list "-"))))
+
+
+;; default buffer filter function
+(defun default-awesome-tab-hide-tab (x)
+  (let ((name (format "%s" x)))
+    (or
+     (string-prefix-p "*epc" name)
+     (string-prefix-p "*helm" name)
+     (string-prefix-p "*Compile-Log*" name)
+     (string-prefix-p "*lsp" name)
+     (and (string-prefix-p "magit" name)
+               (not (file-name-extension name)))
+     )))
+
+;; custom buffer filter function with fallback to default
+(defun awesome-tab-hide-tab (x)
+  "Hide buffer X from awesome-tab buffer list based on custom variable.
+
+The variable that determines the filter's behaviour is
+`windows-and-tabs-buffer-filter-regexp-list'.  It is a list of regexp
+values, and any positive match will eliminate the buffer from awesome
+tab's grouping collage."
+  (if (null windows-and-tabs-buffer-filter-regexp-list)
+      (default-awesome-tab-hide-tab x)
+      (let ((name (format "%s" x)))
+	(cl-loop for buffer-regexp-value
+		in windows-and-tabs-buffer-filter-regexp-list
+		  if (string-match buffer-regexp-value name)
+		      return t
+		  finally
+		      return nil))))
+
+(let ((name (format "%s" (get-buffer "*ovpn-mode*"))))
+  (cl-loop for buffer-regexp-value
+	  in windows-and-tabs-buffer-filter-regexp-list
+	    if (string-match buffer-regexp-value name)
+		return t
+	    finally
+		return buffer-regexp-value))
+
+;; bind Cache-x C-h for previous tab, C-x C-l for next tab, C-x C-u to jump
 (global-set-key (kbd "C-x C-l") 'awesome-tab-forward-tab)
 (global-set-key (kbd "C-x C-h") 'awesome-tab-backward-tab)
-(global-set-key (kbd "C-x C-u") 'awesome-tab-ace-jump)
+(global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
 
 ;; bind "C-x C-j,k" to go to next/previous group
 (global-set-key (kbd "C-x C-j") 'awesome-tab-forward-group)
@@ -201,72 +334,113 @@ Other buffer group by `awesome-tab-get-group-name' with project name."
 ;; bind "C-x C-n" to open minibuffer prompt for group name
 (global-set-key (kbd "C-x C-n") 'awesome-tab-counsel-switch-group)
 
-;; ;;; alternative tab manager: centaur tabs
 
-;; ;; load package
-;; (use-package centaur-tabs
-;;   :demand
-;;   :config
-;;   (centaur-tabs-mode t)
-;;   (centaur-tabs-headline-match)
-;;   :custom
-;;   (centaur-tabs-style "bar")  ; change the way tabs look
-;;   (centaur-tabs-set-close-button nil)  ; hide "close" button
-;;   (centaur-tabs-set-modified-marker t)  ; show if buffer was modified
-;;   (centaur-tabs-modified-marker "*")
-;;   (centaur-tabs-cycle-scope 'tabs)  ; do not cycle past single group
-;;   :bind
-;;   ("C-x C-l" . centaur-tabs-forward)
-;;   ("C-x C-h" . centaur-tabs-backward))
+;;; Manage projects with treemacs
 
-;; ;; function for defining tab groups
-;; (defun centaur-tabs-buffer-groups ()
-;;   "`centaur-tabs-buffer-groups' control buffers' group rules.
+(use-package treemacs
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay      0.5
+          treemacs-directory-name-transformer    #'identity
+          treemacs-display-in-side-window        t
+          treemacs-eldoc-display                 t
+          treemacs-file-event-delay              5000
+          treemacs-file-extension-regex          treemacs-last-period-regex-value
+          treemacs-file-follow-delay             0.2
+          treemacs-file-name-transformer         #'identity
+          treemacs-follow-after-init             t
+          treemacs-git-command-pipe              ""
+          treemacs-goto-tag-strategy             'refetch-index
+          treemacs-indentation                   2
+          treemacs-indentation-string            " "
+          treemacs-is-never-other-window         nil
+          treemacs-max-git-entries               5000
+          treemacs-missing-project-action        'ask
+          treemacs-move-forward-on-expand        nil
+          treemacs-no-png-images		 t
+          treemacs-no-delete-other-windows       nil  ; delete treemacs with other windows
+          treemacs-project-follow-cleanup        nil
+          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                      'left
+          treemacs-recenter-distance             0.1
+          treemacs-recenter-after-file-follow    nil
+          treemacs-recenter-after-tag-follow     nil
+          treemacs-recenter-after-project-jump   'always
+          treemacs-recenter-after-project-expand 'on-distance
+          treemacs-show-cursor                   nil
+          treemacs-show-hidden-files             t
+          treemacs-silent-filewatch              nil
+          treemacs-silent-refresh                nil
+          treemacs-sorting                       'alphabetic-asc
+          treemacs-space-between-root-nodes      t
+          treemacs-tag-follow-cleanup            t
+          treemacs-tag-follow-delay              1.5
+          treemacs-user-mode-line-format         nil
+          treemacs-user-header-line-format       nil
+          treemacs-width                         35
+          treemacs-workspace-switch-cleanup      nil)
 
-;; Group centaur-tabs with mode if buffer is derived from
-;; `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-;; All buffer name start with * will group to \"Emacs\".
-;; Other buffer group by `centaur-tabs-get-group-name' with project name."
-;;   (list
-;;     (cond
-;;       ((or (string-equal "*" (substring (buffer-name) 0 1))
-;; 	  (memq major-mode '(magit-process-mode
-;; 			      magit-status-mode
-;; 			      magit-diff-mode
-;; 			      magit-log-mode
-;; 			      magit-file-mode
-;; 			      magit-blob-mode
-;; 			      magit-blame-mode
-;; 			      )))
-;;       "Emacs")
-;;       ((derived-mode-p 'prog-mode)
-;;       "Editing")
-;;       ((derived-mode-p 'dired-mode)
-;;       "Dired")
-;;       ((memq major-mode '(helpful-mode
-;; 			  help-mode))
-;;       "Help")
-;;       ((memq major-mode '(org-mode
-;; 			  org-agenda-clockreport-mode
-;; 			  org-src-mode
-;; 			  org-agenda-mode
-;; 			  org-beamer-mode
-;; 			  org-indent-mode
-;; 			  org-bullets-mode
-;; 			  org-cdlatex-mode
-;; 			  org-agenda-log-mode
-;; 			  diary-mode))
-;;       "OrgMode")
-;;       (t
-;;       (centaur-tabs-get-group-name (current-buffer))))))
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
 
-;; ;; bind C-x C-h for previous tab, C-x C-l for next tab, C-x C-j to jump
-;; (global-set-key (kbd "C-x C-l") 'centaur-tabs-forward)
-;; (global-set-key (kbd "C-x C-h") 'centaur-tabs-backward)
+    ;; actions to perform with the tab key (open files in new tab)
+    (setq treemacs-TAB-actions-config
+	  '((root-node-open . treemacs-toggle-node)
+	   (root-node-closed . treemacs-toggle-node)
+	   (dir-node-open . treemacs-toggle-node)
+	   (dir-node-closed . treemacs-toggle-node)
+	   (file-node-open . treemacs-visit-node-no-split)
+	   (file-node-closed . treemacs-visit-node-no-split)
+	   (tag-node-open . treemacs-visit-node-no-split)
+	   (tag-node-closed . treemacs-visit-node-no-split)
+	   (tag-node . treemacs-visit-node-no-split)))
 
-;; ;; bind M-<tab> to go to next group, M-s-<tab> to go to previous group
-;; (global-set-key (kbd "M-<tab>") 'centaur-tabs-forward-group)
-;; (global-set-key (kbd "M-S-<iso-lefttab>") 'centaur-tabs-backward-group)
+    ;; actions to perform with the return key (open files in vsplit)
+    (setq treemacs-RET-actions-config
+	  '((root-node-open . treemacs-toggle-node)
+	   (root-node-closed . treemacs-toggle-node)
+	   (dir-node-open . treemacs-toggle-node)
+	   (dir-node-closed . treemacs-toggle-node)
+	   (file-node-open . treemacs-visit-node-horizontal-split)
+	   (file-node-closed . treemacs-visit-node-horizontal-split)
+	   (tag-node-open . treemacs-visit-node-horizontal-split)
+	   (tag-node-closed . treemacs-visit-node-horizontal-split)
+	   (tag-node . treemacs-visit-node-horizontal-split)))
+
+    ;; enable modes
+    (treemacs-follow-mode nil)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode t)
+
+  ))
+
+;; evil mode support
+(use-package treemacs-evil
+  :after treemacs evil
+  :config
+
+  ;; toggle treemacs window with "C-x C-a"
+  (evil-define-key '(normal insert) 'global (kbd "C-x C-a") 'treemacs)
+  (define-key evil-treemacs-state-map (kbd "C-x C-a") #'treemacs-quit)
+
+  ;; fold/unfold directories and tag lists with "za"
+  (define-key evil-treemacs-state-map (kbd "za") #'treemacs-toggle-node)
+
+  ;; move out of the treemacs window with "C-l"
+  (define-key evil-treemacs-state-map (kbd "C-l") #'other-window)
+
+
+  ;; create a file/directory with "C-x C-f,d"
+  (define-key evil-treemacs-state-map (kbd "C-x C-f") #'treemacs-create-file)
+  (define-key evil-treemacs-state-map (kbd "C-x C-d") #'treemacs-create-dir)
+
+  ;; open new files in hsplit with "C-return"
+  (define-key evil-treemacs-state-map (kbd "<C-return>")
+    #'treemacs-visit-node-vertical-split)
+
+  )
 
 (provide 'windows-and-tabs)
 ;;; windows-and-tabs.el ends here

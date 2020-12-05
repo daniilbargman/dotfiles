@@ -30,27 +30,25 @@
   :hook (ovpn-mode . (lambda () (evil-local-set-key
 		      'normal "s" 'ovpn-mode-start-vpn)))
 
-  :init
+  :custom
 
-  ; add /sbin/ to exec-path so it finds openvpn executable
-  (setq exec-path (append exec-path '("/sbin")))  ; path to openvpn
+  ;; disable prompt when switching off ipv6
+  (ovpn-mode-ipv6-auto-toggle t)
 
   :config
 
-  ; set vpn directory to ~/.vpn/
+  ;; disable ipv6
+  (ovpn-mode-ipv6-linux-sysctl-disable 1)
+
+  ;; set vpn directory to ~/.vpn/
   (ovpn-mode-dir-set "~/.vpn/")
 
-  ; use "C-s l" to open ovpn dashboard in new buffer
+  ;; use "C-s l" to open ovpn dashboard in new buffer
   (global-set-key (kbd "C-s l")
 		  '(lambda() (interactive) (other-window 1)
 		     (evil-split-buffer "*scratch*") (ovpn)))
 
   )
-
-;; add evil hook for starting vpn client in normal mode
-;; NOTE: This hook does not work for some reason
-(add-hook 'ovpn-mode-hook (lambda () (evil-local-set-key 'normal
-			    (kbd "s") 'ovpn-mode-start-vpn)))
 
 (provide 'openvpn)
 ;;; openvpn.el ends here

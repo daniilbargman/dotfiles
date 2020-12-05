@@ -57,7 +57,8 @@
 
 ;; wrap text at 72 characters by default
 (setq-default fill-column 72)
-(setq-default auto-fill-function 'do-auto-fill)
+(add-hook 'prog-mode-hook 'auto-fill-mode)
+(add-hook 'text-mode-hook 'auto-fill-mode)
 
 ;; enable text folding via hideshow
 (load-library "hideshow")
@@ -67,13 +68,6 @@
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
 
-
-;;; Session management:
-
-;; reopen previous session on startup
-(desktop-save-mode 1)
-(defvar desktop-load-locked-desktop)
-(setq desktop-load-locked-desktop t)
 
 ;;; Package management:
 
@@ -136,11 +130,14 @@
 
 ;;; Load configuration files
 
+;; run startup scripts
+(load-config-file "startup-scripts.el")
+
 ;; Vim keybindings
 (load-config-file "evil.el")
 
 ;; interactive terminal shell
-(load-config-file "interactive-shell.el")
+(load-config-file "bind-terminal-shell.el")
 
 ;; openvpn client
 (load-config-file "openvpn.el")
@@ -154,14 +151,23 @@
 ;; window and tab management
 (load-config-file "windows-and-tabs.el")
 
+;; customizations for Org mode
+(load-config-file "org.el")
+
 ;; Kubernetes integration
 (load-config-file "k8s.el")
 
 ;; ELisp configuration
 (load-config-file "elisp.el")
 
+;; bash configuration
+(load-config-file "bash.el")
+
 ;; Python configuration
 (load-config-file "python.el")
+
+;; YAML integration
+(load-config-file "yaml.el")
 
 ;; ;; use material theme
 ;; (use-package material-theme
@@ -174,6 +180,13 @@
   :config
   (load-theme 'sanityinc-tomorrow-eighties t) ; night / bright
   )
+
+;;; Session management:
+
+;; reopen previous session on startup
+(desktop-save-mode 1)
+(defvar desktop-load-locked-desktop)
+(setq desktop-load-locked-desktop t)
 
 ;; the end
 (provide 'init)

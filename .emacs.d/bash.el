@@ -1,4 +1,4 @@
-;;; elisp.el --- ELisp configuration -*- lexical-binding: t; -*-
+;;; bash.el --- Bash configuration -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020
 
@@ -20,17 +20,20 @@
 
 ;;; Commentary:
 
-;; Configuration for ELisp files
+;; Configuration for Bash files
 
 ;;; Code:
 
+; 79-column files
+(add-hook 'sh-mode-hook (lambda () (setq fill-column 79)))
+
 ;;; set tab width to 2
-(add-hook 'emacs-lisp-mode-hook
+(add-hook 'sh-mode-hook
 	  (lambda ()
 	    (defvar evil-shift-width) (setq evil-shift-width 2)))
 
 ; auto-indents in increments of 2 as well
-(add-hook 'emacs-lisp-mode-hook (lambda () (setq tab-stop-list '(2 4))))
+(add-hook 'sh-mode-hook (lambda () (setq tab-stop-list '(2 4))))
 
-(provide 'elisp)
-;;; elisp.el ends here
+(provide 'bash)
+;;; bash.el ends here

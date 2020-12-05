@@ -25,8 +25,7 @@
 ;;; Code:
 
 ;; install kubernetes plugin
-(use-package kubernetes
-  :commands (kubernetes-overview))
+(use-package kubernetes)
 
 ;; evil-mode integration
 (use-package kubernetes-evil
@@ -37,11 +36,12 @@
 (global-set-key (kbd "M-k M-k")
 		'(lambda()
 		   (interactive)
-		   (desktop-save-in-desktop-dir)
+		   (tab-new)
 		   (kubernetes-overview)
-		   (desktop-read)
+		   (tab-close)
 		   (other-window 1)
-		   (evil-split-buffer "*kubernetes overview*")))
+		   (evil-split-buffer "*kubernetes overview*")
+		   ))
 (global-set-key (kbd "M-k n") 'kubernetes-set-namespace)
 (global-set-key (kbd "M-k e") 'kubernetes-exec-into)
 

@@ -62,16 +62,16 @@
   (evil-define-key 'normal 'global (kbd "C-u") 'evil-scroll-up)
 
   ;; for moving around use <C-h,j,k,l>
-  (evil-define-key 'normal 'global (kbd "C-h") 'evil-window-left)
-  (evil-define-key 'normal 'global (kbd "C-j") 'evil-window-down)
-  (evil-define-key 'normal 'global (kbd "C-k") 'evil-window-up)
-  (evil-define-key 'normal 'global (kbd "C-l") 'evil-window-right)
+  (evil-define-key '(normal motion) 'global (kbd "C-h") 'evil-window-left)
+  (evil-define-key '(normal motion)'global (kbd "C-j") 'evil-window-down)
+  (evil-define-key '(normal motion)'global (kbd "C-k") 'evil-window-up)
+  (evil-define-key '(normal motion)'global (kbd "C-l") 'evil-window-right)
 
   ;; move panes with C-w C-h,j,k,l
-  (evil-define-key 'normal 'global (kbd "C-w C-h") 'evil-window-move-far-left)
-  (evil-define-key 'normal 'global (kbd "C-w C-j") 'evil-window-move-very-bottom)
-  (evil-define-key 'normal 'global (kbd "C-w C-k") 'evil-window-move-very-top)
-  (evil-define-key 'normal 'global (kbd "C-w C-l") 'evil-window-move-far-right)
+  (evil-define-key '(normal motion) 'global (kbd "C-w C-h") 'evil-window-move-far-left)
+  (evil-define-key '(normal motion) 'global (kbd "C-w C-j") 'evil-window-move-very-bottom)
+  (evil-define-key '(normal motion) 'global (kbd "C-w C-k") 'evil-window-move-very-top)
+  (evil-define-key '(normal motion) 'global (kbd "C-w C-l") 'evil-window-move-far-right)
 
 
   ;; function and mapping to add line below and return to normal mode

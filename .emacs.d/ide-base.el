@@ -75,6 +75,7 @@ buffer name during each attempt to open a shell or send code to it."
   :custom
   (ivy-count-format "(%d/%d) ")
   (ivy-use-virtual-buffers t)
+  (ivy-use-selectable-prompt t)
   :config (ivy-mode))
 
 ;; show additional information about buffers in the buffer window
@@ -119,8 +120,11 @@ buffer name during each attempt to open a shell or send code to it."
     (interactive)
     (if (featurep 'company)
     (cond ((= company-idle-delay ide-company-popup-active-delay)
-	(setq company-idle-delay 10000) (company-cancel))
-	(t (setq company-idle-delay ide-company-popup-active-delay)))))
+	   (setq company-idle-delay 10000)
+	   (company-cancel)
+	   (message "autocomplete disabled"))
+	  (t (setq company-idle-delay ide-company-popup-active-delay)
+	     (message "autocomplete enabled")))))
   ;; bind to "C-a" in normal and insert states
   (evil-define-key '(normal insert) 'global (kbd "C-a") 'toggle-company-idle-delay)
 
@@ -175,6 +179,7 @@ buffer name during each attempt to open a shell or send code to it."
 ;; use which-key for emacs function completion
 (use-package which-key
   :init
+  (setq which-key-popup-type 'minibuffer)
   (which-key-mode))
 
 ;;; LSP support
@@ -210,6 +215,12 @@ buffer name during each attempt to open a shell or send code to it."
   ;; (with-eval-after-load 'lsp-mode
   ;;   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
 
+  ;; lsp-treemacs
+  (use-package lsp-treemacs
+    :commands lsp-treemacs-sync-mode
+    :config
+      (lsp-treemacs-sync-mode 1))
+
   :commands lsp)
 
 
@@ -217,14 +228,13 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; smartly versioned file editing
 (use-package undo-tree
-  :init
-  (setq undo-tree-auto-save-history t)
   :custom
-  ;; avoid file clutter: save all undo files in emacs directory
-  (undo-tree-history-directory-alist
-   '(("." . "~/.emacs.d/undo-tree")))
+    (undo-tree-auto-save-history t)
+    ;; avoid file clutter: save all undo files in emacs directory
+    (undo-tree-history-directory-alist
+    '(("." . "~/.emacs.d/undo-tree")))
   :config
-  (global-undo-tree-mode 1))
+    (global-undo-tree-mode 1))
 
 ;; auto-insert parentheses
 (use-package smartparens

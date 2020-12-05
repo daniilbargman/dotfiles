@@ -1,5 +1,6 @@
+# -*- mode: sh; sh-shell; bash; -*-
 # Personalized bash settings for Daniil Bargman, daniil.bargman@gmail.com #####
-# ADD THIS TO THE END OF THE .bashrc FILE: source .myBashSettings
+# ADD ~source .bashrc_ext~ TO THE END OF .bashrc: 
 
 #################### powerline settings #######################################
 #powerline-daemon -q
