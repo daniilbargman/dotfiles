@@ -31,19 +31,36 @@
 (use-package kubernetes-evil
   :after kubernetes)
 
-;; use M-k as prefix for Kubernetes commands
-(global-unset-key (kbd "M-k"))
-(global-set-key (kbd "M-k M-k")
-		'(lambda()
-		   (interactive)
-		   (tab-new)
-		   (kubernetes-overview)
-		   (tab-close)
-		   (other-window 1)
-		   (evil-split-buffer "*kubernetes overview*")
-		   ))
-(global-set-key (kbd "M-k n") 'kubernetes-set-namespace)
-(global-set-key (kbd "M-k e") 'kubernetes-exec-into)
+;; function for inferring which pod/container should be the target of an
+;; `exec' function based on namespace and deployment
+(defun k8s-parse-exec-command (label &optional namespace exec-command)
+  "Parse a `kubectl exec...' command, inferring the target pod name.
+
+LABEL: label(s) that identify the target pods.
+
+NAMESPACE: optional namespace override (default: current namespace set
+in the kubeconfig file).
+
+EXEC-COMMAND: optional override for the command (default: /bin/sh).
+
+If multiple pods have been matched, the first one will be used."
+  (let* (
+	 (pod-disc-cmd
+	  (concat "echo $(kubectl get pod -l '" label "' "
+		  (when namespace (concat "-n " namespace " "))
+		  "-o jsonpath='{.items[0].metadata.name}')"))
+	 (target-pod
+	  (car (split-string (shell-command-to-string pod-disc-cmd))))
+	 )
+    (concat
+     "kubectl exec -it "
+     (when namespace (concat "-n " namespace " "))
+     target-pod
+     " -- "
+     (or exec-command "/bin/sh"))
+    )
+  )
+
 
 ;; done
 (provide 'k8s)

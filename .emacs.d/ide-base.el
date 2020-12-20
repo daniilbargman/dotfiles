@@ -73,10 +73,14 @@ buffer name during each attempt to open a shell or send code to it."
   ;; :bind (("C-c C-r" . ivy-resume)
   ;;        ("C-x B" . ivy-switch-buffer-other-window))
   :custom
+  (enable-recursive-minibuffers t)
   (ivy-count-format "(%d/%d) ")
   (ivy-use-virtual-buffers t)
   (ivy-use-selectable-prompt t)
-  :config (ivy-mode))
+  :config
+  (ivy-mode)
+  (evil-collection-init 'ivy)
+  )
 
 ;; show additional information about buffers in the buffer window
 (use-package ivy-rich
@@ -98,6 +102,7 @@ buffer name during each attempt to open a shell or send code to it."
 
 
 ;; popup completion with company mode
+
 (use-package company
   :bind
   (:map company-active-map
@@ -106,27 +111,31 @@ buffer name during each attempt to open a shell or send code to it."
     ("C-n" . company-select-next)
     ("C-p" . company-select-previous)
     ("C-l" . company-complete-selection)  ; fill with C-l
+    ("<tab>" . yas-expand)  ; expand snippets with tab
+    ("TAB" . yas-expand)  ; expand snippets with tab
     ("RET" . nil) ("<return>" . nil))  ; unmap return key
 
   :config
 
+  ;; enable
+  (global-company-mode)
+  (add-hook 'after-init-hook 'global-company-mode)
+
   ;; set minimum prefix length to 1
   (setq company-minimum-prefix-length 1)
 
-  ;; toggle popup by changing delay between 0 and 10000
-  (setq company-idle-delay ide-company-popup-active-delay)
-  (defun toggle-company-idle-delay ()
-"Stops or starts company auto-popup feature by setting delay to a few hours or zero."
-    (interactive)
-    (if (featurep 'company)
-    (cond ((= company-idle-delay ide-company-popup-active-delay)
-	   (setq company-idle-delay 10000)
-	   (company-cancel)
-	   (message "autocomplete disabled"))
-	  (t (setq company-idle-delay ide-company-popup-active-delay)
-	     (message "autocomplete enabled")))))
-  ;; bind to "C-a" in normal and insert states
-  (evil-define-key '(normal insert) 'global (kbd "C-a") 'toggle-company-idle-delay)
+;;   ;; toggle popup by changing delay between 0 and 10000
+;;   (setq company-idle-delay ide-company-popup-active-delay)
+;;   (defun toggle-company-idle-delay ()
+;; "Stops or starts company auto-popup feature by setting delay to a few hours or zero."
+;;     (interactive)
+;;     (if (featurep 'company)
+;;     (cond ((= company-idle-delay ide-company-popup-active-delay)
+;; 	   (setq company-idle-delay 10000)
+;; 	   (company-cancel)
+;; 	   (message "autocomplete disabled"))
+;; 	  (t (setq company-idle-delay ide-company-popup-active-delay)
+;; 	     (message "autocomplete enabled")))))
 
   ;; show numbers next to completion candidates
   (setq company-show-numbers t)
@@ -134,27 +143,54 @@ buffer name during each attempt to open a shell or send code to it."
   ;; wrap around
   (setq company-selection-wrap-around t)
 
-  ;; open company popup on any command (not just when editing text)
-  (setq company-begin-commands t)
+  ;; open company popup on any command in insert state, disable otherwise
+  (setq company-begin-commands
+	'(self-insert-command
+	  evil-insert
+	  evil-insert-line
+	  evil-insert-newline-above
+	  evil-insert-newline-below
+	  evil-insert-state
+	  evil-append
+	  evil-append-line
+	  evil-substitute
+	  evil-replace-state
+	  evil-change
+	  evil-change-line
+	  evil-change-whole-line
+	  backward-delete-char-untabify)); t)
+  ;; (add-hook 'evil-insert-state-entry-hook
+  ;; 	    (lambda ()
+  ;; 	      (setq company-idle-delay ide-company-popup-active-delay)))
+  ;; (add-hook 'evil-insert-state-exit-hook
+  ;; 	    (lambda ()
+  ;; 	      (setq company-idle-delay 10000)))
 
   ;; ;; enable auto-completion from filesystem
+  ;; enable
   ;; (add-to-list 'company-backends 'company-files)
 
-  ;; add yasnippet support
-  (defun company-mode/backend-with-yas (backends)
-    "Add :with company-yasnippet to company BACKENDS.
-  Taken from https://github.com/syl20bnr/spacemacs/pull/179."
-    (if (and (listp backends) (memq 'company-yasnippet backends))
-	backends
-      (append (if (consp backends)
-		  backends
-		(list backends))
-	      '(:with company-yasnippet))))
-  (setq company-backends
-	(mapcar #'company-mode/backend-with-yas company-backends))
+  ;; weight by frequency
+  (setq company-transformers '(company-sort-by-occurrence))
 
-  ;; enable
-  (global-company-mode t))
+  ;; Add yasnippet support for all company backends
+  ;; https://github.com/syl20bnr/spacemacs/pull/179
+  (defvar company-mode/enable-yas t "Enable yasnippet for all backends.")
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas)
+	    (and (listp backend) (member 'company-yasnippet backend)))
+    backend
+  (append (if (consp backend) backend (list backend))
+	  '(:with company-yasnippet))))
+
+  ;; add yasnippet support initially and whenever lsp-mode is enabled
+  (setq company-backends
+	(mapcar 'company-mode/backend-with-yas company-backends))
+
+  ;; enable globally
+  (global-company-mode)
+  ;; (add-hook 'after-init-hook 'global-company-mode)
+  )
 
 ;; beautified popup
 (use-package company-box
@@ -165,12 +201,22 @@ buffer name during each attempt to open a shell or send code to it."
   (setq company-box-show-single-candidate t)
 
   ;; display documentation box right away
-  (setq company-box-doc-delay 0.1)
+  (setq company-box-doc-delay 1.0)
   
   )
 
-;; Syntax and error checks
+;; code folding with origami mode and lsp-origami (instead of hideshow)
+;; NOTE: this package is way too slow for large python files, especially
+;; after creating many folds with origami-toggle-all-nodes
+;; (use-package origami
+;;  :quelpa
+;;    (lsp-origami :fetcher github :repo "gregsexton/origami.el")
+;;  :config
+;;    (global-origami-mode)
+;;  )
 
+
+;; Syntax and error checks
 (use-package flycheck
   :init
   (global-flycheck-mode)
@@ -187,33 +233,54 @@ buffer name during each attempt to open a shell or send code to it."
 ;; basic lsp-mode
 (use-package lsp-mode
 
-  ;; try to start up for each language
-  :hook ((prog-mode . lsp)
+  :hook (
   	;; if you want which-key integration
   	(lsp-mode . lsp-enable-which-key-integration))
+
+  :custom
+
+  (lsp-headerline-breadcrumb-enable nil) ; disable breadcrumb
+  ;; (lsp-log-io t)
+  ;; (lsp-print-performance t)
+  ;; (lsp-server-trace t)
+  (lsp-response-timeout 30)
+  ;; (lsp-print-performance t)
+  ;; (lsp-enable-file-watchers nil)
 
   :init
 
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c C-l")
+  (setq lsp-keymap-prefix "C-c C-l"
+	lsp-enable-snippet t
+	;; lsp-auto-configure nil
+	)
 
-  ;; enable snippet support
-  (setq lsp-enable-snippet t)
+  ;; lsp extras
+  (use-package lsp-ui
+    :custom
 
-  ;; ;; lsp extras
-  ;; (use-package lsp-ui
-  ;;   :ensure t
-  ;;   :config
-  ;;   (setq lsp-ui-sideline-ignore-duplicate t)
-  ;;   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+    ;; lsp-ui-doc
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-show-with-cursor nil)
+    ;; (lsp-ui-doc-header t)
+    (lsp-ui-doc-max-height 50)
+    ;; (lsp-ui-doc-use-webkit t)
+
+    ;; lsp-ui-peek
+    ;; (lsp-ui-peek-enable t)
+
+    :config
+    (lsp-ui-peek-mode)
+    
+    )
+
+  ;; performance optimization settings
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
   ;; lsp-ivy
   (use-package lsp-ivy
     :commands lsp-ivy-workspace-symbol)
-
-  ;; ;; which-key integration
-  ;; (with-eval-after-load 'lsp-mode
-  ;;   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
 
   ;; lsp-treemacs
   (use-package lsp-treemacs
@@ -221,8 +288,32 @@ buffer name during each attempt to open a shell or send code to it."
     :config
       (lsp-treemacs-sync-mode 1))
 
-  :commands lsp)
+  ;; NOTE: this throws an error
+  ;; trying out code folding support with lsp mode
+;; (use-package lsp-origami
+;;   :quelpa
+;;   (lsp-origami :fetcher github :repo "emacs-lsp/lsp-origami.el" )
+;;   :commands lsp-origami-try-enable
+;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
 
+  ;; which-key integration
+  (with-eval-after-load 'lsp-mode
+    (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
+
+  ;; make sure to enable yasnippet support in lsp completion
+  (with-eval-after-load 'lsp-mode
+    (add-hook
+      'lsp-completion-mode-hook
+	(lambda ()
+	  (setq company-backends
+		(cl-remove-duplicates
+		 (mapcar 'company-mode/backend-with-yas
+			 company-backends)
+		 :test 'equal-including-properties
+		 :from-end t)))
+    ))
+
+  :commands lsp)
 
 ;;; other tweaks
 

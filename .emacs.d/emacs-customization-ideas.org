@@ -2,6 +2,55 @@
 
 * Improvement ideas for Emacs configuration
   
+** PONDERING Figure out a way for Emacs to rely exclusively on config files for customization
+   - State "PONDERING"  from              [2020-12-08 Tue 22:28] \\
+     Emacs seems to handle settings changes in a strange way. For example,
+     when a variable (with a default value of ~nil~) is overridden in a
+     config file, the setting value changes. But then the override is
+     commented out and Emacs is restarted, the variable is not reset to its
+     nil value. This implies that Emacs settings are not only persisted
+     in configuration files and the custom-file, but also somewhere in Emacs
+     internals.
+     
+     The idea is to find a way for Emacs to behave more like Vim in this
+     respect, meaning all customizations should be reset when an Emacs
+     session is closed, and configuration files should be used as the single
+     source of truth.
+     
+
+** SCHEDULED Integrate an email client
+   - State "SCHEDULED"  from              [2020-12-08 Tue 22:49] \\
+     Would be nice to make use of Emacs' email client capabilities. Need to
+     check the different options out there for checking and writing emails
+     from within Emacs.
+
+
+** TESTING Code folding
+   - State "TESTING"    from "SCHEDULED"  [2020-12-08 Tue 22:37] \\
+     Tried out origami and origami-lsp, but the plugin is extremely slow
+     for large files. Other custom plugins either do not exist, or do
+     not provide the necessary functionality. Will try to customize the
+     built-in hideshow mode instead.
+
+     [ ] custom function to toggle folding, which recognizes the
+     inner-most code block as the one that should be folded
+
+     [ ] folding of multi-line comments and/or strings
+
+     [ ] folding of conditionals and loops
+
+     [ ] folding of import blocks in python
+
+     [ ] potentially, folding of entire code blocks using separator
+
+
+** SCHEDULED Add built-in debugger
+   - State "SCHEDULED"  from              [2020-12-08 Tue 22:41] \\
+     Look at DAP-mode vs realgud. DAP-mode seems to be referenced in [[https://emacs-lsp.github.io/dap-mode/][LSP docs]]
+     but is listed as unstable for now. Moreover, LSP/debugger integration
+     may not be essential anyway.
+
+
 ** SCHEDULED Add/configure snippets
    - State "SCHEDULED"  from              [2020-11-27 Fri 16:28] \\
      Snippet support has much more functionality in Emacs than in
@@ -13,19 +62,24 @@
     [ ] Python snippet; add hook to auto-insert into new .py files 
     [ ] Elisp header snippet with presets
 
+
 ** SCHEDULED Window and tab navigation
 *** sync treemacs workspaces and tab-bar workspaces via a hook
     [ ] When creating or deleting or renaming treemacs workspaces, create / delete / rename tabs
     [ ] When switching between tabs switch workspaces, and vice versa.
     [ ] Also consider adding filters to awesome-tab to only show system buffers and files within project directory for each workspace.
 
+
 ** SCHEDULED Python customisations: see emacswiki python programming in emacs
 *** SCHEDULED iPython shell
 *** SCHEDULED Talk to editor
 *** SCHEDULED Use K8S pod as runtime
 *** SCHEDULED Highlighting and traversing code blocks
+*** SCHEDULED re-formatting of iterables and comprehensions as in the Vim customization
+
 
 ** PONDERING Try out exwm as tiling window manager
+
 
 ** DONE Session management
    - State "DONE"       from "TESTING"    [2020-11-21 Sat 03:05] \\
@@ -35,6 +89,7 @@
    - State "TESTING"    from "SCHEDULED"  [2020-11-08 Sun 00:31] \\
      Session management should be sufficient between Emacs 27's built-in
      tab-bar-mode and session persistence.
+
 
 ** DONE treemacs integration
    - State "DONE"       from "SCHEDULED"  [2020-11-21 Sat 03:10] \\
@@ -61,9 +116,11 @@
       treemacs comes with its own notion of workspaces, but those are already
       integrated within the window management configuration file.
 
+
 ** DONE Figure out a way to toggle full screen for a window
    - State "DONE"       from "SCHEDULED"  [2020-11-08 Sun 00:25] \\
      Works with help from tab-bar-history-mode
+
 
 ** DONE Open new buffers in splits using "C-w h,j,k,l"
    - State "DONE"       from "PONDERING"  [2020-11-08 Sun 00:32] \\
@@ -79,6 +136,7 @@
      
      Proposal is to map buffer-opening window splits to "C-w h,j,k,l" which
      is not used for any Vim functions after window movements were remapped.
+
 
 ** DONE Code completion
    - State "DONE"       from "TESTING"    [2020-11-08 Sun 00:25]
@@ -97,6 +155,7 @@
     - State "DISCARDED"  from "DISCARDED"  [2020-11-06 Fri 18:42] \\
       turns out this is the default in lsp-mode
 
+
 ** DONE Finish system-commands.el
 *** DONE Customisation options take hold if defined in
     - State "DONE"       from "TESTING"    [2020-11-27 Fri 16:20]
@@ -110,15 +169,34 @@
 *** DONE Finish other functions using a more modular approach
 *** DONE Move openvpn config to other module and rename this one into something like "interactive-shell.el"
 
+
 ** DONE Line number column
+
+
 ** DONE Better status line
+
+
 ** DONE Ivy
+
+
 ** DONE Configure keybindings for flycheck (possibly via LSP)
+
+
 ** DONE K8S support
+
+
 ** DONE Configure and port code snippets
+
+
 ** DONE LSP
+
+
 ** DONE Bracket manipulation
+
+
 ** DONE Refactor config files
+
+
 ** DISCARDED Evil plugin for Org mode
    - State "DISCARDED"  from "PONDERING"  [2020-11-21 Sat 03:07] \\
      Easier to add the necessary keybindings manually as needed.
@@ -126,25 +204,30 @@
      Check out evil-org and weigh pros and cons between using vim keybindings
      for Org mode commands.
 
+
 ** DISCARDED map evil-ex file opening commands to counsel commands
    - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:26] \\
      Came up with different mappings instead as evil-ex command not easily
      customizable. Buffers and splits can now be opened with "C-w w,j,l"
      as per another TODO item.
 
+
 ** DISCARDED map "+p to paste-with-replacement in visual state
    - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:28] \\
      This seems to work out of the box now. Before was a glitch.
+
 
 ** DISCARDED Try out ivy-push-view
    - State "DISCARDED"  from "SCHEDULED"  [2020-11-08 Sun 00:29] \\
      Discarded as option for sessions because views cannot be easily
      persisted. Upgrading to Emacs 27 and using tab-bar-mode instead.
 
+
 ** DISCARDED Use ivy-hydra for vim-like bindings
    - State "DISCARDED"  from "PONDERING"  [2020-11-07 Sat 15:31] \\
      It seems Hydra is a package that amis to improve on Emacs keybindings
      rather than provide a vim-style interface. Not doing this for the time being.
+
 
 
 * Topics for reading

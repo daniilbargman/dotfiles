@@ -49,8 +49,8 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; make translucent (<active opacity> . <inactive opacity>)
-(set-frame-parameter (selected-frame) 'alpha '(95 . 75))
-(add-to-list 'default-frame-alist '(alpha . (95 . 75)))
+(set-frame-parameter (selected-frame) 'alpha '(95 . 95))
+(add-to-list 'default-frame-alist '(alpha . (95 . 95)))
 
 
 ;;; Basic settings for working with text
@@ -80,7 +80,7 @@
 
 ;; NOTE: this is no longer required with Emacs 27.1
 ;; set this to make sure packages are installed from ELPA
-; (defvar gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+(defvar gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
 ;; install "use-package" macro
 (when (not (package-installed-p 'use-package))
@@ -133,14 +133,17 @@
 ;; run startup scripts
 (load-config-file "startup-scripts.el")
 
+;; openvpn client
+(load-config-file "openvpn.el")
+
+;; centralized keybinding configuration
+(load-config-file "keybindings.el")
+
 ;; Vim keybindings
 (load-config-file "evil.el")
 
 ;; interactive terminal shell
 (load-config-file "bind-terminal-shell.el")
-
-;; openvpn client
-(load-config-file "openvpn.el")
 
 ;; code and text snippets
 (load-config-file "snippets.el")

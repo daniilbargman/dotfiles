@@ -33,14 +33,5 @@
 ;; pull predefined collection of snippets
 (use-package yasnippet-snippets)
 
-;; in snippet mode, navigate with "C-h,l"
-(define-key yas-keymap (kbd "<tab>") nil)
-(define-key yas-keymap (kbd "TAB") nil)
-(define-key yas-keymap (kbd "<backtab>") nil)
-(define-key yas-keymap (kbd "S-TAB") nil)
-(define-key yas-keymap (kbd "C-l") 'yas-next-field-or-maybe-expand)
-(define-key yas-keymap (kbd "C-h") 'yas-prev-field)
-
-
 (provide 'snippets)
 ;;; snippets.el ends here

@@ -27,9 +27,6 @@
 ;; ovpn-mode for VPN connections
 (use-package ovpn-mode
 
-  :hook (ovpn-mode . (lambda () (evil-local-set-key
-		      'normal "s" 'ovpn-mode-start-vpn)))
-
   :custom
 
   ;; disable prompt when switching off ipv6
@@ -42,11 +39,6 @@
 
   ;; set vpn directory to ~/.vpn/
   (ovpn-mode-dir-set "~/.vpn/")
-
-  ;; use "C-s l" to open ovpn dashboard in new buffer
-  (global-set-key (kbd "C-s l")
-		  '(lambda() (interactive) (other-window 1)
-		     (evil-split-buffer "*scratch*") (ovpn)))
 
   )
 

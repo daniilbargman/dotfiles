@@ -49,15 +49,15 @@ If this variable is not set, the user will be prompted for a targat
 buffer name during each attempt to open a shell or send code to it."
   :group 'bind-terminal-shell
   :type 'string
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
 
 ;; Executable program for the shell buffer
 (defcustom bind-terminal-shell-program "/bin/bash"
-  "Program to run in the terminal terminal shell."
+  "Program to run in the terminal shell."
 
   :group 'bind-terminal-shell
   :type 'string
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
 
 ;; initialization commands to run when a terminal first starts
 (defcustom bind-terminal-shell-init-commands nil
@@ -65,45 +65,28 @@ buffer name during each attempt to open a shell or send code to it."
 
   :group 'bind-terminal-shell
   :type '(repeat string)
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
 
-
-;; set variable values
-(setq windows-and-tabs-buffer-groups-by-name-regex
-      '(("^\*terminal\*$" . "interactive")
-        ("^\*kubernetes.*\*$" . "interactive")
-        ("^action-log.org$" . "notes")
-        ("^TODO.*$" . "notes")
-        ("^.*\.yaml$" . "manifests")
-        ("^.*test.*$" . "testing")))
-
-(setq windows-and-tabs-buffer-filter-regexp-list
-      '("^\*ovpn-mode\*$" "^\*mount-statosphere\*$"))
 
 ;;; truncate lines instead of wrapping in terminal mode
 ;; (add-hook 'term-mode-hook (lambda () (setq truncate-lines t)))
 
 
 ;;; Define functions for opening shells and running shell commands
-(defun parse-target-buffer-name ()
-  "Parse the name of the TARGET-BUFFER using user setting or prompt.
+(defun prompt-target-buffer-name ()
+  "Prompt the user for a buffer name, and then return it."
 
-The name of the target shell can be set via the variable:
-  - bind-terminal-shell-buffer-name
-
-If this value is unset, the user is prompted for an input."
-
-  ; interactively prompt for target buffer name if not set as variable
+  ;; interactively prompt for target buffer name if not set as variable
   (interactive)
-  (or bind-terminal-shell-buffer-name (read-buffer
-					  "Name of shell buffer: "
-					  "*interactive-shell*"
-					  nil)))
+  (read-buffer "Name of shell buffer: " "*interactive-shell*" nil))
 
 ;; function for getting a pointer to a buffer and creating one if needed
 (defun get-or-create-shell-buffer
-    (target-buffer &optional program init-commands move-cursor and-run)
+    (&optional target-buffer program init-commands move-cursor and-run)
   "Get or create a terminal shell in TARGET-BUFFER.
+
+TARGET-BUFFER can be set via `bind-terminal-shell-buffer-name'.
+Otherwise, the user will be prompted for a buffer name.
 
 If the buffer doesn't exist, it is created and put in a new window.
 If the buffer exists but is not visible, a window is created for it.
@@ -111,7 +94,9 @@ The name of the shell can be set via a custom variable:
 
   - see: bind-terminal-shell-buffer-name
 
-If unset, the user is prompted for a name in the minibuffer each time.
+If unset, the user is prompted for a name in the minibuffer.  This also
+makes this command suitable for keybindings if wrapped in an interactive
+lambda function.
 
 If a new shell is being created, its working directory will be the same
 as the working directory of the buffer from which it is initialized (or
@@ -145,11 +130,17 @@ run something akin to 'process-send-region from the source buffer to the
 target shell after creating it, set MOVE-CURSOR to nil.  For commands
 like 'process-send-string, the position of the cursor is less relevant."
 
-  ; save the current window
+  ;; save the current window
   (defvar original-active-window)
   (setq original-active-window (get-buffer-window))
 
-  ; make sure we have short name (no "*") and long name (with "*")
+  ;; figure out the name of the target buffer to use
+  (setq
+   target-buffer
+   (or target-buffer (or bind-terminal-shell-buffer-name
+			 (prompt-target-buffer-name))))
+
+  ;; make sure we have short name (no "*") and long name (with "*")
   (defvar target-buffer-short)
   (if (string-match "^\*.*\*$" target-buffer)
       (setq target-buffer-short (string-trim target-buffer "*" "*"))
@@ -185,11 +176,11 @@ like 'process-send-string, the position of the cursor is less relevant."
 		   (termbuf (apply 'make-term
 				   target-buffer-short cmd nil all-args)))
 
-	      ; once again, try to carve out space from non-active window
+	      ;; once again, try to carve out space from non-active window
 	      (when (> (length (window-list)) 1) (other-window 1))
 	      (when (boundp 'treemacs--in-this-buffer)
 		(when treemacs--in-this-buffer (other-window 1)))
-	      ; then open a scratch window and turn it into a shell buffer
+	      ;; then open a scratch window and turn it into a shell buffer
 	      (evil-split-buffer current-buffer-tmp)
 	      (set-buffer termbuf)
 	      (term-mode)
@@ -200,50 +191,42 @@ like 'process-send-string, the position of the cursor is less relevant."
 				    (concat each-cmd "\n")))
 	      )))
 
-  ; move back to original window if needed
+  ;; move back to original window if needed
   (if move-cursor (select-window (get-buffer-window target-buffer))
     (select-window original-active-window))
 
-  ; optionally run function
+  ;; optionally run function
   (when and-run (funcall and-run target-buffer)))
 
 ;; (let ((init-commands (or nil (list "source /mnt/projects/statosphere/config"))))
 ;;   (dolist (each-command init-commands) (message each-command)))
 
 ;; function to send selected text to buffer
-(defun evil-send-region-to-terminal-shell (target-buffer)
-  "Send selected text as a command to TARGET-BUFFER in evil mode."
+(defun evil-send-region-to-terminal-shell (target-buffer
+					   &optional fallback-selection)
+  "Send selected text as a command to TARGET-BUFFER in evil mode.
 
-  ; if we are in normal state, select line under cursor
-  (when (evil-normal-state-p) (evil-visual-line))
+FALLBACK-SELECTION is a function that determines which region should be
+sent if there is no visual selection available.  It defaults to
+`evil-visual-line', i.e. the default behaviour is to send the line under
+cursor if no text is visually selected.  Alternatives could involve
+selecting regions of text based on properties, for example
+`python-mark-fold-or-section' could be used as to achieve block-wise
+execution of python code if the python-x package is installed."
 
-  ; extract beginning and end of visual selection, and send to shell
+  ;; if we are in normal state, select line under cursor
+  (when (evil-normal-state-p)
+    (if fallback-selection (funcall fallback-selection)
+      (evil-visual-line)))
+
+  ;; extract beginning and end of visual selection, and send to shell
   (let* ((target-range (evil-visual-range))
   	 (BEG (nth 0 target-range))
   	 (END (nth 1 target-range)))
-    (process-send-region target-buffer BEG END))
+    (comint-send-region target-buffer BEG END))
 
-  ; exit visual mode
+  ;; exit visual mode
   (evil-normal-state))
-
-;; unbind C-s and use it as a prefix for terminal shell commands
-(global-unset-key (kbd "C-s"))
-
-; use "C-s t" to open ansi-term in emacs state in new window
-(global-set-key (kbd "C-s t") '(lambda () (interactive)
-				 (setq target-buffer
-				       (parse-target-buffer-name))
-				 (get-or-create-shell-buffer
-				  target-buffer nil nil t)
-				 (evil-emacs-state)))
-
-;; send region to shell buffer with "C-s x"
-(global-set-key (kbd "C-s x")
-		'(lambda () (interactive)
-		  (setq target-buffer
-		    (parse-target-buffer-name))
-		  (get-or-create-shell-buffer target-buffer nil nil nil
-		    'evil-send-region-to-terminal-shell)))
 
 (provide 'bind-terminal-shell)
 ;;; bind-terminal-shell.el ends here

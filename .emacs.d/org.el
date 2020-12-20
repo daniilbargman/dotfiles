@@ -32,13 +32,6 @@
 
 ;; add Verb to run HTTP(S) requests from Org files
 (use-package verb)
-(with-eval-after-load 'org
-  (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
-
-;; toggle URL visibility with "C-c w w"
-(define-key org-mode-map (kbd "C-c w w") 'org-toggle-link-display)
-
-;; copy link to clipboard with "C-c w c"
 
 (provide 'org)
 

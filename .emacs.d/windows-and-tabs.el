@@ -106,20 +106,9 @@ groups and filters"
 	))))
  )
 
-;; customize tab bar keybindings
-(global-set-key (kbd "M-<tab>") 'tab-bar-switch-to-next-tab)
-(global-set-key (kbd "M-S-<iso-lefttab>") 'tab-bar-switch-to-prev-tab)
-(global-set-key (kbd "M-j") 'tab-bar-select-tab)
-
 
 ;;; Support creating / maximizing / destroying windows
 (window-list)
-
-;; keybindings for resizing windows (M-<arrows>)
-(global-set-key (kbd "M-<left>") 'shrink-window-horizontally)
-(global-set-key (kbd "M-<right>") 'enlarge-window-horizontally)
-(global-set-key (kbd "M-<down>") 'shrink-window)
-(global-set-key (kbd "M-<up>") 'enlarge-window)
 
 ;; function to toggle single-window view
 (defun view-single-window-toggle ()
@@ -166,17 +155,6 @@ Uses evil commands."
   ;; make empty split below current window and switch to new buffer there
   (evil-window-vsplit)
   (next-buffer))
-
-;; toggle single-window mode with "C-w o" in normal state
-(evil-define-key 'normal 'global (kbd "C-w o") 'view-single-window-toggle)
-;; load different buffer in same window with "C-w w"
-(evil-define-key 'normal 'global (kbd "C-w w") 'ivy-switch-buffer)
-;; split and prompt for new buffer
-(evil-define-key 'normal 'global (kbd "C-w j") 'view-new-buffer-below)
-(evil-define-key 'normal 'global (kbd "C-w l") 'view-new-buffer-right)
-
-;; kill current buffer with C-q
-(global-set-key (kbd "C-q") 'kill-this-buffer)
 
 
 ;;; support for tabs and tab groups via awesome-tab
@@ -322,18 +300,6 @@ tab's grouping collage."
 	    finally
 		return buffer-regexp-value))
 
-;; bind Cache-x C-h for previous tab, C-x C-l for next tab, C-x C-u to jump
-(global-set-key (kbd "C-x C-l") 'awesome-tab-forward-tab)
-(global-set-key (kbd "C-x C-h") 'awesome-tab-backward-tab)
-(global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
-
-;; bind "C-x C-j,k" to go to next/previous group
-(global-set-key (kbd "C-x C-j") 'awesome-tab-forward-group)
-(global-set-key (kbd "C-x C-k") 'awesome-tab-backward-group)
-
-;; bind "C-x C-n" to open minibuffer prompt for group name
-(global-set-key (kbd "C-x C-n") 'awesome-tab-counsel-switch-group)
-
 
 ;;; Manage projects with treemacs
 
@@ -419,26 +385,6 @@ tab's grouping collage."
 ;; evil mode support
 (use-package treemacs-evil
   :after treemacs evil
-  :config
-
-  ;; toggle treemacs window with "C-x C-a"
-  (evil-define-key '(normal insert) 'global (kbd "C-x C-a") 'treemacs)
-  (define-key evil-treemacs-state-map (kbd "C-x C-a") #'treemacs-quit)
-
-  ;; fold/unfold directories and tag lists with "za"
-  (define-key evil-treemacs-state-map (kbd "za") #'treemacs-toggle-node)
-
-  ;; move out of the treemacs window with "C-l"
-  (define-key evil-treemacs-state-map (kbd "C-l") #'other-window)
-
-
-  ;; create a file/directory with "C-x C-f,d"
-  (define-key evil-treemacs-state-map (kbd "C-x C-f") #'treemacs-create-file)
-  (define-key evil-treemacs-state-map (kbd "C-x C-d") #'treemacs-create-dir)
-
-  ;; open new files in hsplit with "C-return"
-  (define-key evil-treemacs-state-map (kbd "<C-return>")
-    #'treemacs-visit-node-vertical-split)
 
   )
 

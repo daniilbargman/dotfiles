@@ -96,7 +96,7 @@ if [[ -z "${2:-}" || " ${help_flags[@]} " =~ "${2:-}" ]]; then
 fi
 
 # use cryptsetup to decrypt the partition (if not decrypted already)
-if [[ ! -d /mnt/$1 || ! "$(ls -A /mnt/$2/)" ]]; then
+if [[ ! -d /mnt/$2 || ! "$(ls -A /mnt/$2/)" ]]; then
 
     # create unencrypted mapping
     sudo cryptsetup luksOpen /dev/$1 $2 2> /dev/null || true

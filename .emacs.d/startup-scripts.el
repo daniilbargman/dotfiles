@@ -31,33 +31,37 @@
 
 ;;; Code:
 
+;; ;; append save values to file-local variables
+;; (add-to-list 'safe-local-variable-values '((lsp-pyls-server-command
+;; 	      . "/homee/daniilbargman/miniconda3/envs/statosphere/bin/pyls")))
+
 ;; mount encrypted project drive
 (with-eval-after-load "bind-terminal-shell"
-  (let ((bind-terminal-shell-program
+ (let ((bind-terminal-shell-program
 	(mapconcat 'identity
 		    '("/home/daniilbargman/executables/decrypt-and-mount"
 		      "nvme0n1p9"
 		      "projects")
 		    " ")))
-    (get-or-create-shell-buffer "mount-statosphere" nil nil t)
-    (comint-watch-for-password-prompt
-     (buffer-substring-no-properties (line-beginning-position)
+   (get-or-create-shell-buffer "mount-statosphere" nil nil t)
+   (comint-watch-for-password-prompt
+    (buffer-substring-no-properties (line-beginning-position)
 				     (line-end-position)))
-    (while (comint-check-proc (current-buffer))
-      (comint-watch-for-password-prompt
-     (buffer-substring-no-properties (line-beginning-position)
+   (while (comint-check-proc (current-buffer))
+     (comint-watch-for-password-prompt
+    (buffer-substring-no-properties (line-beginning-position)
 				     (line-end-position)))
-      (sleep-for 1))
-    ;; (comint-watch-for-password-prompt)
-      ;; (comint-send-invisible "Enter passphrase for nvme0n1p9: ")
-    (evil-quit)
-    ))
+     (sleep-for 1))
+   ;; (comint-watch-for-password-prompt)
+     ;; (comint-send-invisible "Enter passphrase for nvme0n1p9: ")
+   (evil-quit)
+   ))
 
 
 ;; start vpn client
 (with-eval-after-load "openvpn"
-  (ovpn-mode-start-vpn-conf
-  "/home/daniilbargman/.vpn/dbargman-server2.ovpn"))
+ (ovpn-mode-start-vpn-conf
+ "/home/daniilbargman/.vpn/dbargman-server2.ovpn"))
 
 
 ;; set groupings and filters for buffers in tab navigation
@@ -91,6 +95,8 @@
 	  "^[*]tramp/sudo .*[*]$"
 	  "^[*]scratch[*]$"
 	  "^ *[*]company-.*[*]$"
+	  "^ *[*]Treemacs-.*$"
+	  "^ *[*]lsp-ui-.*$"
 	  "^.*[.]ovpn$"))
 )
 
