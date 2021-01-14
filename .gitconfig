@@ -3,3 +3,5 @@
 [user]
 	email = daniil.bargman@gmail.com
 	name = daniilbargman
+[credential]
+	helper = cache

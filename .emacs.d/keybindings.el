@@ -38,9 +38,9 @@
   ;;; manipulation of workspace tabs in tab-bar mode
 
   ;; customize tab bar keybindings
-  (global-set-key (kbd "M-<tab>") 'tab-bar-switch-to-next-tab)
-  (global-set-key (kbd "M-S-<iso-lefttab>") 'tab-bar-switch-to-prev-tab)
-  (global-set-key (kbd "M-j") 'tab-bar-select-tab)
+  (global-set-key (kbd "M-<tab>") 'next-tab-and-workspace)
+  (global-set-key (kbd "M-S-<iso-lefttab>") 'previous-tab-and-workspace)
+  (global-set-key (kbd "M-j") 'jump-tab-and-workspace)
 
   ;;; buffer tab manipulation via awesome-tab
   
@@ -114,12 +114,8 @@
   ;; close current buffer with Q
   (evil-define-key '(normal visual) 'global (kbd "Q") 'evil-quit)
 
-  ;; add vim leader key support
-  (use-package evil-leader
-    :config (with-no-warnings
-    (global-evil-leader-mode)
-    (evil-leader/set-leader ",")
-    (evil-leader/set-key
+  ;; add vim leader keybindings support
+  (evil-leader/set-key
 
     ;; help
     "h" 'describe-key ; envoke emacs' C-h k with <leader>h
@@ -135,7 +131,7 @@
     "C-s" 'swiper-all-thing-at-point ; search thing at point in all
 					; buffers with <leader>C-s
 
-    )))
+    )
 
   ;;; Keybindings for normal mode
 

@@ -26,8 +26,10 @@
 
 ;; add vim keybindings
 (use-package evil
-  :after (evil-leader undo-tree smartparens)
+  :after (undo-tree smartparens)
   :init
+
+  ;; other settings
   (setq evil-default-state 'normal)
   (setq evil-want-C-u-scroll t)  ; this breaks if evil-leader package is added
   (setq evil-vsplit-window-right t)
@@ -50,6 +52,31 @@
 
   ))
 
+;; compatibility package for use in other modes
+(use-package evil-collection
+  :after evil
+  :custom
+  ;; do not automatically switch between line and char mode in term
+  ;; (this is handled separately)
+  (evil-collection-term-sync-state-and-mode-p nil)
+  ;; try out evil keybindings for the minibuffer
+  (evil-collection-setup-minibuffer t)
+  :config
+  (evil-collection-init)
+  )
+
+;; enable leader keymappings
+(use-package evil-leader
+
+  ;; evil-leader loads evil, so certain things need to be set here
+  :init
+  (setq evil-want-keybinding nil)
+
+  ;; set leader key to ","
+  :config (with-no-warnings
+  (global-evil-leader-mode)
+  (evil-leader/set-leader ",")))
+
 ;; surround.vim
 (use-package evil-surround
   :config
@@ -59,10 +86,6 @@
 (use-package evil-commentary
   :config
   (evil-commentary-mode))
-
-;; compatibility package for use in other modes (don't enable by default)
-(use-package evil-collection
-  :after evil)
 
 (provide 'evil)
 ;;; evil.el ends here

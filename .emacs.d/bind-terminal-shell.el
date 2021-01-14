@@ -68,9 +68,18 @@ buffer name during each attempt to open a shell or send code to it."
   :safe (lambda (_) t))
 
 
-;;; truncate lines instead of wrapping in terminal mode
+;; ;; truncate lines instead of wrapping in terminal mode
 ;; (add-hook 'term-mode-hook (lambda () (setq truncate-lines t)))
 
+;; automatically switch to char mode in emacs state, line mode otherwise
+(add-hook 'evil-emacs-state-entry-hook
+	  (lambda () (when (and (derived-mode-p 'term-mode)
+				(get-buffer-process (window-buffer)))
+		       (term-char-mode))))
+(add-hook 'evil-emacs-state-exit-hook
+	  (lambda () (when (and (derived-mode-p 'term-mode)
+				(get-buffer-process (window-buffer)))
+		       (term-line-mode))))
 
 ;;; Define functions for opening shells and running shell commands
 (defun prompt-target-buffer-name ()

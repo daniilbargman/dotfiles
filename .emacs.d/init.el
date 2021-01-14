@@ -63,7 +63,7 @@
 ;; enable text folding via hideshow
 (load-library "hideshow")
 (add-hook 'prog-mode-hook 'hs-minor-mode)
-(add-hook 'text-mode-hook 'hs-minor-mode)
+(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
 
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
@@ -157,6 +157,9 @@
 ;; customizations for Org mode
 (load-config-file "org.el")
 
+;; customizations for markdown mode
+(load-config-file "markdown.el")
+
 ;; Kubernetes integration
 (load-config-file "k8s.el")
 
@@ -171,6 +174,12 @@
 
 ;; YAML integration
 (load-config-file "yaml.el")
+
+;; Dockerfile integration
+(load-config-file "dockerfile.el")
+
+;; email client
+(load-config-file "email.el")
 
 ;; ;; use material theme
 ;; (use-package material-theme

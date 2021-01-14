@@ -87,7 +87,7 @@ for i in ${!tag_names[@]} ; do
     fi
 done
 
-# cycle through tags
+# cycle through tabs
 hc keybind $Mod-w use_index +1 --skip-visible
 hc keybind $Mod-Tab use_index +1 --skip-visible
 hc keybind $Mod-q  use_index -1 --skip-visible

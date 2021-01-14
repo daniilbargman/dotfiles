@@ -79,7 +79,7 @@ buffer name during each attempt to open a shell or send code to it."
   (ivy-use-selectable-prompt t)
   :config
   (ivy-mode)
-  (evil-collection-init 'ivy)
+  ;; (evil-collection-init 'ivy)
   )
 
 ;; show additional information about buffers in the buffer window
@@ -246,6 +246,7 @@ buffer name during each attempt to open a shell or send code to it."
   (lsp-response-timeout 30)
   ;; (lsp-print-performance t)
   ;; (lsp-enable-file-watchers nil)
+  (lsp-restart 'auto-restart)
 
   :init
 

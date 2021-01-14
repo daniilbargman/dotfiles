@@ -302,7 +302,6 @@ tab's grouping collage."
 
 
 ;;; Manage projects with treemacs
-
 (use-package treemacs
   :config
   (progn
@@ -382,10 +381,89 @@ tab's grouping collage."
 
   ))
 
-;; evil mode support
+;; evil mode support in treemacs
 (use-package treemacs-evil
   :after treemacs evil
 
+  )
+
+;; helpers: send keys to minibuffer when prompted by interactive defun
+(defmacro with-minibuffer-input (form &rest inputs)
+  "Helper macro: send INPUTS to minibuffer while running FORM.
+
+https://emacs.stackexchange.com/questions/
+10393/how-can-i-answer-a-minibuffer-prompt-from-elisp."
+  (declare (indent 1))
+  `(minibuffer-with-setup-hook
+       (lambda ()
+         (minibuffer-input-provider ',inputs))
+     ,form))
+(defun minibuffer-input-provider (inputs)
+  "Helper function: send INPUTS to minibuffer.
+
+https://emacs.stackexchange.com/questions/
+10393/how-can-i-answer-a-minibuffer-prompt-from-elisp."
+  (let ((hook (make-symbol "hook")))
+    (fset hook (lambda ()
+                 (remove-hook 'post-command-hook hook)
+                 (when inputs
+                   (when (= 0 (minibuffer-depth))
+                     (error "Too many inputs"))
+                   (when (cdr inputs)
+                     (add-hook 'post-command-hook hook))
+                   (insert (pop inputs))
+                   (exit-minibuffer))))
+    (add-hook 'post-command-hook hook)))
+
+;; switch to treemacs workspace by the same name as the tab name
+(defun switch-to-workspace-by-tab-name ()
+  "Switch to a treemacs workspace with the same name as the tab-bar tab.
+
+This is a source-code copy-paste from `treemacs-do-switch-workspace'
+with bits of code replaced for non-interactive workspace switch."
+  (treemacs--maybe-load-workspaces)
+  (treemacs-block
+   (treemacs-return-if (= 1 (length treemacs--workspaces))
+     'only-one-workspace)
+   (let* ((workspaces (->> treemacs--workspaces
+                           (--reject (eq it (treemacs-current-workspace)))
+                           (--map (cons (treemacs-workspace->name it) it))))
+          (name (cdr (car (cdr (tab-bar--current-tab)))))
+          (selected (cdr (--first (string= (car it) name) workspaces))))
+     (when selected
+      (setf (treemacs-current-workspace) selected)
+      (treemacs--invalidate-buffer-project-cache)
+      (treemacs--rerender-after-workspace-change)
+      (run-hooks 'treemacs-switch-workspace-hook)
+      (treemacs-return
+	`(success ,selected))))))
+
+;; change treemacs workspace when jumping to tab by number
+(defun jump-tab-and-workspace (&optional tabnum)
+  "Switch tab-bar tab and treemacs workspace.
+
+The assumption is that there is a Treemacs workspace corresponding to
+the tab-bar name.
+
+The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
+  (interactive "P")
+  (when tabnum
+    (tab-bar-select-tab tabnum)
+    (switch-to-workspace-by-tab-name))
+  )
+
+;; change treemacs workspace when jumping to next / previous tab
+(defun next-tab-and-workspace ()
+  "Switch to next tab-bar tab and change treemacs workspace."
+  (interactive)
+  (tab-bar-switch-to-next-tab)
+  (switch-to-workspace-by-tab-name)
+  )
+(defun previous-tab-and-workspace ()
+  "Switch to previous tab-bar tab and change treemacs workspace."
+  (interactive)
+  (tab-bar-switch-to-prev-tab)
+  (switch-to-workspace-by-tab-name)
   )
 
 (provide 'windows-and-tabs)

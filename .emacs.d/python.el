@@ -80,7 +80,7 @@ Accepts any valid bash terminal command, including flags."
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
-                          (lsp-deferred)))  ; or lsp-deferred
+                          (lsp-deferred)))  ; or lsp
   ;; :custom
   ;; (lsp-pyright-langserver-command-args '("--stdio" "--verbose"))
   :config
