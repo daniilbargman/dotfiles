@@ -37,8 +37,7 @@
 
 ;; group under "bind-terminal-shell"
 (defgroup windows-and-tabs nil
-  "Variables for setting behaviour of windows and tabs, including buffer
-groups and filters"
+  "Variables for setting behaviour of windows and tabs."
   :group 'External
   :prefix 'windows-and-tabs
   :version '0.1.0)
@@ -48,26 +47,39 @@ groups and filters"
   "Alist mapping buffer name regexp expressions to buffer group names."
   :group 'windows-and-tabs
   :type '(alist :key-type regexp :value-type string)
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
 
 ;; alist mapping buffer major modes to tab groups
 (defcustom windows-and-tabs-buffer-groups-by-major-mode nil
   "Alist mapping buffer major modes to buffer group names."
   :group 'windows-and-tabs
   :type '(alist :key-type sexp :value-type string)
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
+
+;; alist mapping buffer file paths to tab groups
+(defcustom windows-and-tabs-buffer-groups-by-project-path nil
+  "Alist mapping project paths to buffer group names."
+  :group 'windows-and-tabs
+  :type '(alist :key-type string :value-type string)
+  :safe (lambda (_) t))
 
 ;; list of buffer names to filter out from awesome-tab
 (defcustom windows-and-tabs-buffer-filter-regexp-list nil
   "Alist mapping buffer major modes to buffer group names."
   :group 'windows-and-tabs
   :type '(repeat regexp)
-  :safe (lambda (x) t))
+  :safe (lambda (_) t))
 
 
 ;;; Support for preserving and toggling views (tab-bar-mode)
 (tab-bar-mode 1)
 (tab-bar-history-mode 1)
+
+
+;; remove tab-bar header line from popup frames
+(advice-add
+ 'display-buffer-in-child-frame :filter-return
+ #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
 
 
 ;; customize tab bar design
@@ -84,25 +96,25 @@ groups and filters"
 (setq tab-bar-tab-hints t)
 (custom-set-faces
  '(tab-bar
-   ((t (:background "#393939"
+   ((t (:background "#202020"
 	:height 1.2
 	))))
  '(tab-bar-tab
-   ((t (:background "#393939"
-	:foreground "#cc99cc"
+   ((t (:background "#202020"
+	:foreground "#78B9C5" ; "#7ec98f"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
 	:height 0.9
 	))))
  '(tab-bar-tab-inactive
-   ((t (:background "#999999"
-	:foreground "#393939"
+   ((t (:background "#202020"
+	:foreground "#999999"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
 	:height 0.9
 	))))
  '(tab-line
-   ((t (:background "#191919"
+   ((t (:background "#101010"
 	))))
  )
 
@@ -160,148 +172,185 @@ Uses evil commands."
 ;;; support for tabs and tab groups via awesome-tab
 
 ;; load package (from github as melpa doesn't have it yet)
-(use-package awesome-tab
-  :quelpa
-  (awesome-tab :fetcher github :repo "manateelazycat/awesome-tab")
+(use-package centaur-tabs
+  :demand
+  :custom
+
+  ;; shape and size of the tabs
+  (centaur-tabs-style "rounded")
+  (centaur-tabs-height 32)
+
+  ;; support for plain icons
+  (centaur-tabs-set-icons t)
+  (centaur-tabs-gray-out-icons 'buffer)
+
+  ;; underline active tab
+  (centaur-tabs-set-bar 'under)
+  (x-underline-at-descent-line t)
+
+  ;; disable close button
+  (centaur-tabs-set-close-button nil)
+
+  ;; show dots next to modified tabs
+  (centaur-tabs-set-modified-marker t)
+
+  ;; adjust ordering of buffers based on usage
+  (centaur-tabs-adjust-buffer-order 'left)
+  
   :config
 
-  ;; ;; cycle through groups not tabs
-  ;; (setq awesome-tab-cycle-scope "groups")
-
-  ;; make tab bar smaller
-  (setq awesome-tab-height 110)  ; default is 150
-
-  ;; display tab globally
-  (setq awesome-tab-display-line 'tab-line)
+  ;; add support for icons
+  (use-package all-the-icons
+    :config (all-the-icons-install-fonts t))
 
   ;; enable mode
-  (awesome-tab-mode t))
+  (centaur-tabs-mode t)
 
-;; default function for defining buffer groups
-(defun default-awesome-tab-buffer-groups ()
-  "`awesome-tab-buffer-groups' control buffers' group rules.
+  ;; match headlin style
+  (centaur-tabs-headline-match)
 
-Group awesome-tab with mode if buffer is derived from
-`eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-All buffer name start with * will group to \"Systema\".
-Other buffer group by `awesome-tab-get-group-name' with project name."
-  (list
-   (cond
-    ((or (string-equal "*" (substring (buffer-name) 0 1))
-         (memq major-mode '(magit-process-mode
-                            magit-status-mode
-                            magit-diff-mode
-                            magit-log-mode
-                            magit-file-mode
-                            magit-blob-mode
-                            magit-blame-mode
-                            )))
-     "*System*")
-    ((derived-mode-p 'eshell-mode)
-     "EShell")
-    ((derived-mode-p 'emacs-lisp-mode)
-     "Emacs-config")
-    ((derived-mode-p 'dired-mode)
-     "Dired")
-    ((memq major-mode '(org-mode org-agenda-mode diary-mode))
-     "OrgMode")
-    (t
-     (awesome-tab-get-group-name (current-buffer))))))
+  ;; match headlin style
+  (centaur-tabs-enable-buffer-reordering)
+
+  ;; default function for defining buffer groups
+  (defun default-centaur-tabs-buffer-groups ()
+    "`centaur-tabs-buffer-groups' control buffers' group rules.
+
+  Group awesome-tab with mode if buffer is derived from
+  `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+  All buffer name start with * will group to \"Systema\".
+  Other buffer group by `centaur-tabs-get-group-name' with project name."
+    (list
+    (cond
+      ((or (string-equal "*" (substring (buffer-name) 0 1))
+	  (memq major-mode '(magit-process-mode
+			     magit-status-mode
+			     magit-diff-mode
+			     magit-log-mode
+			     magit-file-mode
+			     magit-blob-mode
+			     magit-blame-mode
+			     )))
+      "*System*")
+      ((derived-mode-p 'eshell-mode)
+      "EShell")
+      ((derived-mode-p 'emacs-lisp-mode)
+      "Emacs-config")
+      ((derived-mode-p 'dired-mode)
+      "Dired")
+      ((memq major-mode '(org-mode org-agenda-mode diary-mode))
+      "OrgMode")
+      (t
+      (centaur-tabs-get-group-name (current-buffer))))))
 
 
-;; custom function for defining buffer groups in awesome tab
-(defun awesome-tab-buffer-groups ()
-  "Define awesome tab buffer groups based on custom variables.
+  ;; custom function for defining buffer groups in awesome tab
+  (defun centaur-tabs-buffer-groups ()
+    "Define centaur tabs buffer groups based on custom variables.
 
-Variables are `windows-and-tabs-buffer-groups-by-name-regex' and
-`windows-and-tabs-buffer-groups-by-major-mode'.  Both are alists mapping
-buffer attributes (name regex / major mode) to buffer group names.
+  Variables are:
 
-The final result is the name derived from the name regex match, followed
-by the name derived from the major mode match, separated by a dash.
-Only the first valid match from each alist is used.  If no matches have
-been found, \"unmatched\" is used for the name regex component and
-\"other\" is used for the major mode component.
+    `windows-and-tabs-buffer-groups-by-name-regex'
+    `windows-and-tabs-buffer-groups-by-major-mode'
+    `windows-and-tabs-buffer-groups-by-project-path'
 
-If one of the alists is nil, only the other alist is used for grouping.
+  All three are alists mapping buffer attributes (name regex / major
+  mode / file path) to buffer group names.
 
-If both alists are nil, `default-awesome-tab-buffer-groups' is applied."
+  The final result is a concated list of regex-based groups, major
+  mode-based groups, and file path-based groups, in that order
+  (i.e. only buffers not captured by the previous alist are forwarded
+  to the next alist).
 
-  ;; pre-allocate buffer name output
-  (defvar buffer-name-list)
-  (setq buffer-name-list (list))
+  If all alists are nil, `default-centaur-tabs-buffer-groups' is used."
 
-  ;; if name regex mapping is defined, apply it
-  (unless (null windows-and-tabs-buffer-groups-by-name-regex)
-    (add-to-list 'buffer-name-list
+    ;; if name regex mapping is defined, apply it
+    (let ((buffer-group-name nil))
+      (setq buffer-group-name
 	    (cl-loop
-	     for (regex-value . group-name)
-		in windows-and-tabs-buffer-groups-by-name-regex
-	      if (string-match regex-value (buffer-name))
-		  return group-name
-	      finally
-		;; return "unmatched")
-		(awesome-tab-get-group-name (current-buffer)))
-	    t))
+	    for (regex-value . group-name)
+	    in windows-and-tabs-buffer-groups-by-name-regex
+	    if (string-match regex-value (buffer-name))
+	    return group-name
+		;; finally
+		;; 	;; return "unmatched")
+		;; 	(awesome-tab-get-group-name (current-buffer))
+	    ))
 
-  ;; if major mode mapping is defined, apply it
-  (unless (null windows-and-tabs-buffer-groups-by-major-mode)
-    (add-to-list 'buffer-name-list
-	    (cl-loop
-	     for (major-mode-value . group-name)
-		in windows-and-tabs-buffer-groups-by-major-mode
+      ;; if major mode mapping is defined, apply it
+      (unless buffer-group-name
+	(setq buffer-group-name
+	      (cl-loop
+	      for (major-mode-value . group-name)
+	      in windows-and-tabs-buffer-groups-by-major-mode
 	      if (derived-mode-p major-mode-value)
+	      return group-name
+	      )))
+
+      ;; if project path mapping is defined, apply it
+      (unless buffer-group-name
+	(let ((bufferpath (buffer-file-name)))
+	  (if bufferpath
+	    (setq buffer-group-name
+		  (cl-loop
+		  for (project-path-value . group-name)
+		  in windows-and-tabs-buffer-groups-by-project-path
+		  if (string-prefix-p project-path-value bufferpath)
 		  return group-name
-	      finally
-		;; return "other")
-		(awesome-tab-get-group-name (current-buffer)))
-	    t))
+		  )))))
 
-  ;; return final value or the output of the fallback function
-  (if (null buffer-name-list) (default-awesome-tab-buffer-groups)
-	  (list (mapconcat 'identity buffer-name-list "-"))))
+      ;; if at least one classification is present but tab hasn't been
+      ;; classified, return default group
+      (if
+	  (and
+	    (null buffer-group-name)
+	    (not (and (null windows-and-tabs-buffer-groups-by-major-mode)
+		      (null windows-and-tabs-buffer-groups-by-name-regex)
+		      (null windows-and-tabs-buffer-groups-by-project-path)
+		      )))
+	  (setq buffer-group-name
+		(centaur-tabs-get-group-name (current-buffer))))
+
+      ;; return final value or the output of the fallback function
+      (if (null buffer-group-name) (default-centaur-tabs-buffer-groups)
+	      (list buffer-group-name))))
 
 
-;; default buffer filter function
-(defun default-awesome-tab-hide-tab (x)
-  (let ((name (format "%s" x)))
-    (or
-     (string-prefix-p "*epc" name)
-     (string-prefix-p "*helm" name)
-     (string-prefix-p "*Compile-Log*" name)
-     (string-prefix-p "*lsp" name)
-     (and (string-prefix-p "magit" name)
-               (not (file-name-extension name)))
-     )))
+  ;; default buffer filter function
+  (defun default-centaur-tabs-hide-tab (x)
+    (let ((name (format "%s" x)))
+      (or
+      (string-prefix-p "*epc" name)
+      (string-prefix-p "*helm" name)
+      (string-prefix-p "*Compile-Log*" name)
+      (string-prefix-p "*lsp" name)
+      (and (string-prefix-p "magit" name)
+		(not (file-name-extension name)))
+      )))
 
-;; custom buffer filter function with fallback to default
-(defun awesome-tab-hide-tab (x)
-  "Hide buffer X from awesome-tab buffer list based on custom variable.
+  ;; custom buffer filter function with fallback to default
+  (defun centaur-tabs-hide-tab (x)
+    "Hide buffer X from centaur-tabs buffer list based on custom variable.
 
-The variable that determines the filter's behaviour is
-`windows-and-tabs-buffer-filter-regexp-list'.  It is a list of regexp
-values, and any positive match will eliminate the buffer from awesome
-tab's grouping collage."
-  (if (null windows-and-tabs-buffer-filter-regexp-list)
-      (default-awesome-tab-hide-tab x)
-      (let ((name (format "%s" x)))
-	(cl-loop for buffer-regexp-value
-		in windows-and-tabs-buffer-filter-regexp-list
-		  if (string-match buffer-regexp-value name)
-		      return t
-		  finally
-		      return nil))))
+  The variable that determines the filter's behaviour is
+  `windows-and-tabs-buffer-filter-regexp-list'.  It is a list of regexp
+  values, and any positive match will eliminate the buffer from centaur
+  tab's grouping collage."
+    (if (null windows-and-tabs-buffer-filter-regexp-list)
+	(default-centaur-tabs-hide-tab x)
+	(let ((name (format "%s" x)))
+	  (cl-loop for buffer-regexp-value
+		  in windows-and-tabs-buffer-filter-regexp-list
+		    if (string-match buffer-regexp-value name)
+			return t
+		    finally
+			return nil))))
 
-(let ((name (format "%s" (get-buffer "*ovpn-mode*"))))
-  (cl-loop for buffer-regexp-value
-	  in windows-and-tabs-buffer-filter-regexp-list
-	    if (string-match buffer-regexp-value name)
-		return t
-	    finally
-		return buffer-regexp-value))
+  )
 
 
 ;;; Manage projects with treemacs
+
 (use-package treemacs
   :config
   (progn
@@ -323,7 +372,7 @@ tab's grouping collage."
           treemacs-max-git-entries               5000
           treemacs-missing-project-action        'ask
           treemacs-move-forward-on-expand        nil
-          treemacs-no-png-images		 t
+          treemacs-no-png-images		 nil
           treemacs-no-delete-other-windows       nil  ; delete treemacs with other windows
           treemacs-project-follow-cleanup        nil
           treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
@@ -346,6 +395,12 @@ tab's grouping collage."
           treemacs-width                         35
           treemacs-workspace-switch-cleanup      nil)
 
+    ;; use all-the-icons with treemacs
+    (use-package treemacs-all-the-icons
+      :after (treemacs all-the-icons)
+      ;; :config (treemacs-load-theme "treemacs-all-the-icons")
+      )
+
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
     ;;(treemacs-resize-icons 44)
@@ -356,11 +411,11 @@ tab's grouping collage."
 	   (root-node-closed . treemacs-toggle-node)
 	   (dir-node-open . treemacs-toggle-node)
 	   (dir-node-closed . treemacs-toggle-node)
-	   (file-node-open . treemacs-visit-node-no-split)
-	   (file-node-closed . treemacs-visit-node-no-split)
-	   (tag-node-open . treemacs-visit-node-no-split)
-	   (tag-node-closed . treemacs-visit-node-no-split)
-	   (tag-node . treemacs-visit-node-no-split)))
+	   (file-node-open . treemacs-visit-node-ace-horizontal-split)
+	   (file-node-closed . treemacs-visit-node-ace-horizontal-split)
+	   (tag-node-open . treemacs-visit-node-ace-horizontal-split)
+	   (tag-node-closed . treemacs-visit-node-ace-horizontal-split)
+	   (tag-node . treemacs-visit-node-ace-horizontal-split)))
 
     ;; actions to perform with the return key (open files in vsplit)
     (setq treemacs-RET-actions-config
@@ -368,11 +423,11 @@ tab's grouping collage."
 	   (root-node-closed . treemacs-toggle-node)
 	   (dir-node-open . treemacs-toggle-node)
 	   (dir-node-closed . treemacs-toggle-node)
-	   (file-node-open . treemacs-visit-node-horizontal-split)
-	   (file-node-closed . treemacs-visit-node-horizontal-split)
-	   (tag-node-open . treemacs-visit-node-horizontal-split)
-	   (tag-node-closed . treemacs-visit-node-horizontal-split)
-	   (tag-node . treemacs-visit-node-horizontal-split)))
+	   (file-node-open . treemacs-visit-node-ace)
+	   (file-node-closed . treemacs-visit-node-ace)
+	   (tag-node-open . treemacs-visit-node-ace)
+	   (tag-node-closed . treemacs-visit-node-ace)
+	   (tag-node . treemacs-visit-node-ace)))
 
     ;; enable modes
     (treemacs-follow-mode nil)
@@ -383,60 +438,7 @@ tab's grouping collage."
 
 ;; evil mode support in treemacs
 (use-package treemacs-evil
-  :after treemacs evil
-
-  )
-
-;; helpers: send keys to minibuffer when prompted by interactive defun
-(defmacro with-minibuffer-input (form &rest inputs)
-  "Helper macro: send INPUTS to minibuffer while running FORM.
-
-https://emacs.stackexchange.com/questions/
-10393/how-can-i-answer-a-minibuffer-prompt-from-elisp."
-  (declare (indent 1))
-  `(minibuffer-with-setup-hook
-       (lambda ()
-         (minibuffer-input-provider ',inputs))
-     ,form))
-(defun minibuffer-input-provider (inputs)
-  "Helper function: send INPUTS to minibuffer.
-
-https://emacs.stackexchange.com/questions/
-10393/how-can-i-answer-a-minibuffer-prompt-from-elisp."
-  (let ((hook (make-symbol "hook")))
-    (fset hook (lambda ()
-                 (remove-hook 'post-command-hook hook)
-                 (when inputs
-                   (when (= 0 (minibuffer-depth))
-                     (error "Too many inputs"))
-                   (when (cdr inputs)
-                     (add-hook 'post-command-hook hook))
-                   (insert (pop inputs))
-                   (exit-minibuffer))))
-    (add-hook 'post-command-hook hook)))
-
-;; switch to treemacs workspace by the same name as the tab name
-(defun switch-to-workspace-by-tab-name ()
-  "Switch to a treemacs workspace with the same name as the tab-bar tab.
-
-This is a source-code copy-paste from `treemacs-do-switch-workspace'
-with bits of code replaced for non-interactive workspace switch."
-  (treemacs--maybe-load-workspaces)
-  (treemacs-block
-   (treemacs-return-if (= 1 (length treemacs--workspaces))
-     'only-one-workspace)
-   (let* ((workspaces (->> treemacs--workspaces
-                           (--reject (eq it (treemacs-current-workspace)))
-                           (--map (cons (treemacs-workspace->name it) it))))
-          (name (cdr (car (cdr (tab-bar--current-tab)))))
-          (selected (cdr (--first (string= (car it) name) workspaces))))
-     (when selected
-      (setf (treemacs-current-workspace) selected)
-      (treemacs--invalidate-buffer-project-cache)
-      (treemacs--rerender-after-workspace-change)
-      (run-hooks 'treemacs-switch-workspace-hook)
-      (treemacs-return
-	`(success ,selected))))))
+  :after treemacs evil)
 
 ;; change treemacs workspace when jumping to tab by number
 (defun jump-tab-and-workspace (&optional tabnum)
@@ -449,7 +451,10 @@ The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
   (interactive "P")
   (when tabnum
     (tab-bar-select-tab tabnum)
-    (switch-to-workspace-by-tab-name))
+    ;; (switch-to-workspace-by-tab-name)
+    (treemacs-do-switch-workspace
+      (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+    )
   )
 
 ;; change treemacs workspace when jumping to next / previous tab
@@ -457,14 +462,20 @@ The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
   "Switch to next tab-bar tab and change treemacs workspace."
   (interactive)
   (tab-bar-switch-to-next-tab)
-  (switch-to-workspace-by-tab-name)
+  (treemacs-do-switch-workspace
+   (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+  ;; (switch-to-workspace-by-tab-name)
   )
 (defun previous-tab-and-workspace ()
   "Switch to previous tab-bar tab and change treemacs workspace."
   (interactive)
   (tab-bar-switch-to-prev-tab)
-  (switch-to-workspace-by-tab-name)
+  (treemacs-do-switch-workspace
+   (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+  ;; (switch-to-workspace-by-tab-name)
   )
+
+
 
 (provide 'windows-and-tabs)
 ;;; windows-and-tabs.el ends here

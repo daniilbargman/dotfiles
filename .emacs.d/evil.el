@@ -87,5 +87,6 @@
   :config
   (evil-commentary-mode))
 
+
 (provide 'evil)
 ;;; evil.el ends here

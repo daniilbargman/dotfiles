@@ -1,4 +1,4 @@
-;;; org.el --- Org mode customizations -*- lexical-binding: t -*-
+;;; web.el --- web stack support for Emacs -*- lexical-binding: t -*-
 
 ;; Author: Daniil Bargman
 ;; Maintainer: Daniil Bargman
@@ -26,20 +26,24 @@
 
 ;;; Commentary:
 
-;; Keymaps and extensions for Org mode
+;; support for web dev
 
 ;;; Code:
 
-;; allow refiling between all agenda files
-(setq org-refile-targets '((nil :maxlevel . 1)
-			   (org-agenda-files :maxlevel . 1))
-      org-refile-use-outline-path 'buffer-name
-      org-outline-path-complete-in-steps nil
-      org-refile-allow-creating-parent-nodes t)
 
-;; add Verb to run HTTP(S) requests from Org files
-(use-package verb)
+;; enable lsp in JavaScript mode
+(add-hook 'js-mode-hook 'lsp-deferred)
 
-(provide 'org)
+;;; add svelte support
+(use-package svelte-mode
+  :hook (svelte-mode (lsp-deferred))
+  :custom
+  (svelte-basic-offset 2)
+  (svelte-display-submodule-name t)
+  :config
+  )
 
-;;; org.el ends here
+
+(provide 'web)
+
+;;; web.el ends here

@@ -27,6 +27,9 @@
 ;;; Code:
 
 
+;; pre-compile packages as recommended by GCC Emacs branch
+(setq package-native-compile t)
+
 ;;; Basic look and feel:
 
 ;; remove distractions
@@ -36,9 +39,15 @@
 (scroll-bar-mode -1)              ; no scrollbar
 ;; (mouse-avoidance-mode 'banish)    ; move away mouse pointer
 
+;; disable dialog box and kill-process confirmations
+(setq use-dialog-box nil)
+(setq confirm-kill-processes nil)
+
+;; shorten delay before killing emacs to 1 second
+(setq timp-kill-emacs-close-thread-delay 1)
+
 ;; add line numbers and highlight current line in minibuffer
 (global-display-line-numbers-mode t)
-(line-number-mode t)
 (column-number-mode t)
 (global-hl-line-mode t)
 
@@ -68,6 +77,8 @@
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
 
+;; don't auto-save files (undo-tree will do this for us)
+(setq auto-save-default nil)
 
 ;;; Package management:
 
@@ -104,8 +115,98 @@
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 (require 'quelpa-use-package)
 
+;; update packages asynchronously on a daily basis
+(use-package spu
+  :defer 5 ;; defer package loading for 5 second
+  :config (spu-package-upgrade-daily))
+
+;; add rainbow mode
+(use-package rainbow-mode
+  :hook prog-mode org-mode)
+
 ;; add org mode
 (use-package org)
+
+
+;;; Colour theme management
+
+;; ;; use solarized theme
+;; (use-package solarized-theme
+;;   :custom
+;;   (solarized-distinct-fringe-background t)
+;;   :config
+;;   ;; wombat color-theme with misc face definition
+;;   (solarized-create-theme-file-with-palette 'dark 'solarized-wombat-dark
+;;     '("#2a2a29" "#f6f3e8"
+;;       "#e5c06d" "#ddaa6f" "#ffb4ac" "#e5786d" "#834c98" "#a4b5e6" "#7ec98f" "#8ac6f2")
+;;     '((custom-theme-set-faces
+;;       theme-name
+;;       `(default ((,class (:foreground ,(solarized-color-blend base03 base3 0.15 2) :background ,base03))))
+;;       `(highlight ((,class (:background ,violet))))
+;;       `(font-lock-builtin-face ((,class (:foreground ,magenta))))
+;;       `(font-lock-constant-face ((,class (:foreground ,blue))))
+;;       `(font-lock-comment-face ((,class (:foreground ,base00))))
+;;       `(mode-line
+;; 	((,class (:foreground ,base2 :background ,(solarized-color-blend base03 base3 0.85 2)))))
+;;       `(mode-line-inactive
+;; 	((,class (:foreground ,base00 :background ,(solarized-color-blend base03 "black" 0.85 2)))))
+;;       `(mode-line-buffer-id ((,class (:foreground ,base3 :weight bold))))
+;;       `(minibuffer-prompt ((,class (:foreground ,base1))))
+;;       `(vertical-border ((,class (:foreground ,base03)))))))
+
+;;   ;; don't change the size of org-mode headlines
+;;   (setq solarized-scale-org-headlines nil)
+;;   (load-theme 'solarized-wombat-dark t)
+;;   )
+
+;; ;; use sanityinc theme
+;; (use-package color-theme-sanityinc-tomorrow
+;;   :config
+;;   (load-theme 'sanityinc-tomorrow-eighties t) ; night / bright
+;;   )
+
+;; ;; use material theme
+;; (use-package material-theme
+;;   :config
+;;   (load-theme 'material t)
+;;   )
+
+;; ;; use zenburn theme
+;; (use-package zenburn-theme
+;;   :config
+;;   (load-theme 'zenburn t)
+;;   )
+
+;; ;; use gruvbox theme
+;; (use-package gruvbox-theme
+;;   :config
+;;   (load-theme 'gruvbox t)
+;;   )
+
+;; ;; use atom-one-dark theme
+;; (use-package atom-one-dark-theme
+;;   :config
+;;   (load-theme 'atom-one-dark t)
+;;   )
+
+(use-package doom-themes
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-tomorrow-night t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+
+  ;; ;; Enable custom neotree theme (all-the-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+  (doom-themes-treemacs-config)
+  
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 
 ;;; Config file management:
@@ -129,6 +230,9 @@
 (when (file-exists-p custom-file) (load-config-file custom-file))
 
 ;;; Load configuration files
+
+;; add widget support
+(load-config-file "widgets.el")
 
 ;; run startup scripts
 (load-config-file "startup-scripts.el")
@@ -172,6 +276,9 @@
 ;; Python configuration
 (load-config-file "python.el")
 
+;; Python configuration
+(load-config-file "web.el")
+
 ;; YAML integration
 (load-config-file "yaml.el")
 
@@ -180,18 +287,6 @@
 
 ;; email client
 (load-config-file "email.el")
-
-;; ;; use material theme
-;; (use-package material-theme
-;;   :config
-;;   (load-theme 'material t)
-;;   )
-
-;; use sanityinc theme
-(use-package color-theme-sanityinc-tomorrow
-  :config
-  (load-theme 'sanityinc-tomorrow-eighties t) ; night / bright
-  )
 
 ;;; Session management:
 

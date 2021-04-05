@@ -53,9 +53,47 @@ buffer name during each attempt to open a shell or send code to it."
 (defcustom my-python-shell-program "python"
   "Program that runs the python shell.
 
-Accepts any valid bash terminal command, including flags."
+Accepts any valid bash terminal command, including flags.
 
-  :group 'bind-terminal-shell
+Also accepts a wildcard argument \"k8s\" which instructs the function to
+parse an executable command using `k8s-parse-exec-command' from k8s.el.
+Requires `my-python-k8s-pod-label' and `my-python-k8s-pod-namespace' to
+be set.  Optionally accepts `my-python-k8s-exec-command' as well."
+
+  :group 'my-python
+  :type 'string
+  :safe (lambda (_) t))
+
+;; labels for identifying a k8s pod if python shell should be run in one
+(defcustom my-python-k8s-pod-label nil
+  "Label to identify a K8S pod that should run a python shell.
+
+This variable is only used if `my-python-shell-program' is `k8s'."
+
+  :group 'my-python
+  :type 'string
+  :safe (lambda (_) t))
+
+;; labels for identifying a k8s pod if python shell should be run in one
+(defcustom my-python-k8s-pod-namespace nil
+  "K8S namespace containing the pod that should run a python shell.
+
+This variable is only used if `my-python-shell-program' is `k8s'."
+
+  :group 'my-python
+  :type 'string
+  :safe (lambda (_) t))
+
+;; labels for identifying a k8s pod if python shell should be run in one
+(defcustom my-python-k8s-exec-command nil
+  "Shell command for the K8S pod that should launch the python shell.
+
+If unset, it defaults to `/bin/sh' per the `k8s-parse-exec-command'
+function spec.
+
+This variable is only used if `my-python-shell-program' is `k8s'."
+
+  :group 'my-python
   :type 'string
   :safe (lambda (_) t))
 
@@ -80,7 +118,7 @@ Accepts any valid bash terminal command, including flags."
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
-                          (lsp-deferred)))  ; or lsp
+                         (lsp-deferred)))  ; or lsp
   ;; :custom
   ;; (lsp-pyright-langserver-command-args '("--stdio" "--verbose"))
   :config
@@ -88,41 +126,16 @@ Accepts any valid bash terminal command, including flags."
     (add-to-list 'lsp-disabled-clients 'pyls))
   )
 
-;; ;; add jedi backend to company
-;; (use-package company-jedi
-;;   :after company
-;;   :config
-
-;;   ;; enable jedi backend in python mode
-;;   (defun my/python-mode-hook ()
-;;     (add-to-list 'company-backends 'company-jedi))
-;;   (add-hook 'python-mode-hook 'my/python-mode-hook)
-
-;;   )
-
-;; ;; use jedi language server instead of pyls
-;; (use-package lsp-jedi
-;;   :ensure t
-;;   :config
-;;   (with-eval-after-load "lsp-mode"
-;;     (add-to-list 'lsp-disabled-clients 'pyls)
-;;     (add-to-list 'lsp-enabled-clients 'jedi)))
-
-;; ;; use python cell blocks
-;; (use-package python-cell
-;;   :quelpa
-;;   (python-cell :fetcher github :repo  "thisch/python-cell.el" )
-;;   :hook ((python-mode . 'python-cell-mode))
-;;   :custom
-;;   (python-cell-cellbreak-regexp "^ *# %% .*$")
-;;   (python-cell-highlight-cell nil)
-;;  )
-
 ;; face for displaying code block separators
 (defface py-code-block-separator-style
   '((t . (:foreground "grey75" :background "grey30" :extend t)))
 
   "Display style for python code block separators.")
+
+
+;; eval:
+;;   (setq my-python-shell-program
+;;     (k8s-parse-exec-command "name=fred" "statosphere-resources" "/bin/ash"))
 
 ;; use python cell blocks
 (use-package python-x
@@ -134,39 +147,54 @@ Accepts any valid bash terminal command, including flags."
   :custom
   (python-section-delimiter "# %% ")
   :config
-  (python-x-setup)
+  (python-x-setup))
 
-  ;; function for creating a terminal shell running python
-  (defun my-python-run-shell-in-terminal ()
-    "Run a python shell inside a terminal buffer."
-    (interactive)
-    (let
-	((bind-terminal-shell-init-commands
-	  my-python-shell-init-commands))
-	(get-or-create-shell-buffer
-	  my-python-shell-buffer-name my-python-shell-program nil t)))
+;; function for creating a terminal shell running python
+(defun my-python-run-shell-in-terminal ()
+  "Run a python shell inside a terminal buffer."
+  (interactive)
+  (let (
+	;; init commands are python-specific init commands
+	(bind-terminal-shell-init-commands
+	my-python-shell-init-commands)
+	;; shell program needs to be parsed if running in k8s
+	(my-python-shell-program
+	(progn (if (string-equal my-python-shell-program "k8s")
+		    (k8s-parse-exec-command my-python-k8s-pod-label
+					    my-python-k8s-pod-namespace
+					    my-python-k8s-exec-command)
+		  (my-python-shell-program)))))
+    (get-or-create-shell-buffer
+      my-python-shell-buffer-name my-python-shell-program nil t)))
 
-  ;; function for executing a python code block using
-  ;; bind-terminal-shell
-  (defun my-python-execute-code-block ()
-    "Execute code block, or the visual selection if in visual mode."
-    (interactive)
-      (let
-	  ((bind-terminal-shell-init-commands
-	    my-python-shell-init-commands))
-	  (get-or-create-shell-buffer
-	    my-python-shell-buffer-name my-python-shell-program nil nil
-	    '(lambda (term-buffer)
-	       (save-excursion
-		(comint-send-string term-buffer "%cpaste\n")
-		(when (evil-normal-state-p)
-		  (python-mark-fold-or-section))
-		(evil-send-region-to-terminal-shell term-buffer)
-		(comint-send-string term-buffer "--\n")))
-	    )
-	  ))
-
-  )
+;; function for executing a python code block using
+;; bind-terminal-shell
+(defun my-python-execute-code-block ()
+  "Execute code block, or the visual selection if in visual mode."
+  (interactive)
+  (let
+      (
+	;; init commands are python-specific init commands
+	(bind-terminal-shell-init-commands
+	my-python-shell-init-commands)
+	;; shell program needs to be parsed if running in k8s
+	(my-python-shell-program
+	(progn (if (string-equal my-python-shell-program "k8s")
+		    (k8s-parse-exec-command my-python-k8s-pod-label
+					    my-python-k8s-pod-namespace
+					    my-python-k8s-exec-command)
+		  (my-python-shell-program)))))
+    (get-or-create-shell-buffer
+      my-python-shell-buffer-name my-python-shell-program nil nil
+      '(lambda (term-buffer)
+	(save-excursion
+	  (comint-send-string term-buffer "%cpaste\n")
+	  (when (evil-normal-state-p)
+	    (python-mark-fold-or-section))
+	  (evil-send-region-to-terminal-shell term-buffer)
+	  (comint-send-string term-buffer "--\n")))
+	)
+      ))
 
 ;; functions for formatting expressions inside braces
 (defun my-python-format-parens ()
@@ -267,7 +295,8 @@ Accepts any valid bash terminal command, including flags."
 	 ((seq-every-p
 	   (lambda (elt) (eql (nth 1 elt) 1))
 	   breakpoint-list)
-	  (progn (goto-char (caar (last breakpoint-list)))
+	  (progn (goto-char (1+ (car (nth 1 breakpoint-list))))
+		 (evil-backward-word-end)
 		 (when (looking-at-p ",")
 		   (setq breakpoint-list (butlast breakpoint-list)))))
 
@@ -323,21 +352,24 @@ Accepts any valid bash terminal command, including flags."
 	  (newline-and-indent))
 
 	 ;; fill to style if either a) all elements are on the same
-	 ;; line, or b) all non-paren elements are on the same line and
+	 ;; line, or b) all non-paren elements are on the same line, and
 	 ;; the length of the line exceeds the fill column.
 	 ((or
 	   ;; case a) all elements are on the same line
-	   (seq-every-p
-	    (lambda (elt) (not (nth 2 elt))) breakpoint-list)
-	   ;; case b) all non-paren elements are on the same line and
-	   ;; line length exceeds fill column
+	   (and
+	    (seq-every-p
+	     (lambda (elt) (not (nth 2 elt))) breakpoint-list)
+	    (save-excursion
+	      (progn (end-of-line) (>= (current-column) fill-column))))
+	   ;; case b) all non-paren elements are on the same line
 	   (and
 	    (seq-every-p
 	     (lambda (elt) (not (nth 2 elt)))
 	     (nthcdr 2 breakpoint-list))
-	    (progn (goto-char (1- (caar (last breakpoint-list))))
-		   (end-of-line)
-		   (> (current-column) fill-column))))
+	    (save-excursion
+	      (progn (goto-char (caar (last breakpoint-list)))
+		     (end-of-line)
+		     (>= (current-column) fill-column)))))
 
 	  ;; some of the prep is slightly different for the two cases
 	  (goto-char (caar breakpoint-list))
@@ -370,8 +402,9 @@ Accepts any valid bash terminal command, including flags."
 			  (list (nth 1 breakpoint-list))))
 
 		 ;; variables to store active points we're working on
-		 (elt nil)
 		 (prev-elt nil)
+		 (elt nil)
+		 (next-elt nil)
 
 		 )
 
@@ -380,33 +413,26 @@ Accepts any valid bash terminal command, including flags."
 	    ;; possible by inserting newline after opening paren)
 	    (dotimes (i (1- (length active-breakpoints)))
 
-	      ;; go to previous element and check if current one is
-	      ;; wrongly indented
-	      (setq prev-elt (nth i active-breakpoints))
-	      ;; (when (or (and (> cumulative-offset 0) (eql i 0))
-	      ;; 		(car (cddr prev-elt)))
-	      ;; 	(goto-char (+ cumulative-offset (car prev-elt)))
-	      ;; 	(evil-forward-word-begin)
-	      ;; 	(let ((offset-delta (- (current-column) column-offset)))
-	      ;; 	  (when (not (eql offset-delta 0))
-	      ;; 	    (evil-shift-left-line 100)
-	      ;; 	    (insert-char (string-to-char " ") column-offset)
-	      ;; 	    (setq cumulative-offset
-	      ;; 		  (- cumulative-offset offset-delta)))))
+	      ;; extract elements
+	      (setq prev-elt (nth i active-breakpoints)
+		    elt (nth (1+ i) active-breakpoints)
+		    next-elt (nth (+ 2 i) active-breakpoints))
 
-	      ;; extract current element
-	      (setq elt (nth (1+ i) active-breakpoints))
+	      ;; go to end of symbol to see if it breaks fill column
+	      (goto-char (+ cumulative-offset
+			    (or (car next-elt)
+				(car elt))))
 
-	      ;; go to symbol ahead of breakpoint mark
-	      (goto-char (+ cumulative-offset (1- (car elt))))
-	      (when (looking-back "^ *" (current-column))
-		(evil-backward-word-end))
+	      ;; move to end of symbol or to closing paren if at the end
+	      (if next-elt (evil-backward-word-end) (evil-forward-char))
 
 	      ;; if it goes beyond fill column, put newline after
 	      ;; previous candidate if it's on the same line
-	      (when (> (current-column) fill-column)
+	      (when (>= (current-column) fill-column)
 		(unless (car (cddr prev-elt))
-		  (goto-char (+ cumulative-offset (1- (car prev-elt))))
+		  (goto-char
+		   (+ cumulative-offset
+		      (1- (if next-elt (car elt) (car prev-elt)))))
 		  (newline-and-indent)
 		  (setq cumulative-offset
 			(+ cumulative-offset column-offset)))))))

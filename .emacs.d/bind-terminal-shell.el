@@ -71,6 +71,9 @@ buffer name during each attempt to open a shell or send code to it."
 ;; ;; truncate lines instead of wrapping in terminal mode
 ;; (add-hook 'term-mode-hook (lambda () (setq truncate-lines t)))
 
+;; suppress hard newlines in terminal
+(setq term-suppress-hard-newline t)
+
 ;; automatically switch to char mode in emacs state, line mode otherwise
 (add-hook 'evil-emacs-state-entry-hook
 	  (lambda () (when (and (derived-mode-p 'term-mode)

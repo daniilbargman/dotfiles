@@ -33,7 +33,7 @@
 
 ;; helper function: get string contents of a file
 (defun get-string-from-file (filePath)
-  "Return filePath's file content."
+  "Return FILEPATH's file content."
   (with-temp-buffer
     (insert-file-contents filePath)
     (buffer-string)))
@@ -43,22 +43,50 @@
 
   ;; set groupings for relevant tabs
   (setq windows-and-tabs-buffer-groups-by-name-regex
-	'(("^[*]terminal[*]$" . "interactive")
-	  ("^[*].*shell*[*]$" . "interactive")
-	  ("^[*]kubernetes.*[*]$" . "interactive")
-	  ("^action-log.org$" . "meta")
-	  ("^TODO.*$" . "meta")
-	  ("^README.*$" . "meta")
-	  ("^[.]dir-locals[.]el$" . "meta")
-	  ("^.*[.]yaml$" . "manifests")
-	  ("^.*[.]el$" . "dotfiles")
-	  (".*[.]bash.*$" . "dotfiles")
-	  (".*[.]conf$" . "dotfiles")
-	  (".*[.].*rc$" . "dotfiles")
-	  ("^.*test.*$" . "testing")
-	  ("^[a-z-]+$" . "source")
-	  ("^.*[.]py$" . "source")
-	  ("^[*].*[*]$" . "_system")))
+	'(("^[*]kubernetes.*[*]$" . "interactive")
+	  ;; ("^task-queue[.]org[a-zA-Z/-<>]*" . "tasks")
+	  ;; ("^README.*$" . "docs")
+	  ("^eaf-.*$" . "widgets")
+	  ("^[.]dir-locals[.]el$" . "dir-locals")
+	  ;; ("^[.]bash.*$" . "dotfiles")
+	  ;; ("^[a-zA-Z0-9-_.]+[.]conf[a-zA-Z/-<>]*$" . "config-files")
+	  ;; ("^[a-zA-Z0-9-_.]+[.]json[a-zA-Z/-<>]*$" . "config-files")
+	  ;; ("[.].*rc$" . "dotfiles")
+	  ("^[*].*[*]$" . "_system")
+	  ))
+
+  ;; set groupings for relevant tabs
+  (setq windows-and-tabs-buffer-groups-by-major-mode
+	'((term-mode . "interactive")
+	  (shell-mode . "interactive")
+	  (eaf-mode . "interactive")
+	  ;; (python-mode . "python")
+	  ;; (emacs-lisp-mode . "emacs-config")
+	  ;; (yaml-mode . "yaml")
+	  ;; (sh-mode . "scripts")
+	  ;; (js-mode . "web-dev")
+	  ;; (svelte-mode . "web-dev")
+	  ;; (html-mode . "web-dev")
+	  ))
+
+  ;; set groupings for relevant tabs
+  (setq windows-and-tabs-buffer-groups-by-project-path
+	'(("/home/daniilbargman" . "Project: dotfiles")
+	  ("/mnt/projects/statosphere/source" . "Project: sttospr-source")
+	  ("/mnt/projects/statosphere/backend" . "Project: sttospr-backend")
+	  ("/mnt/projects/statosphere/services" . "Project: sttospr-services")
+	  ("/mnt/projects/statosphere/resource-api" . "Project: sttospr-rsc-api")
+	  ("/mnt/projects/statosphere/frontend" . "Project: sttospr-frontend")
+	  ("/mnt/projects/statosphere/infrastructure" . "Project: sttospr-infrastructure")
+	  ("/mnt/projects/statosphere" . "Project: sttospr-root")
+	  ;; (python-mode . "python")
+	  ;; (emacs-lisp-mode . "emacs-config")
+	  ;; (yaml-mode . "yaml")
+	  ;; (sh-mode . "scripts")
+	  ;; (js-mode . "web-dev")
+	  ;; (svelte-mode . "web-dev")
+	  ;; (html-mode . "web-dev")
+	  ))
 
   ;; hide tabs for buffers that aren't frequently useful
   (setq windows-and-tabs-buffer-filter-regexp-list
@@ -68,9 +96,15 @@
 	  "^[*]Messages[*]$"
 	  "^[*]tramp/sudo .*[*]$"
 	  "^[*]scratch[*]$"
-	  "^ *[*]company-.*[*]$"
+	  "^ *[*]company-.*$"
 	  "^ *[*]Treemacs-.*$"
 	  "^ *[*]lsp-ui-.*$"
+	  "^ *[*]mu4e-.*$"
+	  "^ *[*]Org[ -].*$"
+	  "^ *[*]EPC Server .*$"
+	  "^ *[*]epc con .*$"
+	  "^ *Download: .*$"
+	  "^task-queue[.]org-archive[a-zA-Z/-<>]*"
 	  "^.*[.]ovpn$"))
 )
 
@@ -101,10 +135,17 @@
    ))
 
 
-;; start vpn client
+;; start vpn client on startup, kill before exiting emacs
 (with-eval-after-load "openvpn"
- (ovpn-mode-start-vpn-conf
- "/home/daniilbargman/.vpn/dbargman-server2.ovpn"))
+  (ovpn-mode-start-vpn-conf
+   "/home/daniilbargman/.vpn/dbargman-server2.ovpn")
+  ;; (advice-add
+  ;;  'save-buffers-kill-terminal :before
+  ;;   #'(lambda (&optional arg)
+  ;; 	(ovpn-mode-stop-vpn-conf
+  ;; 	 "/home/daniilbargman/.vpn/dbargman-server2.ovpn")
+  ;; 	arg))
+ )
 
 
 ;; set up email client
@@ -161,9 +202,87 @@
 	org-msg-convert-citation t
 	org-msg-signature
 	  (get-string-from-file
-	   (concat maildir-path "email-signature.html")))
+	   (concat maildir-path "email-signature.html"))))
 
-    ))
+  ;; the following only makes sense once org mode is loaded
+  (with-eval-after-load "org"
+
+    ;; org capture templates for project notes
+    (defvar org-capture-templates (list))
+    (setq org-capture-templates
+	  (append org-capture-templates
+	  `(("s" "process emails as statosphere tasks")
+	    ("st"
+	     "capture email as a task"
+	     entry
+	     (file "/mnt/projects/statosphere/task-queue.org")
+	     ,(concat
+	      "* %(string-trim-left \"%:subject\" \"sttospr:[ ]*\")\n"
+	      "- email date: %:date-timestamp-inactive\n"
+	      "- [[%:link][email link (C-c C-o)]]")
+	     :empty-lines-before 1
+	     :immediate-finish
+	     :kill-buffer
+	     )
+	    ("sd"
+	     "capture email as a data source idea"
+	     entry
+	     (file "/mnt/projects/statosphere/datasources.org")
+	     ,(concat
+	      "* %(string-trim-left \"%:subject\" \"datasource:[ ]*\")\n"
+	      "- email date: %:date-timestamp-inactive\n"
+	      "- [[%:link][email link (C-c C-o)]]")
+	     :empty-lines-before 1
+	     :immediate-finish
+	     :kill-buffer
+	     )
+	    ("d" "process emails as dotfile tasks")
+	    ("dt"
+	     "capture email as a task"
+	     entry
+	     (file+headline "~/notes-to-self.org" "Unsorted")
+	     ,(concat
+	      "* %(string-trim-left \"%:subject\" \"nts:[ ]*\")\n"
+	      "- email date: %:date-timestamp-inactive\n"
+	      "- [[%:link][email link (C-c C-o)]]")
+	     :empty-lines-before 1
+	     :immediate-finish
+	     :kill-buffer
+	     )
+	    )
+	  )
+      )
+
+    ;; command for moving emails with special titles to unsorted
+    ;; sections in dedicated org files
+    (defun move-email-notes-to-orgfile ()
+	"Move email notes from myself to unsorted org file."
+	(interactive)
+	(link-emails-to-org-file
+	 "from:daniil.bargman and flag:unread"
+	 '(((lambda (msg)
+	      (string-match
+	       "^sttospr:.+"
+	       (mu4e-message-field msg :subject)))
+	    . "st")
+	   ((lambda (msg)
+	      (string-match
+	       "^datasource:.+"
+	       (mu4e-message-field msg :subject)))
+	    . "sd")
+	   ((lambda (msg)
+	      (string-match
+	       "^nts:.+"
+	       (mu4e-message-field msg :subject)))
+	    . "dt"))
+	 t t)
+	)
+      (define-key mu4e-main-mode-map
+	(kbd "C-c c") 'move-email-notes-to-orgfile)
+      (define-key 'mu4e-headers-mode-map
+	(kbd "C-c c") 'move-email-notes-to-orgfile)
+      )
+  )
 
 
 (provide 'startup-scripts)

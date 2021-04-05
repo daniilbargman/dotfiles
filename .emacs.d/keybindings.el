@@ -31,6 +31,7 @@
 
 ;;; Code:
 
+
 ;;; "windows-and-tabs" keybindings
 
 (with-eval-after-load "windows-and-tabs"
@@ -42,19 +43,33 @@
   (global-set-key (kbd "M-S-<iso-lefttab>") 'previous-tab-and-workspace)
   (global-set-key (kbd "M-j") 'jump-tab-and-workspace)
 
-  ;;; buffer tab manipulation via awesome-tab
+  ;; ;;; buffer tab manipulation via awesome-tab
+  
+  ;; ;; previous tab, next tab, jump to tab
+  ;; (global-set-key (kbd "C-x C-l") 'awesome-tab-forward-tab)
+  ;; (global-set-key (kbd "C-x C-h") 'awesome-tab-backward-tab)
+  ;; (global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
+
+  ;; ;; next/previous tab group
+  ;; (global-set-key (kbd "C-x C-j") 'awesome-tab-forward-group)
+  ;; (global-set-key (kbd "C-x C-k") 'awesome-tab-backward-group)
+
+  ;; ;; open minibuffer prompt for group name
+  ;; (global-set-key (kbd "C-x C-n") 'awesome-tab-counsel-switch-group)
+
+  ;;; buffer tab manipulation via centaur-tabs
   
   ;; previous tab, next tab, jump to tab
-  (global-set-key (kbd "C-x C-l") 'awesome-tab-forward-tab)
-  (global-set-key (kbd "C-x C-h") 'awesome-tab-backward-tab)
-  (global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
+  (global-set-key (kbd "C-x C-l") 'centaur-tabs-forward)
+  (global-set-key (kbd "C-x C-h") 'centaur-tabs-backward)
+  ;; (global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
 
   ;; next/previous tab group
-  (global-set-key (kbd "C-x C-j") 'awesome-tab-forward-group)
-  (global-set-key (kbd "C-x C-k") 'awesome-tab-backward-group)
+  (global-set-key (kbd "C-x C-j") 'centaur-tabs-forward-group)
+  (global-set-key (kbd "C-x C-k") 'centaur-tabs-backward-group)
 
   ;; open minibuffer prompt for group name
-  (global-set-key (kbd "C-x C-n") 'awesome-tab-counsel-switch-group)
+  (global-set-key (kbd "C-x C-n") 'centaur-tabs-counsel-switch-group)
 
 
   ;;; visual window and buffer manipulation
@@ -99,7 +114,7 @@
 
   ;; open new files in hsplit with "C-return"
   (define-key evil-treemacs-state-map (kbd "<C-return>")
-    #'treemacs-visit-node-vertical-split)
+    #'treemacs-visit-node-ace-vertical-split)
 
 
   )
@@ -141,6 +156,7 @@
 
   ;; scroll up with C-u (automatic setting breaks if evil-leader is added)
   (evil-define-key 'normal 'global (kbd "C-u") 'evil-scroll-up)
+  (evil-define-key 'normal 'global (kbd "C-d") 'evil-scroll-down)
 
   ;; for moving around use <C-h,j,k,l>
   (evil-define-key '(normal motion) 'global
@@ -244,6 +260,7 @@
 
   ))
 
+
 ;;; "bind-terminal-shell" keybindings
 
 (with-eval-after-load "bind-terminal-shell"
@@ -252,9 +269,25 @@
   ;; in ivy messes with this default behaviour
   (evil-define-key 'emacs 'term-raw-map
     (kbd "<escape>") 'term-send-raw-meta)
+  ;; (bind-key "<escape>" 'term-send-raw-meta 'term-raw-map)
 
   ;; prefix and command sequence bindings for opening terminal shells
   (global-unset-key (kbd "M-s"))
+
+  ;; use "M-s t" to open EAF terminal
+  (with-eval-after-load "widgets"
+    (with-eval-after-load "evil"
+      (global-set-key (kbd "M-s t")
+		      '(lambda() (interactive)
+			(evil-window-split) (eaf-open-terminal)))
+    ;; map escape key to itself in EAF terminal
+    (defun eaf-send-raw-escape ()
+      "Directly send <escape> key to EAF Python side."
+      (interactive)
+      (eaf-call-async "send_key_sequence" eaf--buffer-id "M-d"))
+    (eaf-bind-key eaf-send-raw-escape "<escape>"
+		  eaf-terminal-keybinding) ;; unbind, see more in the Wiki
+      ))
 
   ; keybinding to open term buffer in emacs state in new window
   (global-set-key
@@ -365,7 +398,25 @@
   ;; toggle URL visibility with "C-c w w"
   (define-key org-mode-map (kbd "C-c w w") 'org-toggle-link-display)
 
-  ;; copy link to clipboard with "C-c w c"
+  ;; open link at point with EAF using "C-c w o"
+  ;; NOTE: this does not override the default Org keybinding "C-c C-o"
+  (define-key org-mode-map (kbd "C-c w o")
+    (lambda () (interactive)
+      (evil-window-vsplit) (eaf-open-url-at-point)))
+
+  ;; add useful keybindings to emails as well
+  (with-eval-after-load "email"
+
+    ;; open messages with org keybinding in mu4e-view-mode
+    (define-key mu4e-view-mode-map (kbd "C-c C-o") 'org-open-at-point)
+    (define-key mu4e-view-mode-map (kbd "C-c w w")
+      (lambda () (interactive)
+	(evil-window-vsplit) (eaf-open-mail-as-html)))
+    (define-key mu4e-view-mode-map (kbd "C-c w o")
+      (lambda () (interactive)
+	(evil-window-vsplit) (eaf-open-url-at-point)))
+
+    )
 
   )
 

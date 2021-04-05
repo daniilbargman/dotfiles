@@ -77,6 +77,15 @@
        (:from          .  22)
        (:subject       .  nil))) ;; alternatively, use :thread-subject
 
+;; don't show update warnings
+(setq mu4e-index-update-error-warning nil)
+
+;; don't split window when opening messages
+(setq mu4e-split-view nil)
+
+;; use fancy characters in mu4e
+(setq mu4e-use-fancy-chars t)
+
 ;; prefer HTML body over plaintext body, when available
 (setq mu4e-view-prefer-html t)
 
@@ -91,6 +100,57 @@
 ;; enable org-msg-mode and configure for mu4e
 (org-msg-mode)
 (org-msg-mode-mu4e)
+
+;; function for refiling specific incoming email directly to a
+;; dedicated Org file for a project
+(defun link-emails-to-org-file (email-query capture-rules &optional mark-read do-refile refile-location)
+  "Capture all emails matching EMAIL-QUERY using CAPTURE-RULES.
+
+CAPTURE-RULES must be an alist of the form:
+
+  '((<message-test-function> . <capture-template>) ...)
+
+Each message test function must accept the message object from the
+headers view as the only argument.  Messages for which the test function
+returns a non-nil value will be captured using the <capture-template>.
+
+If MARK-READ is non-nil, messages for which at least one test function
+has returned non-nil, will be marked as read.
+
+If DO-REFILE is non-nil, messages for which at least one test function
+has returned non-nil, will be refiled - either to \"/archive\" (default)
+or to REFILE-LOCATION if one is set."
+
+  ;; for each message, apply function
+  (defun move-headers-to-orgfile ()
+    (dolist (rule capture-rules)
+      (let ((testfun (car rule))
+	    (use-template (cdr rule)))
+	(mu4e-headers-for-each
+	  (lambda (msg)
+	    "Link message to a file."
+	    ;; capture into templates
+	    (when (funcall testfun msg)
+	      (org-capture nil use-template))))
+	;; apply and execute marks as needed
+	(mu4e-headers-mark-for-each-if
+	  (cons 'read nil)
+	  (lambda (msg param) (funcall testfun msg)))
+	(when (> (mu4e-mark-marks-num) 0) (mu4e-mark-execute-all t))
+	(mu4e-headers-mark-for-each-if
+	  (cons 'refile (or refile-location "/archive"))
+	  (lambda (msg param) (funcall testfun msg)))
+	(when (> (mu4e-mark-marks-num) 0) (mu4e-mark-execute-all t))))
+    ;; remove this function from hooks
+    (remove-hook 'mu4e-headers-found-hook 'move-headers-to-orgfile))
+
+    ;; add hook and fire email query
+  (add-hook 'mu4e-headers-found-hook 'move-headers-to-orgfile)
+  (save-excursion
+    (mu4e-headers-search email-query))
+
+    )
+
 
 ;; NOTE: rest is deferred to startup-scripts.el ;;
 

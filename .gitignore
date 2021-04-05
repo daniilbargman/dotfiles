@@ -11,6 +11,7 @@
 !.vim/
 !.vimrc
 !initial_setup.sh
+!build-gccemacs.sh
 !.emacs.d/
 
 # in the emacs configuration folder, ignore auto-generated files and all subfolders
@@ -18,6 +19,7 @@
 .emacs.d/network-security.data
 .emacs.d/recentf
 .emacs.d/tramp
+.emacs.d/bookmarks
 .emacs.d/*/*
 .emacs.d/*~
 .emacs.d/.*

@@ -100,6 +100,15 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;;; Code essentials
 
+;; try out tree-sitter
+(use-package tree-sitter
+  :hook (lsp-mode . tree-sitter-hl-mode)
+  :config
+  (use-package tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (tree-sitter-hl-mode)
+  )
+
 
 ;; popup completion with company mode
 
@@ -117,9 +126,9 @@ buffer name during each attempt to open a shell or send code to it."
 
   :config
 
-  ;; enable
-  (global-company-mode)
-  (add-hook 'after-init-hook 'global-company-mode)
+  ;; ;; enable
+  ;; (global-company-mode)
+  ;; (add-hook 'after-init-hook 'global-company-mode)
 
   ;; set minimum prefix length to 1
   (setq company-minimum-prefix-length 1)
@@ -170,8 +179,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; enable
   ;; (add-to-list 'company-backends 'company-files)
 
-  ;; weight by frequency
-  (setq company-transformers '(company-sort-by-occurrence))
+  ;; ;; weight by frequency
+  ;; (setq company-transformers '(company-sort-by-occurrence))
 
   ;; Add yasnippet support for all company backends
   ;; https://github.com/syl20bnr/spacemacs/pull/179
@@ -180,8 +189,8 @@ buffer name during each attempt to open a shell or send code to it."
     (if (or (not company-mode/enable-yas)
 	    (and (listp backend) (member 'company-yasnippet backend)))
     backend
-  (append (if (consp backend) backend (list backend))
-	  '(:with company-yasnippet))))
+    (append (if (consp backend) backend (list backend))
+	    '(:with company-yasnippet))))
 
   ;; add yasnippet support initially and whenever lsp-mode is enabled
   (setq company-backends
@@ -189,8 +198,9 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; enable globally
   (global-company-mode)
-  ;; (add-hook 'after-init-hook 'global-company-mode)
+  (add-hook 'after-init-hook 'global-company-mode)
   )
+
 
 ;; beautified popup
 (use-package company-box
@@ -210,7 +220,7 @@ buffer name during each attempt to open a shell or send code to it."
 ;; after creating many folds with origami-toggle-all-nodes
 ;; (use-package origami
 ;;  :quelpa
-;;    (lsp-origami :fetcher github :repo "gregsexton/origami.el")
+;;    (origami :fetcher github :repo "gregsexton/origami.el")
 ;;  :config
 ;;    (global-origami-mode)
 ;;  )
@@ -243,7 +253,7 @@ buffer name during each attempt to open a shell or send code to it."
   ;; (lsp-log-io t)
   ;; (lsp-print-performance t)
   ;; (lsp-server-trace t)
-  (lsp-response-timeout 30)
+  (lsp-response-timeout 10)
   ;; (lsp-print-performance t)
   ;; (lsp-enable-file-watchers nil)
   (lsp-restart 'auto-restart)
@@ -267,11 +277,15 @@ buffer name during each attempt to open a shell or send code to it."
     (lsp-ui-doc-max-height 50)
     ;; (lsp-ui-doc-use-webkit t)
 
+    ;; disable sideline
+    (lsp-ui-sideline-enable nil)
+
     ;; lsp-ui-peek
     ;; (lsp-ui-peek-enable t)
 
-    :config
-    (lsp-ui-peek-mode)
+    ;; :config
+    ;; (lsp-ui-peek-mode)  ; disable peek mode
+    ;; (lsp-ui-sideline-mode)  ; disable sideline mode
     
     )
 
@@ -291,11 +305,11 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; NOTE: this throws an error
   ;; trying out code folding support with lsp mode
-;; (use-package lsp-origami
-;;   :quelpa
-;;   (lsp-origami :fetcher github :repo "emacs-lsp/lsp-origami.el" )
-;;   :commands lsp-origami-try-enable
-;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
+  ;; (use-package lsp-origami
+  ;;   :quelpa
+  ;;   (lsp-origami :fetcher github :repo "emacs-lsp/lsp-origami.el" )
+  ;;   :commands lsp-origami-try-enable
+  ;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
 
   ;; which-key integration
   (with-eval-after-load 'lsp-mode
