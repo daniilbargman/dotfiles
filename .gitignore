@@ -25,6 +25,11 @@
 .emacs.d/.*
 .emacs.d/\#*
 
+# do not ignore snippet files
+# !.emacs.d/snippets
+!.emacs.d/snippets/**
+.emacs.d/snippets/**/*~
+
 # ignore vim's undo directory and plugins, except vim-plug itself
 .vim/undodir/
 .vim/view/

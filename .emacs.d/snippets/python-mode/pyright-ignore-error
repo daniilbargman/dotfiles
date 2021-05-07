@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pyright-ignore-error
+# key: pyrightignore
+# --
+ # type: ignore

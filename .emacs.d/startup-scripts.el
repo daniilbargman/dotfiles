@@ -41,6 +41,18 @@
 ;; set groupings and filters for buffers in tab navigation
 (with-eval-after-load "windows-and-tabs"
 
+  ;; ;; set list of project tabs
+  ;; (tab-bar-tabs-set
+  ;;  '(
+  ;;    (tab (name . "dotfiles") (explicit-name))
+  ;;    (tab (name . "statosphere-root") (explicit-name))
+  ;;    (tab (name . "statosphere-source") (explicit-name))
+  ;;    (current-tab (name . "statosphere-frontend") (explicit-name))
+  ;;    (tab (name . "statosphere-infrastructure") (explicit-name))
+  ;;    (tab (name . "mu4e") (explicit-name))
+  ;;    )
+  ;;  )
+
   ;; set groupings for relevant tabs
   (setq windows-and-tabs-buffer-groups-by-name-regex
 	'(("^[*]kubernetes.*[*]$" . "interactive")
@@ -75,7 +87,7 @@
 	  ("/mnt/projects/statosphere/source" . "Project: sttospr-source")
 	  ("/mnt/projects/statosphere/backend" . "Project: sttospr-backend")
 	  ("/mnt/projects/statosphere/services" . "Project: sttospr-services")
-	  ("/mnt/projects/statosphere/resource-api" . "Project: sttospr-rsc-api")
+	  ("/mnt/projects/statosphere/endpoint-api" . "Project: sttospr-endpoints")
 	  ("/mnt/projects/statosphere/frontend" . "Project: sttospr-frontend")
 	  ("/mnt/projects/statosphere/infrastructure" . "Project: sttospr-infrastructure")
 	  ("/mnt/projects/statosphere" . "Project: sttospr-root")

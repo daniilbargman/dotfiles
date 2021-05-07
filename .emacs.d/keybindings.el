@@ -85,6 +85,10 @@
     (kbd "C-w j") 'view-new-buffer-below)
   (evil-define-key 'normal 'global
     (kbd "C-w l") 'view-new-buffer-right)
+  (evil-define-key 'normal 'global
+    (kbd "C-w k") 'view-new-buffer-above)
+  (evil-define-key 'normal 'global
+    (kbd "C-w h") 'view-new-buffer-left)
 
   ;; keybindings for resizing windows (M-<arrows>)
   (global-set-key (kbd "M-<left>") 'shrink-window-horizontally)
@@ -155,8 +159,10 @@
   (evil-define-key 'normal 'global (kbd "k") 'evil-previous-visual-line)
 
   ;; scroll up with C-u (automatic setting breaks if evil-leader is added)
-  (evil-define-key 'normal 'global (kbd "C-u") 'evil-scroll-up)
-  (evil-define-key 'normal 'global (kbd "C-d") 'evil-scroll-down)
+  (evil-define-key 'normal 'global (kbd "C-u")
+    (lambda () (interactive) (evil-scroll-up 0)))
+  (evil-define-key 'normal 'global (kbd "C-d")
+    (lambda () (interactive) (evil-scroll-down 0)))
 
   ;; for moving around use <C-h,j,k,l>
   (evil-define-key '(normal motion) 'global

@@ -133,6 +133,9 @@ buffer name during each attempt to open a shell or send code to it."
   ;; set minimum prefix length to 1
   (setq company-minimum-prefix-length 1)
 
+  ;; set idle delay to 0.2 seconds
+  (setq company-idle-delay 0.2)
+
 ;;   ;; toggle popup by changing delay between 0 and 10000
 ;;   (setq company-idle-delay ide-company-popup-active-delay)
 ;;   (defun toggle-company-idle-delay ()

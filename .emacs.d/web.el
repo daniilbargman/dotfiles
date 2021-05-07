@@ -30,18 +30,48 @@
 
 ;;; Code:
 
-
 ;; enable lsp in JavaScript mode
 (add-hook 'js-mode-hook 'lsp-deferred)
 
 ;;; add svelte support
 (use-package svelte-mode
-  :hook (svelte-mode (lsp-deferred))
+  ;;; disabling this hook as it tends to mess up tab-bar tabs
+  ;; :hook (svelte-mode . lsp-deferred)
   :custom
   (svelte-basic-offset 2)
   (svelte-display-submodule-name t)
+
   :config
+
+  ;; associate .svelte files with svelte-mode
+  (add-to-list 'auto-mode-alist '("\\.svelte\\'" . svelte-mode))
+
+  ;; add svelte to LSP language ID index
+  (add-to-list 'lsp-language-id-configuration '(svelte-mode . "svelte"))
+
   )
+
+;; install lsp server for tailwind-css
+(use-package lsp-tailwindcss
+
+  :custom
+
+  ;; make sure tailwindcss is used as an add-on server
+  (lsp-tailwindcss-add-on-mode t)
+
+  :config
+
+  ;; add tailwindcss to LSP language ID index
+  (add-to-list 'lsp-language-id-configuration '(svelte-mode . "tailwindcss"))
+  (add-to-list 'lsp-language-id-configuration '(js-mode . "tailwindcss"))
+  (add-to-list 'lsp-language-id-configuration '(css-mode . "tailwindcss"))
+  (add-to-list 'lsp-language-id-configuration '(html-mode . "tailwindcss"))
+
+  )
+
+;; ;; make sure flycheck works with multiple major modes enabled
+;; (with-eval-after-load 'lsp-mode
+;;   (mapc #'lsp-flycheck-add-mode '(typescript-mode js-mode css-mode svelte-mode)))
 
 
 (provide 'web)

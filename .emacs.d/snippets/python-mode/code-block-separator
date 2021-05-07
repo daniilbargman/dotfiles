@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: python code block
+# key: dblock
+# --
+# %% $0

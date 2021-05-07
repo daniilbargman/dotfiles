@@ -33,6 +33,7 @@ hc keybind $Mod-Shift-x close_or_remove
 hc keybind $Mod-Return spawn xfce4-terminal
 hc keybind $Mod-b spawn firefox
 hc keybind $Mod-e spawn emacs -bg 'dark gray'
+hc keybind $Mod-t spawn thunar
 
 # basic movement
 # focusing clients

@@ -76,12 +76,6 @@
 (tab-bar-history-mode 1)
 
 
-;; remove tab-bar header line from popup frames
-(advice-add
- 'display-buffer-in-child-frame :filter-return
- #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
-
-
 ;; customize tab bar design
 (setq tab-bar-position t)
 (setq tab-bar-back-button "")
@@ -97,26 +91,39 @@
 (custom-set-faces
  '(tab-bar
    ((t (:background "#202020"
-	:height 1.2
+	:height 1.1
 	))))
  '(tab-bar-tab
    ((t (:background "#202020"
 	:foreground "#78B9C5" ; "#7ec98f"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
-	:height 0.9
+	:height 1.2
+	;; :underline t
+	;; :overline t
 	))))
  '(tab-bar-tab-inactive
    ((t (:background "#202020"
 	:foreground "#999999"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
-	:height 0.9
+	;; :height 0.9
 	))))
  '(tab-line
    ((t (:background "#101010"
 	))))
  )
+
+
+;; remove tab-bar header line from popup frames
+(advice-add
+ 'display-buffer-in-child-frame :filter-return
+ #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
+
+
+;; automatically prompt to rename buffer after creating
+(setq tab-bar-post-open-functions
+      '(tab-bar-rename-tab))
 
 
 ;;; Support creating / maximizing / destroying windows
@@ -167,6 +174,39 @@ Uses evil commands."
   ;; make empty split below current window and switch to new buffer there
   (evil-window-vsplit)
   (next-buffer))
+
+;; create new window above current and open switch-buffer prompt
+(defun view-new-buffer-above ()
+  "Split current window horizontally and open a buffer prompt.
+
+Uses evil commands."
+  (interactive)
+  ;; choose new buffer from menu
+  (ivy-switch-buffer)
+  ;; make empty split below current window and switch to new buffer there
+  (evil-window-split)
+  ;; go back to current buffer in this window
+  (previous-buffer)
+  ;; go to window above current
+  (evil-window-up 1)
+  )
+
+
+;; create new window right of current and open switch-buffer prompt
+(defun view-new-buffer-left ()
+  "Split current window horizontally and open a buffer prompt.
+
+Uses evil commands."
+  (interactive)
+  ;; choose new buffer from menu
+  (ivy-switch-buffer)
+  ;; make empty split below current window and switch to new buffer there
+  (evil-window-vsplit)
+  ;; go back to current buffer in this window
+  (previous-buffer)
+  ;; go to window left of current
+  (evil-window-left 1)
+  )
 
 
 ;;; support for tabs and tab groups via awesome-tab
@@ -452,8 +492,7 @@ The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
   (when tabnum
     (tab-bar-select-tab tabnum)
     ;; (switch-to-workspace-by-tab-name)
-    (treemacs-do-switch-workspace
-      (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+    (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
     )
   )
 
@@ -462,20 +501,16 @@ The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
   "Switch to next tab-bar tab and change treemacs workspace."
   (interactive)
   (tab-bar-switch-to-next-tab)
-  (treemacs-do-switch-workspace
-   (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+  (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
   ;; (switch-to-workspace-by-tab-name)
   )
 (defun previous-tab-and-workspace ()
   "Switch to previous tab-bar tab and change treemacs workspace."
   (interactive)
   (tab-bar-switch-to-prev-tab)
-  (treemacs-do-switch-workspace
-   (cdar (cdr (tab-bar-get-buffer-tab (current-buffer)))))
+  (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
   ;; (switch-to-workspace-by-tab-name)
   )
-
-
 
 (provide 'windows-and-tabs)
 ;;; windows-and-tabs.el ends here

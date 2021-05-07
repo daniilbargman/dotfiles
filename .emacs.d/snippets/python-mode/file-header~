@@ -1,0 +1,9 @@
+(1/8) File to save in: ~/.emacs.d/snippets/python-mode/
+./
+../
+code-block-separator
+code-block-separator~
+function-with-docstring
+function-with-docstring~
+pyright-ignore-error
+pyright-ignore-error~

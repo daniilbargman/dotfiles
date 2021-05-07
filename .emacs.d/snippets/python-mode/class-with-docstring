@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: class-with-docstrings-dbargman
+# key: class
+# expand-env: ((yas-indent-line 'auto) (yas-after-exit-snippet-hook (lambda () (whitespace-cleanup-region yas-snippet-beg yas-snippet-end) (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t))))
+# --
+
+class ${1:name}:
+    """$0
+
+    """
+
+    ${2:$(unless (string-empty-p yas-text) (concat "# slots for " (yas-field-value 1)))}
+    ${2:$(unless (string-empty-p yas-text) "__slots__ = [")}
+	${2:slots}
+    ${2:$(unless (string-empty-p yas-text) "]")}
+
+    def __init__(self${3:$(unless (string-empty-p yas-text) ", ")}${3:arguments}):
+	"""Initialize $1...
+
+	${3:$(mapconcat (lambda (x) (concat ":" (caar x) (when (nth 1 (car x)) (concat ":" (nth 1 (car x)))) (when (cadr x) (concat ": optional (default: " (cadr x)")")) ": TODO")) (python-split-args-dbargman yas-text) "\n" )}
+
+	"""
+	...

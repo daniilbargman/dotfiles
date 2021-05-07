@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: method-with-docstring-dbargman
+# key: method
+# expand-env: ((yas-indent-line 'auto) (yas-after-exit-snippet-hook (lambda () (whitespace-cleanup-region yas-snippet-beg yas-snippet-end) (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t))))
+# --
+
+def ${1:name}(self${2:$(unless (string-empty-p yas-text) ", ")}${2:arguments})${3:$(unless (string-empty-p yas-text) " -> ")}${3:return-type}:
+    """$0
+
+    ${2:$(mapconcat (lambda (x) (concat ":" (caar x) (when (nth 1 (car x)) (concat ":" (nth 1 (car x)))) (when (cadr x) (concat ": optional (default: " (cadr x)")")) ": TODO")) (python-split-args-dbargman yas-text) "\n" )}
+
+    ${5:$(unless (and (string-empty-p yas-text) (string-empty-p (yas-field-value 3))) ":returns:" )}${3:$(when yas-text (concat yas-text ":"))} ${5:TODO}
+
+    """
+    ...

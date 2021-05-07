@@ -119,8 +119,15 @@ This variable is only used if `my-python-shell-program' is `k8s'."
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp-deferred)))  ; or lsp
-  ;; :custom
+  :custom
   ;; (lsp-pyright-langserver-command-args '("--stdio" "--verbose"))
+
+  ;; autoimport completions clutter company mode intolerably
+  (lsp-pyright-auto-import-completions nil)
+
+  ;; type-checking is not necessary for now
+  (lsp-pyright-typechecking-mode "off")
+
   :config
   (with-eval-after-load "lsp-mode"
     (add-to-list 'lsp-disabled-clients 'pyls))
@@ -159,11 +166,11 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 	my-python-shell-init-commands)
 	;; shell program needs to be parsed if running in k8s
 	(my-python-shell-program
-	(progn (if (string-equal my-python-shell-program "k8s")
+	 (progn (if (string-equal my-python-shell-program "k8s")
 		    (k8s-parse-exec-command my-python-k8s-pod-label
 					    my-python-k8s-pod-namespace
 					    my-python-k8s-exec-command)
-		  (my-python-shell-program)))))
+		  my-python-shell-program))))
     (get-or-create-shell-buffer
       my-python-shell-buffer-name my-python-shell-program nil t)))
 
@@ -179,21 +186,23 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 	my-python-shell-init-commands)
 	;; shell program needs to be parsed if running in k8s
 	(my-python-shell-program
-	(progn (if (string-equal my-python-shell-program "k8s")
+	 (progn (if (string-equal my-python-shell-program "k8s")
 		    (k8s-parse-exec-command my-python-k8s-pod-label
 					    my-python-k8s-pod-namespace
 					    my-python-k8s-exec-command)
-		  (my-python-shell-program)))))
+		  my-python-shell-program))))
     (get-or-create-shell-buffer
       my-python-shell-buffer-name my-python-shell-program nil nil
       '(lambda (term-buffer)
-	(save-excursion
-	  (comint-send-string term-buffer "%cpaste\n")
-	  (when (evil-normal-state-p)
-	    (python-mark-fold-or-section))
-	  (evil-send-region-to-terminal-shell term-buffer)
-	  (comint-send-string term-buffer "--\n")))
-	)
+	 (comint-send-string term-buffer "%cpaste\n")
+	 (sleep-for 0 200)
+	 (when (evil-normal-state-p)
+	   (python-mark-fold-or-section))
+	 (evil-send-region-to-terminal-shell term-buffer)
+	 (sleep-for 0 200)
+	 (comint-send-string term-buffer "--\n")
+	 )
+      )
       ))
 
 ;; functions for formatting expressions inside braces
@@ -454,6 +463,22 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 
 ;; ;; support for ipython
 ;; (use-package ipython-shell-send)
+
+
+;; helper function to split python function input arguments for
+;; yasnippet templates
+(defun python-split-args-dbargman (input-string)
+  "Split python arguments INPUT-STRING into ((name, type) value)"
+  (let* (
+	 (arglist (split-string input-string " *, *\n* *" t))
+	 (argmap
+	  (mapcar (lambda (x) (split-string x " *= *" nil)) arglist))
+	 )
+    (mapcar
+     (lambda (x) (list (split-string (car x) " *: *" nil) (nth 1 x)))
+     argmap)
+    )
+  )
 
 (provide 'python)
 ;;; python.el ends here

@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: file header
+# key: dbpy
+# --
+# %% encoding: utf-8
+
+'''
+
+Author: Daniil Bargman (daniil.bargman@gmail.com)
+
+Module description: ${1: Module description}
+
+(Note: "# %% " is used as a code block separator)
+
+'''
+
+# %% Dependencies
+import $0
+
+
+# %% ##########################################################################

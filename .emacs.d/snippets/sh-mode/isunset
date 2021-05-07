@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: test for unset variable
+# key: isunset
+# group: bash
+# --
+[ -z "\$\{${1:variable name}:-\}" ] && $0
