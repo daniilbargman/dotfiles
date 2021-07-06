@@ -47,8 +47,11 @@
   ;; set undo system via undo-tree
   (evil-set-undo-system 'undo-tree)
 
-  ;; open terminal shells in normal state
+  ;; open term shells in emacs state
   (evil-set-initial-state 'term-mode 'emacs)
+
+  ;; open vterm shells in normal state
+  (evil-set-initial-state 'vterm-mode 'normal)
 
   ))
 

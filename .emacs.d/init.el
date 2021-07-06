@@ -64,10 +64,19 @@
 
 ;;; Basic settings for working with text
 
+;; treat underscores as parts of a word
+(modify-syntax-entry ?_ "w")
+
+;; do not use double spaces to delimit sentences
+(setq sentence-end-double-space nil)
+
 ;; wrap text at 72 characters by default
 (setq-default fill-column 72)
 (add-hook 'prog-mode-hook 'auto-fill-mode)
 (add-hook 'text-mode-hook 'auto-fill-mode)
+
+;; enable built-in fill-column indicator
+(global-display-fill-column-indicator-mode)
 
 ;; enable text folding via hideshow
 (load-library "hideshow")
@@ -231,14 +240,8 @@
 
 ;;; Load configuration files
 
-;; add widget support
-(load-config-file "widgets.el")
-
 ;; run startup scripts
 (load-config-file "startup-scripts.el")
-
-;; openvpn client
-(load-config-file "openvpn.el")
 
 ;; centralized keybinding configuration
 (load-config-file "keybindings.el")
@@ -247,7 +250,7 @@
 (load-config-file "evil.el")
 
 ;; interactive terminal shell
-(load-config-file "bind-terminal-shell.el")
+(load-config-file "terminal.el")
 
 ;; code and text snippets
 (load-config-file "snippets.el")
@@ -256,7 +259,10 @@
 (load-config-file "ide-base.el")
 
 ;; window and tab management
-(load-config-file "windows-and-tabs.el")
+(load-config-file "layout.el")
+
+;; ELisp configuration
+(load-config-file "elisp.el")
 
 ;; customizations for Org mode
 (load-config-file "org.el")
@@ -264,11 +270,14 @@
 ;; customizations for markdown mode
 (load-config-file "markdown.el")
 
+;; YAML integration
+(load-config-file "yaml.el")
+
+;; Dockerfile integration
+(load-config-file "dockerfile.el")
+
 ;; Kubernetes integration
 (load-config-file "k8s.el")
-
-;; ELisp configuration
-(load-config-file "elisp.el")
 
 ;; bash configuration
 (load-config-file "bash.el")
@@ -279,14 +288,14 @@
 ;; Python configuration
 (load-config-file "web.el")
 
-;; YAML integration
-(load-config-file "yaml.el")
-
-;; Dockerfile integration
-(load-config-file "dockerfile.el")
-
 ;; email client
 (load-config-file "email.el")
+
+;; openvpn client
+(load-config-file "openvpn.el")
+
+;; add widget support
+(load-config-file "widgets.el")
 
 ;;; Session management:
 

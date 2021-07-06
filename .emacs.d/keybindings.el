@@ -31,17 +31,28 @@
 
 ;;; Code:
 
+;; demote errors when exiting emacs
+(global-set-key (kbd "C-x C-c")
+		(lambda () (interactive)
+		  (ignore-errors (save-buffers-kill-terminal)))
+		)
 
-;;; "windows-and-tabs" keybindings
+;;; layout keybindings
 
-(with-eval-after-load "windows-and-tabs"
+(with-eval-after-load "layout"
 
   ;;; manipulation of workspace tabs in tab-bar mode
 
   ;; customize tab bar keybindings
-  (global-set-key (kbd "M-<tab>") 'next-tab-and-workspace)
-  (global-set-key (kbd "M-S-<iso-lefttab>") 'previous-tab-and-workspace)
-  (global-set-key (kbd "M-j") 'jump-tab-and-workspace)
+  (bind-key* "M-<tab>" 'tab-bar-switch-to-next-tab)
+  (bind-key* "M-S-<iso-lefttab>" 'tab-bar-switch-to-prev-tab)
+  (bind-key* "M-S-<tab>" 'tab-bar-switch-to-prev-tab)
+  (bind-key* "M-p" 'tab-bar-switch-to-recent-tab)
+  (bind-key* "M-j" 'tab-bar-select-tab)
+
+  ;; shortkey for ace-window
+  (bind-key* "M-o" 'ace-window)
+  
 
   ;; ;;; buffer tab manipulation via awesome-tab
   
@@ -60,16 +71,16 @@
   ;;; buffer tab manipulation via centaur-tabs
   
   ;; previous tab, next tab, jump to tab
-  (global-set-key (kbd "C-x C-l") 'centaur-tabs-forward)
-  (global-set-key (kbd "C-x C-h") 'centaur-tabs-backward)
+  (bind-key* "C-x C-l" 'centaur-tabs-forward)
+  (bind-key* "C-x C-h" 'centaur-tabs-backward)
   ;; (global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
 
   ;; next/previous tab group
-  (global-set-key (kbd "C-x C-j") 'centaur-tabs-forward-group)
-  (global-set-key (kbd "C-x C-k") 'centaur-tabs-backward-group)
+  (bind-key* "C-x C-j" 'centaur-tabs-forward-group)
+  (bind-key* "C-x C-k" 'centaur-tabs-backward-group)
 
   ;; open minibuffer prompt for group name
-  (global-set-key (kbd "C-x C-n") 'centaur-tabs-counsel-switch-group)
+  (bind-key* "C-x C-n" 'centaur-tabs-counsel-switch-group)
 
 
   ;;; visual window and buffer manipulation
@@ -91,13 +102,13 @@
     (kbd "C-w h") 'view-new-buffer-left)
 
   ;; keybindings for resizing windows (M-<arrows>)
-  (global-set-key (kbd "M-<left>") 'shrink-window-horizontally)
-  (global-set-key (kbd "M-<right>") 'enlarge-window-horizontally)
-  (global-set-key (kbd "M-<down>") 'shrink-window)
-  (global-set-key (kbd "M-<up>") 'enlarge-window)
+  (bind-key* "M-<left>" 'shrink-window-horizontally)
+  (bind-key* "M-<right>" 'enlarge-window-horizontally)
+  (bind-key* "M-<down>" 'shrink-window)
+  (bind-key* "M-<up>" 'enlarge-window)
 
   ;; kill current buffer with C-q
-  (global-set-key (kbd "C-q") 'kill-this-buffer)
+  (bind-key* "C-q" 'kill-this-buffer)
 
   ;;; operations in/on the treemacs buffer
   
@@ -267,9 +278,9 @@
   ))
 
 
-;;; "bind-terminal-shell" keybindings
+;;; "terminal" keybindings
 
-(with-eval-after-load "bind-terminal-shell"
+(with-eval-after-load "terminal"
 
   ;; explicitly map escape key to raw meta key because another mapping
   ;; in ivy messes with this default behaviour
@@ -277,36 +288,40 @@
     (kbd "<escape>") 'term-send-raw-meta)
   ;; (bind-key "<escape>" 'term-send-raw-meta 'term-raw-map)
 
+  ;; bind escape key in vterm-mode as well
+  (evil-define-key 'emacs 'vterm-mode-map
+    (kbd "<escape>") 'vterm-send-escape)
+
   ;; prefix and command sequence bindings for opening terminal shells
   (global-unset-key (kbd "M-s"))
 
-  ;; use "M-s t" to open EAF terminal
-  (with-eval-after-load "widgets"
-    (with-eval-after-load "evil"
-      (global-set-key (kbd "M-s t")
-		      '(lambda() (interactive)
-			(evil-window-split) (eaf-open-terminal)))
-    ;; map escape key to itself in EAF terminal
-    (defun eaf-send-raw-escape ()
-      "Directly send <escape> key to EAF Python side."
-      (interactive)
-      (eaf-call-async "send_key_sequence" eaf--buffer-id "M-d"))
-    (eaf-bind-key eaf-send-raw-escape "<escape>"
-		  eaf-terminal-keybinding) ;; unbind, see more in the Wiki
-      ))
+  ;;; DEPRECATED IN FAVOUR OF VTERM:
+  ;; ;; use "M-s t" to open EAF terminal
+  ;; (with-eval-after-load "widgets"
+  ;;   (with-eval-after-load "evil"
+  ;;     (global-set-key (kbd "M-s t")
+  ;; 		      '(lambda() (interactive)
+  ;; 			(evil-window-split) (eaf-open-terminal)))
+  ;;   ;; map escape key to itself in EAF terminal
+  ;;   (defun eaf-send-raw-escape ()
+  ;;     "Directly send <escape> key to EAF Python side."
+  ;;     (interactive)
+  ;;     (eaf-call-async "send_key_sequence" eaf--buffer-id "M-d"))
+  ;;   (eaf-bind-key eaf-send-raw-escape "<escape>"
+  ;; 		  eaf-terminal-keybinding) ;; unbind, see more in the Wiki
+  ;;     ))
 
   ; keybinding to open term buffer in emacs state in new window
   (global-set-key
    (kbd "M-s s")
    '(lambda () (interactive)
-      (get-or-create-shell-buffer nil nil nil t)))
+      (get-or-create-terminal nil nil t)))
 
   ;; keybinding to send text region as commands to a terminal buffer
   (global-set-key
    (kbd "M-s M-s")
    '(lambda () (interactive)
-      (get-or-create-shell-buffer nil nil nil nil
-				  'evil-send-region-to-terminal-shell))))
+      (get-or-create-terminal nil nil nil 'evil-send-region-to-terminal))))
 
 ;;; "ide-base" keybindings
 
@@ -326,6 +341,12 @@
   ;; map tab key to yasnippet completion
   (evil-define-key 'insert 'yas-minor-mode-map (kbd "<tab>") yas-maybe-expand)
   (evil-define-key 'insert 'yas-minor-mode-map (kbd "TAB") yas-maybe-expand)
+
+  ;; browse kill-ring with counsel
+  (evil-define-key 'normal 'global (kbd "M-y") 'my/counsel-paste-pop)
+
+  ;; also, when in visual mode, delete highlighted text first
+  (evil-define-key 'visual 'global (kbd "M-y") 'my/counsel-yank-pop-selection)
 
   ;; leader key mappings
   (evil-leader/set-key
@@ -384,15 +405,15 @@
 
   )
 
-;;; "openvpn" keybindings
+;; ;;; "openvpn" keybindings
 
-(with-eval-after-load "openvpn"
+;; (with-eval-after-load "openvpn"
 
-  ;; use "C-s l" to open ovpn dashboard in new buffer
-  (global-set-key (kbd "M-s l")
-		  '(lambda() (interactive) (other-window 1)
-		     (evil-split-buffer "*scratch*") (ovpn)))
-  )
+;;   ;; use "C-s l" to open ovpn dashboard in new buffer
+;;   (global-set-key (kbd "M-s l")
+;; 		  '(lambda() (interactive) (other-window 1)
+;; 		     (evil-split-buffer "*scratch*") (ovpn)))
+;;   )
 
 ;;; "org" keybindings
 

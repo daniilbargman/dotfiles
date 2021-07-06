@@ -31,137 +31,40 @@
 
 ;;; Code:
 
-;; helper function: get string contents of a file
-(defun get-string-from-file (filePath)
-  "Return FILEPATH's file content."
-  (with-temp-buffer
-    (insert-file-contents filePath)
-    (buffer-string)))
-
-;; set groupings and filters for buffers in tab navigation
-(with-eval-after-load "windows-and-tabs"
-
-  ;; ;; set list of project tabs
-  ;; (tab-bar-tabs-set
-  ;;  '(
-  ;;    (tab (name . "dotfiles") (explicit-name))
-  ;;    (tab (name . "statosphere-root") (explicit-name))
-  ;;    (tab (name . "statosphere-source") (explicit-name))
-  ;;    (current-tab (name . "statosphere-frontend") (explicit-name))
-  ;;    (tab (name . "statosphere-infrastructure") (explicit-name))
-  ;;    (tab (name . "mu4e") (explicit-name))
-  ;;    )
-  ;;  )
-
-  ;; set groupings for relevant tabs
-  (setq windows-and-tabs-buffer-groups-by-name-regex
-	'(("^[*]kubernetes.*[*]$" . "interactive")
-	  ;; ("^task-queue[.]org[a-zA-Z/-<>]*" . "tasks")
-	  ;; ("^README.*$" . "docs")
-	  ("^eaf-.*$" . "widgets")
-	  ("^[.]dir-locals[.]el$" . "dir-locals")
-	  ;; ("^[.]bash.*$" . "dotfiles")
-	  ;; ("^[a-zA-Z0-9-_.]+[.]conf[a-zA-Z/-<>]*$" . "config-files")
-	  ;; ("^[a-zA-Z0-9-_.]+[.]json[a-zA-Z/-<>]*$" . "config-files")
-	  ;; ("[.].*rc$" . "dotfiles")
-	  ("^[*].*[*]$" . "_system")
-	  ))
-
-  ;; set groupings for relevant tabs
-  (setq windows-and-tabs-buffer-groups-by-major-mode
-	'((term-mode . "interactive")
-	  (shell-mode . "interactive")
-	  (eaf-mode . "interactive")
-	  ;; (python-mode . "python")
-	  ;; (emacs-lisp-mode . "emacs-config")
-	  ;; (yaml-mode . "yaml")
-	  ;; (sh-mode . "scripts")
-	  ;; (js-mode . "web-dev")
-	  ;; (svelte-mode . "web-dev")
-	  ;; (html-mode . "web-dev")
-	  ))
-
-  ;; set groupings for relevant tabs
-  (setq windows-and-tabs-buffer-groups-by-project-path
-	'(("/home/daniilbargman" . "Project: dotfiles")
-	  ("/mnt/projects/statosphere/source" . "Project: sttospr-source")
-	  ("/mnt/projects/statosphere/backend" . "Project: sttospr-backend")
-	  ("/mnt/projects/statosphere/services" . "Project: sttospr-services")
-	  ("/mnt/projects/statosphere/endpoint-api" . "Project: sttospr-endpoints")
-	  ("/mnt/projects/statosphere/frontend" . "Project: sttospr-frontend")
-	  ("/mnt/projects/statosphere/infrastructure" . "Project: sttospr-infrastructure")
-	  ("/mnt/projects/statosphere" . "Project: sttospr-root")
-	  ;; (python-mode . "python")
-	  ;; (emacs-lisp-mode . "emacs-config")
-	  ;; (yaml-mode . "yaml")
-	  ;; (sh-mode . "scripts")
-	  ;; (js-mode . "web-dev")
-	  ;; (svelte-mode . "web-dev")
-	  ;; (html-mode . "web-dev")
-	  ))
-
-  ;; hide tabs for buffers that aren't frequently useful
-  (setq windows-and-tabs-buffer-filter-regexp-list
-	'("^[*]ovpn-mode[*]$"
-	  "^[*]mount-statosphere[*]$"
-	  "^[*]quelpa-.*[*]$"
-	  "^[*]Messages[*]$"
-	  "^[*]tramp/sudo .*[*]$"
-	  "^[*]scratch[*]$"
-	  "^ *[*]company-.*$"
-	  "^ *[*]Treemacs-.*$"
-	  "^ *[*]lsp-ui-.*$"
-	  "^ *[*]mu4e-.*$"
-	  "^ *[*]Org[ -].*$"
-	  "^ *[*]EPC Server .*$"
-	  "^ *[*]epc con .*$"
-	  "^ *Download: .*$"
-	  "^task-queue[.]org-archive[a-zA-Z/-<>]*"
-	  "^.*[.]ovpn$"))
-)
-
-;; ;; append save values to file-local variables
-;; (add-to-list 'safe-local-variable-values '((lsp-pyls-server-command
-;; 	      . "/homee/daniilbargman/miniconda3/envs/statosphere/bin/pyls")))
 
 ;; mount encrypted project drive
-(with-eval-after-load "bind-terminal-shell"
- (let ((bind-terminal-shell-program
-	(mapconcat 'identity
-		    '("/home/daniilbargman/executables/decrypt-and-mount"
-		      "nvme0n1p9"
-		      "projects")
-		    " ")))
-   (get-or-create-shell-buffer "mount-statosphere" nil nil t)
-   (comint-watch-for-password-prompt
-    (buffer-substring-no-properties (line-beginning-position)
-				     (line-end-position)))
-   (while (comint-check-proc (current-buffer))
-     (comint-watch-for-password-prompt
-    (buffer-substring-no-properties (line-beginning-position)
-				     (line-end-position)))
-     (sleep-for 1))
-   ;; (comint-watch-for-password-prompt)
-     ;; (comint-send-invisible "Enter passphrase for nvme0n1p9: ")
-   (evil-quit)
-   ))
+(start-process "mount-projects" "*startup-scripts--mount-projects*"
+	       "/home/daniilbargman/executables/decrypt-and-mount"
+	       "nvme0n1p9"
+	       "projects")
+(with-current-buffer "*startup-scripts--mount-projects*"
+  (comint-watch-for-password-prompt
+      (buffer-substring-no-properties (line-beginning-position)
+				      (line-end-position)))
+    (while (comint-check-proc (current-buffer))
+      (comint-watch-for-password-prompt
+      (buffer-substring-no-properties (line-beginning-position)
+				      (line-end-position)))
+      (sleep-for 1))
+    )
 
 
 ;; start vpn client on startup, kill before exiting emacs
 (with-eval-after-load "openvpn"
   (ovpn-mode-start-vpn-conf
    "/home/daniilbargman/.vpn/dbargman-server2.ovpn")
-  ;; (advice-add
-  ;;  'save-buffers-kill-terminal :before
-  ;;   #'(lambda (&optional arg)
-  ;; 	(ovpn-mode-stop-vpn-conf
-  ;; 	 "/home/daniilbargman/.vpn/dbargman-server2.ovpn")
-  ;; 	arg))
  )
 
 
 ;; set up email client
 (with-eval-after-load "email"
+
+  ;; helper function: get string contents of a file
+  (defun get-string-from-file (filePath)
+    "Return FILEPATH's file content."
+    (with-temp-buffer
+      (insert-file-contents filePath)
+      (buffer-string)))
 
   ;; configure email backend for mu4e
   (let (
@@ -171,6 +74,7 @@
 	 "/mnt/projects/statosphere/Business/mail/daniil.bargman/")
 
 	)
+
     ;; command for retrieving emails
     (setq
      mu4e-get-mail-command
@@ -199,10 +103,6 @@
       smtpmail-smtp-server "mail.statosphere.com"
       smtpmail-local-domain "statosphere.com"
 
-      ;; ;; if you need offline mode, set these -- and create the queue
-      ;; ;; dir with 'mu mkdir', i.e.. mu mkdir /home/user/Maildir/queue
-      ;; smtpmail-queue-mail  nil
-      ;; smtpmail-queue-dir  "/home/user/Maildir/queue/cur"
       )
 
     ;; org-msg customizations, including signature

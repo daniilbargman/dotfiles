@@ -41,6 +41,22 @@ export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_
 # Make bash behave more like vim
 set -o vi
 
+#################### vterm / Emacs compatibility settings #####################
+# see https://github.com/akermu/emacs-libvterm
+
+# main function
+function vterm_printf {
+    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ] ); then
+        # Tell tmux to pass the escape sequences through
+        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
+    elif [ "${TERM%%-*}" = "screen" ]; then
+        # GNU screen (screen, screen-256color, screen-256color-bce)
+        printf "\eP\e]%s\007\e\\" "$1"
+    else
+        printf "\e]%s\e\\" "$1"
+    fi
+}
+
 #################### project management settings ##############################
 
 # project launcher directory
@@ -82,7 +98,7 @@ alias unlock='sudo ufw disable && novpn'
 alias la="ls -lahFtr --color=always"
 
 # alias update commands
-alias update="sudo apt-get update && sudo apt-get -y upgrade; sudo apt-get clean && sudo apt-get -y autoremove"
+alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; sudo apt-get -y autoremove"
 
 # alias nmcli d wifi with "wifi"
 alias wifi="nmcli d wifi"

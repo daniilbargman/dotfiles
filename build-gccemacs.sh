@@ -16,9 +16,12 @@ sudo apt-get update && sudo apt-get -y upgrade
 
 # install main Emacs dependencies for Debian buster
 # (see https://www.emacswiki.org/emacs/BuildingEmacs)
+#
+# additional dependencies are for GCCEmacs and vterm-mode
 sudo apt-get install libc6-dev libjpeg62-turbo libncurses5-dev libpng-dev \
      libtiff5-dev libgif-dev xaw3dg-dev zlib1g-dev libx11-dev \
-     libgccjit-8-dev  # this one is for the GCC branch of Emacs
+     libgccjit-8-dev \
+     cmake libtool libtool-bin
 
 # install recommended dependencies based on StackOverflow answer
 # (see https://superuser.com/questions/1128721/compiling-emacs-25-1-on-ubuntu-16-04/1129052#1129052)

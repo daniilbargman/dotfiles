@@ -61,13 +61,53 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; use counsel
 (use-package counsel
-  :ensure t
   :after ivy
-  :config (counsel-mode))
+  :config
+
+  ;; enable globally
+  (counsel-mode)
+
+  ;; define some functions around counsel-yank-pop to make it consistent
+  (defun my/counsel-paste-pop ()
+    "Interactive like counsel-yank-pop, but removes previous paste if
+  running after an evil-paste command (like evil-paste-pop)"
+    (interactive)
+
+    ;; if running after an evil-paste command...
+    (if (memq last-command
+	      '(evil-paste-after
+		evil-paste-before
+		evil-visual-paste))
+
+	;; save paste location
+	(let ((BEG (evil-get-marker ?\[))
+	      (END (evil-get-marker ?\])))
+
+	  ;; then visually select and run visual equivalent of this func
+	  (evil-visual-select BEG END)
+	  (my/counsel-yank-pop-selection))
+
+      ;;; if not running after an evil-paste command, just run as normal
+      (counsel-yank-pop))
+    )
+
+  ;; replace visual selection with selection from kill-buffer
+  (defun my/counsel-yank-pop-selection ()
+    "Replace visual selection with an item selected from the kill-ring."
+    (interactive)
+    (let* ((target-range (evil-visual-range))
+	    (BEG (nth 0 target-range))
+	    (END (nth 1 target-range))
+	    ;; (type (nth 2 target-range))
+	    )
+      (counsel-yank-pop)
+      (evil-delete BEG END) ; type)
+      ))
+
+  )
 
 ;; use ivy
 (use-package ivy
-  :ensure t
   ;; :defer 0.1
   ;; :diminish
   ;; :bind (("C-c C-r" . ivy-resume)
@@ -133,8 +173,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; set minimum prefix length to 1
   (setq company-minimum-prefix-length 1)
 
-  ;; set idle delay to 0.2 seconds
-  (setq company-idle-delay 0.2)
+  ;; set idle delay to 0.5 seconds
+  (setq company-idle-delay 0.5)
 
 ;;   ;; toggle popup by changing delay between 0 and 10000
 ;;   (setq company-idle-delay ide-company-popup-active-delay)
@@ -157,6 +197,7 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; open company popup on any command in insert state, disable otherwise
   (setq company-begin-commands
+	;; this works for auto-toggle but slows down emacs
 	'(self-insert-command
 	  evil-insert
 	  evil-insert-line
@@ -170,7 +211,10 @@ buffer name during each attempt to open a shell or send code to it."
 	  evil-change
 	  evil-change-line
 	  evil-change-whole-line
-	  backward-delete-char-untabify)); t)
+	  backward-delete-char-untabify)
+	;; ;; run company via keypress only
+	;; nil
+	); t)
   ;; (add-hook 'evil-insert-state-entry-hook
   ;; 	    (lambda ()
   ;; 	      (setq company-idle-delay ide-company-popup-active-delay)))
@@ -233,6 +277,14 @@ buffer name during each attempt to open a shell or send code to it."
 (use-package flycheck
   :init
   (global-flycheck-mode)
+  :custom
+  (flycheck-global-modes
+   '(not
+     fundamental-mode
+     ovpn-mode
+     vterm-mode
+     special-mode
+     messages-buffer-mode))
   )
 
 ;; use which-key for emacs function completion
@@ -295,6 +347,7 @@ buffer name during each attempt to open a shell or send code to it."
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq lsp-idle-delay 1)
 
   ;; lsp-ivy
   (use-package lsp-ivy
@@ -338,16 +391,66 @@ buffer name during each attempt to open a shell or send code to it."
 ;; smartly versioned file editing
 (use-package undo-tree
   :custom
+
+    ;; save history across sessions
     (undo-tree-auto-save-history t)
+
     ;; avoid file clutter: save all undo files in emacs directory
     (undo-tree-history-directory-alist
     '(("." . "~/.emacs.d/undo-tree")))
+
+    ;; disable undo-redo in regions; use file-level only
+    (undo-tree-enable-undo-in-region nil)
+
   :config
-    (global-undo-tree-mode 1))
+
+    ;; enable globally by defualt
+    (global-undo-tree-mode 1)
+    
+  )
 
 ;; auto-insert parentheses
 (use-package smartparens
+
+  :custom
+
+  ;; do not auto-escape quotes inside strings
+  (sp-escape-quotes-after-insert nil)
+
+  ;; ;; do not autowrap regions
+  ;; (sp-autowrap-region nil)
+
+  ;; ;; highlight parens enclosing actively edited region
+  ;; (sp-show-pair-from-inside t)
+
   :config
+
+  ;; add hook to indent according to context
+  (defun indent-to-context (id action mode)
+     "indent closing paren according to context."
+     (when (or (eq action 'insert) (eq action 'wrap))
+     (save-excursion
+       (evil-backward-WORD-end)
+       (evil-jump-item)
+       (indent-according-to-mode))))
+
+  ;; duplicate spaces and newlines inside matching pairs, unless already
+  ;; inserted
+  (sp-pair "( " " )")
+  (sp-pair "(\n" "\n)"
+	   :unless '(sp-point-before-eol-p)
+	   :post-handlers '(:add indent-to-context)
+	   )
+  (sp-pair "[ " " ]")
+  (sp-pair "[\n" "\n]"
+	   :unless '(sp-point-before-eol-p)
+	   :post-handlers '(:add indent-to-context)
+	   )
+  (sp-pair "{ " " }")
+  (sp-pair "{\n" "\n}"
+	   :unless '(sp-point-before-eol-p)
+	   :post-handlers '(:add indent-to-context)
+	   )
 
   ;; enable globally
   (smartparens-global-mode t)
@@ -370,8 +473,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; highlight symbols under cursor
   (highlight-symbol-mode t)
 
-  ;; highlight after 0.5 seconds
-  (setq highlight-symbol-idle-delay 0.5)
+  ;; highlight after 0.4 seconds
+  (setq highlight-symbol-idle-delay 0.4)
 
   ;; ;; not sure what the variable below actually does
   ;; (setq highlight-symbol-on-navigation-p t)
@@ -379,21 +482,16 @@ buffer name during each attempt to open a shell or send code to it."
   )
 
 ;; highlight indent lines
+;; (use-package highlight-indentation)
 (use-package highlight-indent-guides
   :hook (prog-mode . highlight-indent-guides-mode)
+  :custom
+  (highlight-indent-guides-method 'character)
+  (highlight-indent-guides-responsive nil)
+  ;; (highlight-indent-guides-delay 0.4)
   :config
-  (setq highlight-indent-guides-method 'character)
-  (setq highlight-indent-guides-responsive 'stack)
   )
 
-
-;; highlight wrap column (note: should be built in as of emacs 27)
-(use-package fill-column-indicator
-  :hook (prog-mode . fci-mode)
-  :config
-  (setq fci-rule-width 2)
-  ;; (setq fci-rule-color "grey10")
-  )
 
 ;; better modeline
 (use-package telephone-line

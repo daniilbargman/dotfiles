@@ -33,5 +33,21 @@
 ;; pull predefined collection of snippets
 (use-package yasnippet-snippets)
 
+;; helper function to split python function input arguments for
+;; yasnippet templates
+(defun python-split-args-dbargman (input-string)
+  "Split python arguments INPUT-STRING into ((name, type) value)."
+  (let* (
+	 (arglist (split-string input-string " *, *\n* *" t))
+	 (argmap
+	  (mapcar (lambda (x) (split-string x " *= *" nil)) arglist))
+	 )
+    (mapcar
+     (lambda (x) (list (split-string (car x) " *: *" nil) (nth 1 x)))
+     argmap)
+    )
+  )
+
+
 (provide 'snippets)
 ;;; snippets.el ends here

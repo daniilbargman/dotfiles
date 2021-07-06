@@ -161,9 +161,10 @@ This variable is only used if `my-python-shell-program' is `k8s'."
   "Run a python shell inside a terminal buffer."
   (interactive)
   (let (
+       ;; terminal name set to python shell name
+       (terminal-buffer-name my-python-shell-buffer-name)
 	;; init commands are python-specific init commands
-	(bind-terminal-shell-init-commands
-	my-python-shell-init-commands)
+	(terminal-init-commands my-python-shell-init-commands)
 	;; shell program needs to be parsed if running in k8s
 	(my-python-shell-program
 	 (progn (if (string-equal my-python-shell-program "k8s")
@@ -171,39 +172,37 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 					    my-python-k8s-pod-namespace
 					    my-python-k8s-exec-command)
 		  my-python-shell-program))))
-    (get-or-create-shell-buffer
-      my-python-shell-buffer-name my-python-shell-program nil t)))
+    (get-or-create-terminal my-python-shell-program nil t)))
 
-;; function for executing a python code block using
-;; bind-terminal-shell
+;; function for executing a python code block using terminal.el
 (defun my-python-execute-code-block ()
   "Execute code block, or the visual selection if in visual mode."
   (interactive)
   (let
       (
-	;; init commands are python-specific init commands
-	(bind-terminal-shell-init-commands
-	my-python-shell-init-commands)
-	;; shell program needs to be parsed if running in k8s
-	(my-python-shell-program
-	 (progn (if (string-equal my-python-shell-program "k8s")
-		    (k8s-parse-exec-command my-python-k8s-pod-label
-					    my-python-k8s-pod-namespace
-					    my-python-k8s-exec-command)
-		  my-python-shell-program))))
-    (get-or-create-shell-buffer
-      my-python-shell-buffer-name my-python-shell-program nil nil
-      '(lambda (term-buffer)
-	 (comint-send-string term-buffer "%cpaste\n")
-	 (sleep-for 0 200)
-	 (when (evil-normal-state-p)
-	   (python-mark-fold-or-section))
-	 (evil-send-region-to-terminal-shell term-buffer)
-	 (sleep-for 0 200)
-	 (comint-send-string term-buffer "--\n")
+       ;; terminal name set to python shell name
+       (terminal-buffer-name my-python-shell-buffer-name)
+       ;; init commands are python-specific init commands
+       (terminal-init-commands my-python-shell-init-commands)
+       ;; shell program needs to be parsed if running in k8s
+       (my-python-shell-program
+	(progn (if (string-equal my-python-shell-program "k8s")
+		   (k8s-parse-exec-command my-python-k8s-pod-label
+					   my-python-k8s-pod-namespace
+					   my-python-k8s-exec-command)
+		 my-python-shell-program))))
+    (get-or-create-terminal
+     my-python-shell-program nil nil
+     '(lambda (term-buffer)
+	  (comint-send-string term-buffer "%cpaste\n")
+	  (sleep-for 0 200)
+	  (when (evil-normal-state-p)
+	    (python-mark-fold-or-section))
+	  (evil-send-region-to-terminal term-buffer)
+	  (sleep-for 0 200)
+	  (comint-send-string term-buffer "--\n")
 	 )
-      )
-      ))
+      )))
 
 ;; functions for formatting expressions inside braces
 (defun my-python-format-parens ()
@@ -213,7 +212,7 @@ This variable is only used if `my-python-shell-program' is `k8s'."
   ;;  )
 
   ;; only run the command if point is at an opening paren
-  (when (looking-at-p "[[({}]")
+  (when (looking-at-p "[({")
 
     ;; do not move cursor after exiting this function
     (save-excursion
@@ -223,11 +222,14 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 
       (let* (
 
+	    ;; check current smartparens mode status
+	    (current-smartparens-mode smartparens-mode)
+
 	    ;; get matching paren position
 	    (match-paren-pos (point))
 
-	    ;; save expression depth as failsafe against nested parens
-	    (sexp-depth (nth 0 (syntax-ppss)))
+	    ;; ;; save expression depth as failsafe against nested parens
+	    ;; (sexp-depth (nth 0 (syntax-ppss)))
 
 	    ;; pre-allocate list of breakpoints
 	    (breakpoint-list nil)
@@ -245,6 +247,9 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 	    (auto-fill-function nil)
 
 	    )
+
+	;; disable smartparens mode temporarily
+	(smartparens-mode -1)
 
 	;; save closing paren data
 	(setq breakpoint-list
@@ -265,30 +270,38 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 	(while (< (point) match-paren-pos)
 
 	  ;; jump to end of word or expression
-	  (sp-forward-sexp)
+	  (let ((starting-point (point)))
+	    (sp-forward-parallel-sexp)
+	    (when (< (point) starting-point)
+	      (goto-char starting-point) (evil-forward-word-begin)
+	      )
+	    )
 
-	  ;; if we stumbled on a string, skip over it
-	  (when (looking-at-p "[\"']") (sp-forward-sexp))
+	  ;; ;; if we stumbled on a string, skip over it
+	  ;; (when (looking-at-p "[\"']") (sp-forward-sexp))
 
 	  ;; if still at same depth level and looking at comma, add
 	  ;; position after comma with flag 1
-	  (when (and (eql (nth 0 (syntax-ppss)) sexp-depth)
-		     (looking-at-p ","))
+	  ;; (when (and (eql (nth 0 (syntax-ppss)) sexp-depth)
+	  ;; 	     (looking-at-p ","))
+	  (when (looking-at-p ",")
 	    (setq breakpoint-list
 		  (append
 		   breakpoint-list
 		   `((,(+ 2 (point)) . (1 ,(looking-at-p ".$")))))))
 
-	  ;; move to beginning of next word
-	  (evil-forward-word-begin)
-	  (when (looking-back "[\"']" 1) (evil-backward-char))
+	  ;; ;; move to beginning of next word if looking at space
+	  (when (looking-at-p " ")
+	    (evil-forward-word-begin)
+	    (when (looking-back "[\"']" 1) (evil-backward-char))
+	    )
+	  ;; (evil-forward-word-begin)
+	  ;; (when (looking-back "[\"']" 1) (evil-backward-char))
 
 	  ;; if still at same depth level and found break keyword or
 	  ;; closing paren, save position before word with flag 0
-	  (when (and (eql (nth 0 (syntax-ppss)) sexp-depth)
-		     (member
-		      (symbol-name (symbol-at-point))
-		      '("for" "if" "else")))  ; decided not to use "in"
+	  (when (member (symbol-name (symbol-at-point))
+			'("for" "if" "else"))  ; decided not to use "in"
 	    (save-excursion
 	      (evil-backward-word-end)
 	      (setq breakpoint-list
@@ -433,7 +446,7 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 				(car elt))))
 
 	      ;; move to end of symbol or to closing paren if at the end
-	      (if next-elt (evil-backward-word-end) (evil-forward-char))
+	      (if next-elt (evil-forward-char) (evil-backward-word-end))
 
 	      ;; if it goes beyond fill column, put newline after
 	      ;; previous candidate if it's on the same line
@@ -459,26 +472,15 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 	    (unless (car (cddr elt))
 	      (goto-char (car elt))
 	      (newline-and-indent)))))
+
+	;; re-enable smartparens mode if it had been enabled before
+	(smartparens-mode current-smartparens-mode)
+
 	))))
 
 ;; ;; support for ipython
 ;; (use-package ipython-shell-send)
 
-
-;; helper function to split python function input arguments for
-;; yasnippet templates
-(defun python-split-args-dbargman (input-string)
-  "Split python arguments INPUT-STRING into ((name, type) value)"
-  (let* (
-	 (arglist (split-string input-string " *, *\n* *" t))
-	 (argmap
-	  (mapcar (lambda (x) (split-string x " *= *" nil)) arglist))
-	 )
-    (mapcar
-     (lambda (x) (list (split-string (car x) " *: *" nil) (nth 1 x)))
-     argmap)
-    )
-  )
 
 (provide 'python)
 ;;; python.el ends here

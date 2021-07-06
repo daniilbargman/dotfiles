@@ -1,4 +1,4 @@
-;;; windows-and-tabs.el --- windows and tabs -*- lexical-binding: t -*-
+;;; layout.el --- windows and tabs -*- lexical-binding: t -*-
 
 ;; Author: Daniil Bargman
 ;; Maintainer: Daniil Bargman
@@ -36,37 +36,57 @@
 ;;; Define variables for this customization
 
 ;; group under "bind-terminal-shell"
-(defgroup windows-and-tabs nil
+(defgroup layout nil
   "Variables for setting behaviour of windows and tabs."
   :group 'External
-  :prefix 'windows-and-tabs
+  :prefix 'layout
   :version '0.1.0)
 
 ;: alist mapping buffer name prefixes to tab groups
-(defcustom windows-and-tabs-buffer-groups-by-name-regex nil
+(defcustom layout-buffer-groups-by-name-regex
+  '(("^[*]kubernetes.*[*]$" . "interactive")
+    ("^eaf-.*$" . "widgets")
+    ("^[.]dir-locals[.]el$" . "dir-locals")
+    ("^[*].*[*]$" . "_system")
+    )
   "Alist mapping buffer name regexp expressions to buffer group names."
-  :group 'windows-and-tabs
+  :group 'layout
   :type '(alist :key-type regexp :value-type string)
   :safe (lambda (_) t))
 
 ;; alist mapping buffer major modes to tab groups
-(defcustom windows-and-tabs-buffer-groups-by-major-mode nil
+(defcustom layout-buffer-groups-by-major-mode
+  '((term-mode . "terminals")
+    (shell-mode . "terminals")
+    (eshell-mode . "terminals")
+    (vterm-mode . "terminals")
+    )
   "Alist mapping buffer major modes to buffer group names."
-  :group 'windows-and-tabs
+  :group 'layout
   :type '(alist :key-type sexp :value-type string)
   :safe (lambda (_) t))
 
-;; alist mapping buffer file paths to tab groups
-(defcustom windows-and-tabs-buffer-groups-by-project-path nil
-  "Alist mapping project paths to buffer group names."
-  :group 'windows-and-tabs
-  :type '(alist :key-type string :value-type string)
-  :safe (lambda (_) t))
-
 ;; list of buffer names to filter out from awesome-tab
-(defcustom windows-and-tabs-buffer-filter-regexp-list nil
+(defcustom layout-buffer-filter-regexp-list
+ '("^[*]ovpn-mode[*]$"
+   "^[*]mount-.*[*]$"
+   "^[*]quelpa-.*[*]$"
+   "^[*]Messages[*]$"
+   "^[*]tramp/sudo .*[*]$"
+   "^[*]scratch[*]$"
+   "^ *[*]company-.*$"
+   "^ *[*]Treemacs-.*$"
+   "^ *[*]lsp-ui-.*$"
+   "^ *[*]mu4e-.*$"
+   "^ *[*]Org[ -].*$"
+   "^ *[*]EPC Server .*$"
+   "^ *[*]epc con .*$"
+   "^ *Download: .*$"
+   "^\.#.*\.org$"
+   ".*[.]org-archive[a-zA-Z/-<>]*"
+   "^.*[.]ovpn$")
   "Alist mapping buffer major modes to buffer group names."
-  :group 'windows-and-tabs
+  :group 'layout
   :type '(repeat regexp)
   :safe (lambda (_) t))
 
@@ -121,10 +141,17 @@
  #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
 
 
-;; automatically prompt to rename buffer after creating
-(setq tab-bar-post-open-functions
-      '(tab-bar-rename-tab))
+;; ;; automatically prompt to rename buffer after creating
+(defun auto-rename-new-tabs (&optional target-tab)
+  "Prompt the user for a buffer name for TARGET-TAB, and rename.
 
+Also runs tab-bar-post-switch-hooks function defined below."
+  (interactive)
+  (let ((new-tab-name
+	 (read-buffer "Name of the new tab: " (buffer-name) nil)))
+    (tab-rename new-tab-name)
+    (tab-bar-post-switch-hooks)))
+(add-to-list 'tab-bar-tab-post-open-functions 'auto-rename-new-tabs)
 
 ;;; Support creating / maximizing / destroying windows
 (window-list)
@@ -290,26 +317,24 @@ Uses evil commands."
 
   Variables are:
 
-    `windows-and-tabs-buffer-groups-by-name-regex'
-    `windows-and-tabs-buffer-groups-by-major-mode'
-    `windows-and-tabs-buffer-groups-by-project-path'
+    `layout-buffer-groups-by-name-regex'
+    `layout-buffer-groups-by-major-mode'
 
-  All three are alists mapping buffer attributes (name regex / major
-  mode / file path) to buffer group names.
+  Each variable is an alist mapping a buffer property to a group name.
 
-  The final result is a concated list of regex-based groups, major
-  mode-based groups, and file path-based groups, in that order
-  (i.e. only buffers not captured by the previous alist are forwarded
-  to the next alist).
+  The first alist to match a buffer defines its group.
 
-  If all alists are nil, `default-centaur-tabs-buffer-groups' is used."
+  If no alists match and the buffer points to a file, the file's
+  directory is used as the group name.
+
+  "
 
     ;; if name regex mapping is defined, apply it
     (let ((buffer-group-name nil))
       (setq buffer-group-name
 	    (cl-loop
 	    for (regex-value . group-name)
-	    in windows-and-tabs-buffer-groups-by-name-regex
+	    in layout-buffer-groups-by-name-regex
 	    if (string-match regex-value (buffer-name))
 	    return group-name
 		;; finally
@@ -322,31 +347,22 @@ Uses evil commands."
 	(setq buffer-group-name
 	      (cl-loop
 	      for (major-mode-value . group-name)
-	      in windows-and-tabs-buffer-groups-by-major-mode
+	      in layout-buffer-groups-by-major-mode
 	      if (derived-mode-p major-mode-value)
 	      return group-name
 	      )))
 
-      ;; if project path mapping is defined, apply it
+      ;; set group based on directory (i.e. group by directory)
       (unless buffer-group-name
-	(let ((bufferpath (buffer-file-name)))
-	  (if bufferpath
-	    (setq buffer-group-name
-		  (cl-loop
-		  for (project-path-value . group-name)
-		  in windows-and-tabs-buffer-groups-by-project-path
-		  if (string-prefix-p project-path-value bufferpath)
-		  return group-name
-		  )))))
+	(setq buffer-group-name (expand-file-name default-directory)))
 
       ;; if at least one classification is present but tab hasn't been
       ;; classified, return default group
       (if
 	  (and
 	    (null buffer-group-name)
-	    (not (and (null windows-and-tabs-buffer-groups-by-major-mode)
-		      (null windows-and-tabs-buffer-groups-by-name-regex)
-		      (null windows-and-tabs-buffer-groups-by-project-path)
+	    (not (and (null layout-buffer-groups-by-major-mode)
+		      (null layout-buffer-groups-by-name-regex)
 		      )))
 	  (setq buffer-group-name
 		(centaur-tabs-get-group-name (current-buffer))))
@@ -373,14 +389,14 @@ Uses evil commands."
     "Hide buffer X from centaur-tabs buffer list based on custom variable.
 
   The variable that determines the filter's behaviour is
-  `windows-and-tabs-buffer-filter-regexp-list'.  It is a list of regexp
+  `layout-buffer-filter-regexp-list'.  It is a list of regexp
   values, and any positive match will eliminate the buffer from centaur
   tab's grouping collage."
-    (if (null windows-and-tabs-buffer-filter-regexp-list)
+    (if (null layout-buffer-filter-regexp-list)
 	(default-centaur-tabs-hide-tab x)
 	(let ((name (format "%s" x)))
 	  (cl-loop for buffer-regexp-value
-		  in windows-and-tabs-buffer-filter-regexp-list
+		  in layout-buffer-filter-regexp-list
 		    if (string-match buffer-regexp-value name)
 			return t
 		    finally
@@ -480,37 +496,33 @@ Uses evil commands."
 (use-package treemacs-evil
   :after treemacs evil)
 
-;; change treemacs workspace when jumping to tab by number
-(defun jump-tab-and-workspace (&optional tabnum)
-  "Switch tab-bar tab and treemacs workspace.
+;; switch workspaces automatically when switching tab bars
+(defun tab-bar-post-switch-hooks (&rest args)
+  "Functions to run after switching between tab-bar tabs.
 
-The assumption is that there is a Treemacs workspace corresponding to
-the tab-bar name.
+ARGS are ignored but are a requirement for this advice."
 
-The TABNUM argument is a prefix passed on to `tab-bar-select-tab'"
-  (interactive "P")
-  (when tabnum
-    (tab-bar-select-tab tabnum)
-    ;; (switch-to-workspace-by-tab-name)
-    (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
+  ;; get tab name
+  (let (
+	(tab-name (assoc-default 'name (tab-bar--tab)))
+	)
+
+    ;; if the name is "mu4e", load emails
+    (if (string-equal tab-name "email")
+	(mu4e)
+
+      ;; otherwise try to switch to treemacs workspace by the same name
+      (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
+
+      )
     )
   )
 
-;; change treemacs workspace when jumping to next / previous tab
-(defun next-tab-and-workspace ()
-  "Switch to next tab-bar tab and change treemacs workspace."
-  (interactive)
-  (tab-bar-switch-to-next-tab)
-  (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
-  ;; (switch-to-workspace-by-tab-name)
-  )
-(defun previous-tab-and-workspace ()
-  "Switch to previous tab-bar tab and change treemacs workspace."
-  (interactive)
-  (tab-bar-switch-to-prev-tab)
-  (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
-  ;; (switch-to-workspace-by-tab-name)
-  )
+;; add post hooks as advice
+(advice-add 'tab-bar-select-tab :after #'tab-bar-post-switch-hooks)
+(advice-add 'tab-bar-switch-to-next-tab :after #'tab-bar-post-switch-hooks)
+(advice-add 'tab-bar-switch-to-prev-tab :after #'tab-bar-post-switch-hooks)
+(advice-add 'tab-bar-switch-to-recent-tab :after #'tab-bar-post-switch-hooks)
 
-(provide 'windows-and-tabs)
-;;; windows-and-tabs.el ends here
+(provide 'layout)
+;;; layout.el ends here
