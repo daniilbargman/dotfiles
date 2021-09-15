@@ -37,6 +37,9 @@
 		  (ignore-errors (save-buffers-kill-terminal)))
 		)
 
+;; toggle syntax type for a character between symbol and word
+(bind-key* "C-c s" 'toggle-syntax-entry)
+
 ;;; layout keybindings
 
 (with-eval-after-load "layout"
@@ -321,11 +324,36 @@
   (global-set-key
    (kbd "M-s M-s")
    '(lambda () (interactive)
-      (get-or-create-terminal nil nil nil 'evil-send-region-to-terminal))))
+      (get-or-create-terminal nil nil nil 'evil-send-region-to-terminal)
+      )
+   )
+
+  ;; keybinding for pasting text from default register
+  (evil-define-key 'normal 'vterm-mode-map
+    (kbd "p") '(lambda () (interactive)
+		   (forward-char) (vterm-yank)))
+
+  ;; keybinding for pasting text from clipboard
+  (evil-define-key '(insert emacs) 'vterm-mode-map
+    (kbd "M-v") 'vterm-yank-primary)
+  (evil-define-key 'normal 'vterm-mode-map
+    (kbd "M-v") '(lambda () (interactive)
+		   (forward-char) (vterm-yank-primary)))
+
+  ;; keybinding for pasting text from kill ring
+  (evil-define-key '(insert emacs) 'vterm-mode-map
+    (kbd "M-y") 'vterm-yank-pop)
+  (evil-define-key 'normal 'vterm-mode-map
+    (kbd "M-y") '(lambda () (interactive)
+		   (forward-char) (vterm-yank-pop)))
+
+  )
+
+
 
 ;;; "ide-base" keybindings
 
-(with-eval-after-load "ide-base"
+(with-eval-after-load "ide"
 
   ;; escape ivy minibuffer with escape key
   (define-key ivy-minibuffer-map (kbd "<escape>")
@@ -347,6 +375,9 @@
 
   ;; also, when in visual mode, delete highlighted text first
   (evil-define-key 'visual 'global (kbd "M-y") 'my/counsel-yank-pop-selection)
+
+  ;; format braces
+  (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)
 
   ;; leader key mappings
   (evil-leader/set-key
@@ -419,6 +450,36 @@
 
 (with-eval-after-load "org"
 
+  ;; preserve tab-bar movement commads; move headings around differently
+  (define-key outline-mode-map (kbd "M-j") nil)
+  (define-key outline-mode-map (kbd "M-k") nil)
+  (with-eval-after-load "evil"
+    (evil-define-key 'normal outline-mode-map (kbd "M-j") nil)
+    (evil-define-key 'normal outline-mode-map (kbd "M-k") nil)
+    (evil-define-key 'normal org-mode-map (kbd "C-M-j") \
+      'outline-move-subtree-down)
+    (evil-define-key 'normal org-mode-map (kbd "C-M-k") \
+      'outline-move-subtree-up)
+    )
+
+  ;; preserve window movement commands; jump around headings differently
+  (define-key org-mode-map (kbd "C-j") nil)
+  (define-key org-mode-map (kbd "C-k") nil)
+  (with-eval-after-load "evil"
+    (evil-define-key 'normal org-mode-map (kbd "C-j") nil)
+    (evil-define-key 'normal org-mode-map (kbd "C-k") nil)
+    (evil-define-key 'normal org-mode-map (kbd "C-n")
+      'org-forward-heading-same-level)
+    (evil-define-key 'normal org-mode-map (kbd "C-p")
+      'org-backward-heading-same-level)
+    )
+
+  ;; toggle checkboxes more easily
+  (define-key org-mode-map (kbd "C-c x") 'org-toggle-checkbox)
+
+  ;; add property with C-c C-p
+  (define-key org-mode-map (kbd "C-c C-p") 'org-set-property)
+
   ;; trigger for verb command map
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
 
@@ -487,10 +548,6 @@
 		   (python-nav-backward-defun)
 		   (python-nav-backward-defun)
 		   (python-nav-forward-defun)))
-
-  ;; format braces
-  (evil-define-key 'normal python-mode-map
-    (kbd "C-e") 'my-python-format-parens)
 
   ;; leader key mappings
   (evil-leader/set-key

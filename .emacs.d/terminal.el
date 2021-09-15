@@ -136,6 +136,7 @@ buffer name during each attempt to open a shell or send code to it."
       ;; (dedicated . t) ;dedicated is supported in emacs27
       (reusable-frames . visible)
       (window-height . 0.35)
+      (window-width . 1)
       ))
 
   )
@@ -197,12 +198,9 @@ creating it, set MOVE-CURSOR to nil."
        )
 
       ;; run init commands only if a buffer doesn't exist
-    (if vterm-buffer-existed
+    (unless vterm-buffer-existed
 
-	;; make sure the buffer is being displayed
-	(display-buffer vterm-buffer-name)
-
-      ;; otherwise, create a terminal buffer and run init commands
+      ;; create buffer and run initialization commands
       (with-current-buffer (vterm-toggle-show)
 
 	;; make this buffer a dedicated one so that each new buffer name
@@ -215,12 +213,20 @@ creating it, set MOVE-CURSOR to nil."
 	  (comint-send-string vterm-buffer-name
 			      (concat each-cmd "\n")))
 
-	;; if there is a command that should be run afterwards, give a
-	;; few seconds for the terminal shell to initialize
-	(when and-run (sleep-for 3))
-
 	)
+
+      ;; hide the window; it will be displayed in the right place by
+      ;; the display command that comes after this block.
+      (delete-window (get-buffer-window vterm-buffer-name))
+
+      ;; if there is a command that should be run afterwards, give a
+      ;; few seconds for the terminal shell to initialize
+      (when and-run (sleep-for 3))
+
       )
+
+    ;; display buffer
+    (display-buffer vterm-buffer-name)
 
     ;; move back to original window if needed
     (if move-cursor

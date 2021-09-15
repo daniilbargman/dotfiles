@@ -50,8 +50,8 @@
   ;; open term shells in emacs state
   (evil-set-initial-state 'term-mode 'emacs)
 
-  ;; open vterm shells in normal state
-  (evil-set-initial-state 'vterm-mode 'normal)
+  ;; open vterm shells in emacs state
+  (evil-set-initial-state 'vterm-mode 'emacs)
 
   ))
 

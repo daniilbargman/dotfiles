@@ -49,7 +49,8 @@
     )
 
 
-;; start vpn client on startup, kill before exiting emacs
+
+;; start vpn client on startup
 (with-eval-after-load "openvpn"
   (ovpn-mode-start-vpn-conf
    "/home/daniilbargman/.vpn/dbargman-server2.ovpn")

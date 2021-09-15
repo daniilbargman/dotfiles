@@ -1,4 +1,4 @@
-;;; ide-base.el --- Common IDE features -*- lexical-binding: t; -*-
+;;; ide.el --- Common IDE features -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020
 
@@ -57,6 +57,75 @@ buffer name during each attempt to open a shell or send code to it."
   :group 'ide-config
   :type 'float)
 
+
+;; Delay for company popup (when mode is toggled to active)
+(defcustom ide-format-parens-opening-paren-alist '("(")
+  "List of opening parens for which `ide/format-parens' will work.
+
+  Point will have to be on one of the allowed opening paren symbols for
+  the `ide/format-parens' to attempt its formatting logic. Otherwise
+  the function will not work."
+  :group 'ide-config
+  :type '(repeat string)
+  :local t
+  :safe (lambda (_) t))
+
+;; Delay for company popup (when mode is toggled to active)
+(defcustom ide-paren-wrap-delimiters '(((before " ")))
+  "List of lists of strings to use as delimiters inside parens.
+
+  The function `ide/format-parens'iterates over several display options
+  for parentheses, which is useful for languages like python and JS. For
+  example, when the cursor is at the opening paren, this function will
+  sequentially toggle the following options:
+
+      using commas as the separator:
+
+      a = {1, 2, 3}
+
+      a = {1,
+	   2,
+	   3}
+
+      a = {
+	1, 2, 3,
+      }
+
+      a = {
+	1,
+	2,
+	3,
+      }
+
+    using python's list comprehension keywords as separators:
+
+    a = [x for x in range(10) if x > 5]
+
+    a = [x
+	 for x in range(10)
+	 if x > 5]
+
+    a = [
+      x for x in range(10) if x > 5
+    ]
+
+    a = [
+      x
+      for x in range(10)
+      if x > 5
+    ]
+
+  Newlines are dynamically inserted and removed inside paren pairs. The
+  lists of delimiters defined in this variable are used as the guideline
+  for where newlines can be inserted. The function looks for matches
+  from each delimiter list in the order in which the lists are defined,
+  and uses the first list from which at least one string has matched."
+  :group 'ide-config
+  :type '(alist :value-type ((alist :value-type (symbol string))))
+  :local t
+  :safe (lambda (_) t))
+
+
 ;;; Better minibuffer (Ivy)
 
 ;; use counsel
@@ -98,8 +167,8 @@ buffer name during each attempt to open a shell or send code to it."
     (let* ((target-range (evil-visual-range))
 	    (BEG (nth 0 target-range))
 	    (END (nth 1 target-range))
-	    ;; (type (nth 2 target-range))
 	    )
+      (goto-char END)
       (counsel-yank-pop)
       (evil-delete BEG END) ; type)
       ))
@@ -427,28 +496,28 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; add hook to indent according to context
   (defun indent-to-context (id action mode)
-     "indent closing paren according to context."
-     (when (or (eq action 'insert) (eq action 'wrap))
-     (save-excursion
-       (evil-backward-WORD-end)
-       (evil-jump-item)
-       (indent-according-to-mode))))
+    "indent closing paren according to context."
+    (when (or (eq action 'insert) (eq action 'wrap))
+      (save-excursion
+	(evil-backward-WORD-end)
+	(evil-jump-item)
+	(indent-according-to-mode))))
 
   ;; duplicate spaces and newlines inside matching pairs, unless already
   ;; inserted
-  (sp-pair "( " " )")
-  (sp-pair "(\n" "\n)"
-	   :unless '(sp-point-before-eol-p)
+  (sp-local-pair 'prog-mode "( " " )")
+  (sp-local-pair 'prog-mode "(\n" "\n)"
+	   :unless '(sp-point-before-eol-p sp-point-before-word-p)
 	   :post-handlers '(:add indent-to-context)
 	   )
-  (sp-pair "[ " " ]")
-  (sp-pair "[\n" "\n]"
-	   :unless '(sp-point-before-eol-p)
+  (sp-local-pair 'prog-mode "[ " " ]")
+  (sp-local-pair 'prog-mode "[\n" "\n]"
+	   :unless '(sp-point-before-eol-p sp-point-before-word-p)
 	   :post-handlers '(:add indent-to-context)
 	   )
-  (sp-pair "{ " " }")
-  (sp-pair "{\n" "\n}"
-	   :unless '(sp-point-before-eol-p)
+  (sp-local-pair 'prog-mode "{ " " }")
+  (sp-local-pair 'prog-mode "{\n" "\n}"
+	   :unless '(sp-point-before-eol-p sp-point-before-word-p)
 	   :post-handlers '(:add indent-to-context)
 	   )
 
@@ -461,6 +530,254 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; load default config
   (require 'smartparens-config))
+
+
+;; functions for formatting expressions inside braces
+(defun ide/format-parens ()
+  "Format collections inside parens."
+  (interactive)
+  ;; (message (number-to-string (nth 0 (syntax-ppss))))
+  ;;  )
+
+  ;; only run the command if point is at an opening paren
+  (when (looking-at-p
+	 (string-join
+	  `("["
+	    ,(string-join ide-format-parens-opening-paren-alist)
+	    "]")))
+
+    ;; do not move cursor after exiting this function
+    (save-excursion
+
+      ;; originally move cursor to closing paren to extract scope
+      (evil-jump-item)
+
+      (let* (
+
+	     ;; save current state of smartparens modes
+	     (spm smartparens-mode)
+	     (spgm smartparens-global-mode)
+	     (spsm smartparens-strict-mode)
+	     (spgsm smartparens-global-strict-mode)
+
+	     ;; temporarily disable fill functions; handle manually
+	     (auto-fill-function nil)
+
+	     ;; get matching paren position
+	     (match-paren-pos (point))
+
+	     ;; save expression depth as failsafe against nested parens
+	     (sexp-depth (ppss-depth (syntax-ppss)))
+
+	     ;; pre-allocate list of breakpoints
+	     (breakpoint-list nil)
+
+	    )
+
+	;; disable smartparens modes
+	(smartparens-mode -1)
+	(smartparens-global-mode -1)
+	(smartparens-strict-mode -1)
+	(smartparens-global-strict-mode -1)
+	
+
+	;; return to opening paren
+	(evil-jump-item)
+
+	;; try searching for elements of alists containing delimiters.
+	;; If found, assemble list of corresponding breakpoints
+	(setq breakpoint-list
+	  (cl-loop
+	  for delim-alist in ide-paren-wrap-delimiters
+
+	  ;; loop over each element in an alist and look for match
+	  if (cl-loop
+	      for delim in delim-alist
+
+	      ;; check if match exists
+	      if (cl-loop
+		  while t
+		  if (search-forward (cadr delim) match-paren-pos t)
+		  if (progn
+		       (goto-char (- it 1))
+		       (let ((match-found
+			     (and
+			      ;; check same ppss depth
+			      (= (ppss-depth (syntax-ppss)) sexp-depth)
+			      ;; check that it's not inside a string
+			      (not (in-string-p)))))
+
+			 ;; if match is successful, return breakpoint
+			 ;; depending on whether it is a "before" or
+			 ;; "after" keyword
+			 (forward-char)
+			 (when match-found
+			   (if (eq (car delim) 'after)
+			       `(,it ,(looking-at-p "$"))
+			     (save-excursion
+			       (goto-char (- it (length (cadr delim))))
+			       `(,(point)
+				 ,(looking-back
+				   "^ *" (- match-paren-pos 200))
+				 )
+			       )
+			     )
+			   )
+			 )
+		       )
+
+		  ;; append match to breakpoint list
+		  collect it into breakpoint-list-for-one-delim
+		  end
+		  else return breakpoint-list-for-one-delim
+		  )
+	      collect it into breakpoint-list
+	      finally return (apply 'append breakpoint-list)
+	      )
+	  return it
+	  ))
+
+	;; only continue if any breakpoints have been found
+	(when breakpoint-list
+
+	  ;; prepend closing paren data to the list of breakpoints
+	  (goto-char match-paren-pos)
+	  (setq breakpoint-list
+		(append
+		 `((,match-paren-pos
+		    ,(looking-back "^ *" (- match-paren-pos 200))))
+		 breakpoint-list
+		 ))
+
+	  ;; prepend opening paren data to the list of breakpoints
+	  (evil-jump-item)
+	  (setq breakpoint-list
+		(append
+		 `((
+		   ,(1+ (point))
+		   ,(looking-at-p ".$")
+		   ))
+		 breakpoint-list
+		 ))
+
+	  ;; print the breakpoint list
+	  (prin1 breakpoint-list)
+
+	  ;; reformat paren contents depending on current state
+	  (cond
+
+	    ;; if all breakpoints are newlines, compress to one line
+	    ((seq-every-p 'cadr breakpoint-list)
+
+	     ;; simply join between opening paren and closing paren
+	     (evil-join (1- (caar breakpoint-list)) match-paren-pos)
+
+	     )
+
+	    ;; if all non-paren breakpoints are newlines, insert paren
+	    ;; newlines and put everything in-between on same line
+	    ((seq-every-p 'cadr (nthcdr 2 breakpoint-list))
+
+	     ;; join everything onto one line
+	     (evil-join (caar breakpoint-list) match-paren-pos)
+
+	     ;; go to opening paren and insert newline
+	     (goto-char (caar breakpoint-list))
+	     (newline-and-indent)
+
+	     ;; go to closing paren and insert newline
+	     (goto-char (1- (caar breakpoint-list)))
+	     (evil-jump-item)
+	     (newline-and-indent)
+
+	     )
+
+	    ;; if at least one of the non-paren breakpoints is a newline
+	    ;; (but not all of them), then we have already filled to
+	    ;; style and so newlines need to be inserted everywhere
+	    ((seq-some 'cadr (nthcdr 2 breakpoint-list))
+
+	     ;; start from last element, and move back
+	     (cl-loop for bp in (reverse (nthcdr 2 breakpoint-list))
+		      unless (cadr bp) do
+		      (goto-char (car bp)) (newline-and-indent))
+
+	     )
+
+	    ;; remaining case: if none of the non-paren breakpoints have
+	    ;; newlines, we fill to style if the line is too long, or
+	    ;; insert newlines everywhere if line length is within
+	    ;; specified limits
+	    (t
+
+	     ;; we only care about non-paren elements from now on
+	     (let ((breakpoint-list (nthcdr 2 breakpoint-list)))
+
+	       ;; go to end of line and check if too long
+	       (goto-char (caar breakpoint-list))
+	       (end-of-line)
+
+	       (cond
+
+		;; if line is too long, apply fill paragraph
+		((>= (current-column) fill-column)
+
+		 ;; pre-allocate variables for tracking indent
+		 (let (
+		       (cumulative-offset 0)
+		       (bplist (mapcar 'car breakpoint-list))
+		       )
+		   ;; loop and insert newlines ahead of breakpoints that
+		   ;; break beyond fill column setting
+		   (cl-loop
+		    for bp below (length bplist) do
+
+		    ;; go to breakpoint following this one, or to end of
+		    ;; line if we're at the last breakpoint
+		    (let (
+			  (this-bp (nth bp bplist))
+			  (next-bp (nth (1+ bp) bplist))
+			  )
+		      (if next-bp
+			  (goto-char (+ cumulative-offset next-bp))
+			(end-of-line))
+
+		      ;; check if the column is beyond fill-column
+		      (when (>= (current-column) fill-column)
+
+			;; if yes, insert newline at this breakpoint
+			(goto-char (+ cumulative-offset this-bp))
+			(newline-and-indent)
+			(setq cumulative-offset (- (point) this-bp 1))
+
+			)
+		      )
+		    )
+		   )
+		 )
+
+	        ;; otherwise, insert newlines everywhere
+		(t
+
+		 (cl-loop for bp in (reverse breakpoint-list) do
+			  (goto-char (car bp)) (newline-and-indent))
+		 )
+		)
+	       )
+	     )
+	    )
+	  )
+
+	;; revert smartparens mode to original state
+	(when spm (smartparens-mode spm))
+	(when spgm (smartparens-global-mode spgm))
+	(when spsm (smartparens-strict-mode spsm))
+	(when spgsm (smartparens-global-strict-mode spgsm))
+	)
+      )
+    )
+  )
+
 
 ;; highlighting of words/symbols under cursor
 (use-package highlight-symbol
@@ -500,5 +817,5 @@ buffer name during each attempt to open a shell or send code to it."
 
 
 ;; done
-(provide 'ide-common.el)
-;;; ide-base.el ends here
+(provide 'ide.el)
+;;; ide.el ends here

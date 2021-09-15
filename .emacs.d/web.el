@@ -33,8 +33,18 @@
 ;; enable lsp in JavaScript mode
 (add-hook 'js-mode-hook 'lsp-deferred)
 
-;; set fill column at 79
-(add-hook 'js-mode-hook (lambda () (setq fill-column 79)))
+;; set defaults
+(add-hook
+ 'js-mode-hook
+ (lambda ()
+   (setq fill-column 79
+	 ide-format-parens-opening-paren-alist '("(" "[" "{")
+	 ide-paren-wrap-delimiters
+	 '(((after ";"))
+	   ((after ",")))
+	 )
+   )
+ )
 
 ;;; add svelte support
 (use-package svelte-mode
@@ -49,32 +59,7 @@
   ;; associate .svelte files with svelte-mode
   (add-to-list 'auto-mode-alist '("\\.svelte\\'" . svelte-mode))
 
-  ;; ;; add svelte to LSP language ID index
-  ;; (add-to-list 'lsp-language-id-configuration '(svelte-mode . "svelte"))
-
   )
-
-;; ;; install lsp server for tailwind-css
-;; (use-package lsp-tailwindcss
-
-;;   :custom
-
-;;   ;; make sure tailwindcss is used as an add-on server
-;;   (lsp-tailwindcss-add-on-mode t)
-
-;;   :config
-
-;;   ;; add tailwindcss to LSP language ID index
-;;   (add-to-list 'lsp-language-id-configuration '(svelte-mode . "tailwindcss"))
-;;   (add-to-list 'lsp-language-id-configuration '(js-mode . "tailwindcss"))
-;;   (add-to-list 'lsp-language-id-configuration '(css-mode . "tailwindcss"))
-;;   (add-to-list 'lsp-language-id-configuration '(html-mode . "tailwindcss"))
-
-;;   )
-
-;; ;; make sure flycheck works with multiple major modes enabled
-;; (with-eval-after-load 'lsp-mode
-;;   (mapc #'lsp-flycheck-add-mode '(typescript-mode js-mode css-mode svelte-mode)))
 
 
 (provide 'web)

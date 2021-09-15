@@ -1,5 +1,8 @@
 # -*- mode: snippet -*-
 # name: python code block
 # key: dblock
+# expand-env: ((yas-indent-line nil))
 # --
+`""`
 # %% $0
+`""`

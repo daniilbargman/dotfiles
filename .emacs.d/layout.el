@@ -255,8 +255,9 @@ Uses evil commands."
   (centaur-tabs-set-bar 'under)
   (x-underline-at-descent-line t)
 
-  ;; disable close button
+  ;; disable close button and add button
   (centaur-tabs-set-close-button nil)
+  (centaur-tabs-show-new-tab-button nil)
 
   ;; show dots next to modified tabs
   (centaur-tabs-set-modified-marker t)

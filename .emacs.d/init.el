@@ -64,7 +64,17 @@
 
 ;;; Basic settings for working with text
 
-;; treat underscores as parts of a word
+;; interactively toggle character syntax between symbol and word
+(defun toggle-syntax-entry (char)
+  "Toggle syntax entry for CHAR between symbol to word."
+  (interactive "c")
+  (if (eq ?_ (char-syntax char))
+      (progn (modify-syntax-entry char "w")
+	     (message "word"))
+    (progn (modify-syntax-entry char "_")
+	   (message "symbol"))))
+
+;; treat underscores as parts of a word by default
 (modify-syntax-entry ?_ "w")
 
 ;; do not use double spaces to delimit sentences
@@ -124,10 +134,10 @@
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 (require 'quelpa-use-package)
 
-;; update packages asynchronously on a daily basis
-(use-package spu
-  :defer 5 ;; defer package loading for 5 second
-  :config (spu-package-upgrade-daily))
+;; ;; THIS DOES NOT WORK: update packages asynchronously on a daily basis
+;; (use-package spu
+;;   :defer 5 ;; defer package loading for 5 second
+;;   :config (spu-package-upgrade-daily))
 
 ;; add rainbow mode
 (use-package rainbow-mode
@@ -256,7 +266,7 @@
 (load-config-file "snippets.el")
 
 ;; language-agnostic IDE features
-(load-config-file "ide-base.el")
+(load-config-file "ide.el")
 
 ;; window and tab management
 (load-config-file "layout.el")
