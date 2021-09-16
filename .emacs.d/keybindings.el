@@ -329,21 +329,21 @@
    )
 
   ;; keybinding for pasting text from default register
-  (evil-define-key 'normal 'vterm-mode-map
+  (evil-define-key 'normal vterm-mode-map
     (kbd "p") '(lambda () (interactive)
 		   (forward-char) (vterm-yank)))
 
   ;; keybinding for pasting text from clipboard
-  (evil-define-key '(insert emacs) 'vterm-mode-map
+  (evil-define-key '(insert emacs) vterm-mode-map
     (kbd "M-v") 'vterm-yank-primary)
-  (evil-define-key 'normal 'vterm-mode-map
+  (evil-define-key 'normal vterm-mode-map
     (kbd "M-v") '(lambda () (interactive)
 		   (forward-char) (vterm-yank-primary)))
 
   ;; keybinding for pasting text from kill ring
-  (evil-define-key '(insert emacs) 'vterm-mode-map
+  (evil-define-key '(insert emacs) vterm-mode-map
     (kbd "M-y") 'vterm-yank-pop)
-  (evil-define-key 'normal 'vterm-mode-map
+  (evil-define-key 'normal vterm-mode-map
     (kbd "M-y") '(lambda () (interactive)
 		   (forward-char) (vterm-yank-pop)))
 

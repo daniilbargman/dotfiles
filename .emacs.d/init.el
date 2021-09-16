@@ -30,6 +30,26 @@
 ;; pre-compile packages as recommended by GCC Emacs branch
 (setq package-native-compile t)
 
+;; use straight.el instead of package.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'use-package)
+(use-package straight
+  :custom (straight-use-package-by-default t))
+;; (setq straight-enable-use-package-integration t)
+(setq straight-fix-flycheck t)
+
+
 ;;; Basic look and feel:
 
 ;; remove distractions
@@ -101,38 +121,38 @@
 
 ;;; Package management:
 
-;; initialize package manager with the right repositories
-(require 'package)
-(add-to-list 'package-archives
-	     '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
+; ;; initialize package manager with the right repositories
+; (require 'package)
+; (add-to-list 'package-archives
+; 	     '("melpa" . "https://melpa.org/packages/") t)
+; (package-initialize)
 
 
-;; NOTE: this is no longer required with Emacs 27.1
-;; set this to make sure packages are installed from ELPA
-(defvar gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+; ;; NOTE: this is no longer required with Emacs 27.1
+; ;; set this to make sure packages are installed from ELPA
+; (defvar gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 
-;; install "use-package" macro
-(when (not (package-installed-p 'use-package))
-  (package-refresh-contents)
-  (package-install 'use-package))
+; ;; install "use-package" macro
+; (when (not (package-installed-p 'use-package))
+;   (package-refresh-contents)
+;   (package-install 'use-package))
 
-;; always "ensure" that package is installed
-(require 'use-package-ensure)
-(setq use-package-always-ensure t)
+; ;; always "ensure" that package is installed
+; (require 'use-package-ensure)
+; (setq use-package-always-ensure t)
 
-;; install quelpa for getting packages directly from github
-(unless (package-installed-p 'quelpa)
-  (with-temp-buffer
-    (url-insert-file-contents
-     "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-    (eval-buffer)
-    (quelpa-self-upgrade)))
-(quelpa
- '(quelpa-use-package
-   :fetcher git
-   :url "https://github.com/quelpa/quelpa-use-package.git"))
-(require 'quelpa-use-package)
+; ;; install quelpa for getting packages directly from github
+; (unless (package-installed-p 'quelpa)
+;   (with-temp-buffer
+;     (url-insert-file-contents
+;      "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+;     (eval-buffer)
+;     (quelpa-self-upgrade)))
+; (quelpa
+;  '(quelpa-use-package
+;    :fetcher git
+;    :url "https://github.com/quelpa/quelpa-use-package.git"))
+; (require 'quelpa-use-package)
 
 ;; ;; THIS DOES NOT WORK: update packages asynchronously on a daily basis
 ;; (use-package spu
@@ -304,8 +324,13 @@
 ;; openvpn client
 (load-config-file "openvpn.el")
 
-;; add widget support
-(load-config-file "widgets.el")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NOTE: DEPRECATED THIS BIT as it seems to hang with straight.el and
+;; i'm not really using EAF widgets anyway.
+;;
+;; ;; add widget support
+;; (load-config-file "widgets.el")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Session management:
 

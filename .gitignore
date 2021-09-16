@@ -30,6 +30,11 @@
 !.emacs.d/snippets/**
 .emacs.d/snippets/**/*~
 
+# do not ignore straight.el version snapshot file
+!.emacs.d/straight/
+.emacs.d/straight/*
+!.emacs.d/straight/versions/
+
 # ignore vim's undo directory and plugins, except vim-plug itself
 .vim/undodir/
 .vim/view/

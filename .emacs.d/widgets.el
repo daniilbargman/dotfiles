@@ -43,15 +43,16 @@
 
 ;;; browser and other widgets via EAF
 (use-package eaf
-  :quelpa
-  (eaf :fetcher github
+  :straight
+  (eaf :type git
+       :host github
        :repo "manateelazycat/emacs-application-framework"
        :files ("*"))
   :init
-  (use-package epc :defer t :ensure t)
-  (use-package ctable :defer t :ensure t)
-  (use-package deferred :defer t :ensure t)
-  (use-package s :defer t :ensure t)
+  (use-package epc :defer t)
+  (use-package ctable :defer t)
+  (use-package deferred :defer t)
+  (use-package s :defer t)
   :custom
   (eaf-browser-continue-where-left-off t)
   :config
@@ -61,8 +62,25 @@
   ;; (eaf-bind-key take_photo "p" eaf-camera-keybinding)
   (eaf-bind-key nil "M-q" eaf-browser-keybinding) ;; unbind, see more in the Wiki
 
-
   )
+
+;; ;; using straight.el - THIS DOESN'T WORK WITHER
+;; (straight-use-package
+;;  '(eaf :type git
+;;        :host github
+;;        :repo "manateelazycat/emacs-application-framework"
+;;        :files ("*.el" "*.py" "core" "app"))
+;;  )
+;; (use-package epc :defer t)
+;; (use-package ctable :defer t)
+;; (use-package deferred :defer t)
+;; (use-package s :defer t)
+;; (setq eaf-browser-continue-where-left-off t)
+;; (eaf-setq eaf-browser-enable-adblocker "true")
+;; ;; (eaf-bind-key scroll_up "C-u" eaf-pdf-viewer-keybinding)
+;; ;; (eaf-bind-key scroll_down "C-d" eaf-pdf-viewer-keybinding)
+;; ;; (eaf-bind-key take_photo "p" eaf-camera-keybinding)
+;; (eaf-bind-key nil "M-q" eaf-browser-keybinding) ;; unbind, see more in the Wiki
 
 
 (provide 'widgets)

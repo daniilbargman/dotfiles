@@ -195,6 +195,7 @@ creating it, set MOVE-CURSOR to nil."
 	(or program terminal-program))
        (init-commands-tmp
 	(or init-commands terminal-init-commands))
+       (num-windows (length (window-list)))
        )
 
       ;; run init commands only if a buffer doesn't exist
@@ -215,9 +216,14 @@ creating it, set MOVE-CURSOR to nil."
 
 	)
 
-      ;; hide the window; it will be displayed in the right place by
+      ;; hide the buffer; it will be displayed in the right place by
       ;; the display command that comes after this block.
-      (delete-window (get-buffer-window vterm-buffer-name))
+      (let ((bufw (get-buffer-window vterm-buffer-name)))
+	(if (> num-windows 1)
+	    (switch-to-prev-buffer bufw)
+	  (delete-window bufw)
+	)
+      )
 
       ;; if there is a command that should be run afterwards, give a
       ;; few seconds for the terminal shell to initialize
