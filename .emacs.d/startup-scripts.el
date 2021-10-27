@@ -71,10 +71,16 @@
   (let (
 
 	;; path to the maildir
-	(maildir-path
-	 "/mnt/projects/statosphere/Business/mail/daniil.bargman/")
+	(maildir-base
+	 "/mnt/projects/statosphere/Business/mail/")
 
 	)
+
+    ;; set database directories for getmail and mu4e
+    (setq
+      maildir-path (concat maildir-base "daniil.bargman/")
+      mu4e-mu-home (concat maildir-base "muhome/")
+    )
 
     ;; command for retrieving emails
     (setq

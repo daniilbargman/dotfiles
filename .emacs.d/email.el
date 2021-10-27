@@ -45,7 +45,7 @@
 (require 'mu4e)
 
 ;; point to mu binary
-(setq mu4e-mu-binary "~/.emacs.d/mu/mu/mu")
+(setq mu4e-mu-binary "/usr/local/bin/mu")
 
 ;; use mu4e for e-mail in emacs
 (setq mail-user-agent (mu4e-user-agent))

@@ -85,6 +85,9 @@
   ;; open minibuffer prompt for group name
   (bind-key* "C-x C-n" 'centaur-tabs-counsel-switch-group)
 
+  ;; go to previous active buffer with C-x C-p
+  (bind-key* "C-x C-p" 'previous-buffer)
+
 
   ;;; visual window and buffer manipulation
 

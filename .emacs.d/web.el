@@ -32,6 +32,7 @@
 
 ;; enable lsp in JavaScript mode
 (add-hook 'js-mode-hook 'lsp-deferred)
+;; (add-hook 'js-mode-hook 'tree-sitter-hl-mode)
 
 ;; set defaults
 (add-hook
@@ -48,16 +49,31 @@
 
 ;;; add svelte support
 (use-package svelte-mode
-  ;;; disabling this hook as it tends to mess up tab-bar tabs
-  ;; :hook (svelte-mode . lsp-deferred)
+  ;;; enable LSP for svelte-mode
+  :hook (svelte-mode . lsp-deferred)
+
+  :init
+
+  ;; set defaults for paren formatting and other things
+  (add-hook 'svelte-mode-hook
+	    (lambda ()
+	      (setq fill-column 79
+		    ide-format-parens-opening-paren-alist '("(" "[" "{")
+		    ide-paren-wrap-delimiters
+		    '(((after ";"))
+		      ((after ",")))
+		    )
+	      )
+	    )
+
   :custom
   (svelte-basic-offset 4)
   (svelte-display-submodule-name t)
+  (lsp-svelte-plugin-typescript-enable nil)
 
-  :config
-
+  ;; :config
   ;; associate .svelte files with svelte-mode
-  (add-to-list 'auto-mode-alist '("\\.svelte\\'" . svelte-mode))
+  ;; (add-to-list 'auto-mode-alist '("\\.svelte\\'" . svelte-mode))
 
   )
 

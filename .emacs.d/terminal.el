@@ -219,9 +219,9 @@ creating it, set MOVE-CURSOR to nil."
       ;; hide the buffer; it will be displayed in the right place by
       ;; the display command that comes after this block.
       (let ((bufw (get-buffer-window vterm-buffer-name)))
-	(if (> num-windows 1)
-	    (switch-to-prev-buffer bufw)
-	  (delete-window bufw)
+	(if (> (length (window-list)) num-windows)
+	    (delete-window bufw)
+	  (switch-to-prev-buffer bufw)
 	)
       )
 

@@ -211,11 +211,11 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; try out tree-sitter
 (use-package tree-sitter
-  :hook (lsp-mode . tree-sitter-hl-mode)
+  :hook ((python-mode rust-mode) . tree-sitter-hl-mode)
   :config
   (use-package tree-sitter-langs)
   (global-tree-sitter-mode)
-  (tree-sitter-hl-mode)
+  ;; (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
   )
 
 

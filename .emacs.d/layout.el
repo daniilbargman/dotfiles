@@ -238,6 +238,9 @@ Uses evil commands."
 
 ;;; support for tabs and tab groups via awesome-tab
 
+;; add support for icons
+(use-package all-the-icons)
+
 ;; load package (from github as melpa doesn't have it yet)
 (use-package centaur-tabs
   :demand
@@ -266,10 +269,6 @@ Uses evil commands."
   (centaur-tabs-adjust-buffer-order 'left)
   
   :config
-
-  ;; add support for icons
-  (use-package all-the-icons
-    :config (all-the-icons-install-fonts t))
 
   ;; enable mode
   (centaur-tabs-mode t)

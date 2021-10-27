@@ -22,7 +22,8 @@ set -Eeuo pipefail
 function append_error {
     bl=${BASH_LINENO[$((${#BASH_LINENO[@]} - 2))]}
     echo line $bl in $BASE_DIR/$SCRIPT_NAME
-    exit 1 }
+    exit 1
+}
 
 # trap errors from third-party functions
 trap append_error ERR
@@ -31,11 +32,12 @@ trap append_error ERR
 function error_exit {
     echo
     echo $1
-    append_error }
+    append_error
+}
 
 ## install dependencies
 
-sudo apt-get install libgmime-3.0-dev libxapian-dev
+sudo apt-get install libgmime-3.0-dev libxapian-dev meson
 
 # install autotools for git repo to work
 sudo apt-get install -y autotools-dev autoconf libtool texinfo
@@ -43,8 +45,8 @@ sudo apt-get install -y autotools-dev autoconf libtool texinfo
 # optional
 sudo apt-get install guile-2.2-dev html2text xdg-utils
 
-# optional: only needed for msg2pdf and mug (toy gtk+ frontend)
-sudo apt-get install libwebkitgtk-3.0-dev
+# # optional: only needed for msg2pdf and mug (toy gtk+ frontend)
+# sudo apt-get install libwebkitgtk-3.0-dev
 
 ## install package itself
 

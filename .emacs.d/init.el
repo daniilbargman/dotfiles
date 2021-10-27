@@ -164,8 +164,9 @@
   :hook prog-mode org-mode)
 
 ;; add org mode
-(use-package org)
-
+;; (use-package org)
+(use-package org
+  :straight '(org :type built-in))
 
 ;;; Colour theme management
 
