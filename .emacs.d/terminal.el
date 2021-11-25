@@ -36,16 +36,30 @@
   :prefix 'terminal
   :version '0.1.0)
 
-;; Name of shell buffer (if nil, always prompt in minibuffer)
+;; Name of shell buffer (if nil, use default based on buffer name)
 (defcustom terminal-buffer-name nil
   "Name of (the buffer containing) the desired terminal shell.
 
 If the buffer by the specified name does not exist, it will typically be
-created by opening an ansi-terminal in a new window and running the
-command defined by bind-terminal-shell-program.
+created by opening a vterm buffer in a new window and running the
+command defined by terminal-program.
 
-If this variable is not set, the user will be prompted for a targat
-buffer name during each attempt to open a shell or send code to it."
+This variable is buffer-local."
+  :group 'terminal
+  :type 'string
+  :safe (lambda (_) t))
+(make-variable-buffer-local 'terminal-buffer-name)
+
+;; Default name prefix for shell buffer (if terminal-buffer-name is nil)
+(defcustom terminal-buffer-name-default-prefix "vterm"
+  "Prefix for the default terminal buffer name based on original buffer.
+
+If terminal-buffer-name is not nil, the default terminal buffer name
+will be decided by prepending the value of this variable to the name
+of the buffer from which a new terminal is being created. For example,
+if the terminal is being created from within a buffer called new.el and
+this prefix is set to \"vterm\",the default terminal buffer name will be
+\"vterm-new.el\"."
   :group 'terminal
   :type 'string
   :safe (lambda (_) t))
@@ -125,37 +139,70 @@ buffer name during each attempt to open a shell or send code to it."
   (add-to-list 'display-buffer-alist
 
       ;; applies to buffers with vterm-mode major mode
-    '((lambda(bufname _) (with-current-buffer bufname (equal major-mode 'vterm-mode)))
+    '((lambda (bufname _)
+	(with-current-buffer bufname (equal major-mode 'vterm-mode)))
 
-      ;; changed from `display-buffer-reuse-window' because reuse-mode
-      ;; ensures all vterm buffers are created as new tabs in the same
-      ;; window and not in new windows, even when dedicated flag is set
-      (display-buffer-reuse-mode-window display-buffer-in-direction)
-      ;;display-buffer-in-direction/direction/dedicated is added in emacs27
-      (direction . bottom)
-      ;; (dedicated . t) ;dedicated is supported in emacs27
-      (reusable-frames . visible)
-      (window-height . 0.35)
-      (window-width . 1)
-      ))
+	;; changed from `display-buffer-reuse-window' because reuse-mode
+	;; ensures all vterm buffers are created as new tabs in the same
+	;; window and not in new windows, even when dedicated flag is set
+	(display-buffer-reuse-mode-window display-buffer-in-direction)
+	;;display-buffer-in-direction/direction/dedicated is added in emacs27
+	(direction . bottom)
+	;; (dedicated . t) ;dedicated is supported in emacs27
+	(reusable-frames . visible)
+	(window-height . 0.35)
+	(window-width . 1)
+	)
+    )
 
   )
 
 
 ;;; helper function for determing target vterm buffer name
-(defun parse-vterm-buffer-name ()
-  "Parse target vterm buffer name for the current buffer."
-  (or terminal-buffer-name (concat "vterm-" (buffer-name))))
+(defun parse-vterm-buffer-name (p)
+  "Parse target vterm buffer name for the current buffer.
+
+When running with a prefix (P), select an existing terminal buffer as
+the target for the command, or provide a new buffer name manully.
+Optionally set the selected buffer as the new default as well."
+  (interactive "P")
+  (let* (
+	 (default-buffer
+	   (or terminal-buffer-name
+	       (concat
+		terminal-buffer-name-default-prefix "-" (buffer-name))))
+	 (interactive-bufname default-buffer)
+	 (p (or p 0))
+	 )
+    (when (>= p 1)
+      (setq interactive-bufname
+	    (completing-read
+	     "choose or provide vterm buffer name: "
+	     (mapcar 'buffer-name vterm-toggle--buffer-list)
+	     nil nil nil nil default-buffer)
+	    )
+      )
+    (when (>= p 2)
+      (customize-set-value 'terminal-buffer-name interactive-bufname)
+      )
+    interactive-bufname
+    )
+  )
 
 ;;; function for renaming a terminal and running custom init commands
 (defun get-or-create-terminal
-    (&optional program init-commands move-cursor and-run)
+    (p &optional program init-commands move-cursor and-run)
   "Get or create a vterm shell and (optionally) run some commands in it.
 
-The vterm buffer name can be set via `terminal-buffer-name'. Otherwise,
-the name will be \"vterm-<name-of-calling-buffer>\".
-
 Buffers are created and managed using 'vterm-toggle'.
+
+The vterm buffer name defaults to the value of `terminal-buffer-name'
+\(if set), or to a derivative of `terminal-buffer-name-default-prefix'
+\(the buffer name will then be \"<prefix>-<name-of-calling-buffer>\").
+Alternatively, a prefix (P) value of 1 causes the command to prompt the
+user for the name of the shell buffer interactively, while a prefix
+value of 2 additionally saves the selected name as the new value of
+`terminal-buffer-name'.
 
 PROGRAM: The program that the shell runs. It defaults to the value of
 the custom variable `terminal-program' (default: /bin/bash).
@@ -182,14 +229,13 @@ in conjunction with whether the cursor is kept in the original buffer or
 moved to the target buffer. For example, to run something akin to
 `process-send-region' from the source buffer to the terminal after
 creating it, set MOVE-CURSOR to nil."
-
-  (interactive)
+  (interactive "P")
 
   ;; figure out the name of the target buffer to use
   (let*
       (
        (calling-buffer (buffer-name))
-       (vterm-buffer-name (parse-vterm-buffer-name))
+       (vterm-buffer-name (parse-vterm-buffer-name p))
        (vterm-buffer-existed (get-buffer vterm-buffer-name))
        (vterm-shell
 	(or program terminal-program))

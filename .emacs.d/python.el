@@ -35,16 +35,24 @@
   :prefix 'my-python
   :version '0.1.0)
 
-;; Name of shell buffer (if nil, always prompt in minibuffer)
+;; Name of shell buffer
 (defcustom my-python-shell-buffer-name nil
   "Name of (the buffer containing) the desired python shell.
 
-If the buffer by the specified name does not exist, it is created by
-opening a terminal buffer in a new window and running the command
-defined by my-python-shell-program.
+Locally overrides terminal-buffer-name defined in terminal.el.
 
-If this variable is not set, the user will be prompted for a targat
-buffer name during each attempt to open a shell or send code to it."
+This variable is buffer-local."
+  :group 'my-python
+  :type 'string
+  :local t
+  :safe (lambda (_) t))
+(make-variable-buffer-local 'my-python-shell-buffer-name)
+
+;; Name of shell buffer (if nil, always prompt in minibuffer)
+(defcustom my-python-shell-buffer-name-default-prefix "ipython"
+  "Prefix for the default python shell buffer name.
+
+Locally overrides terminal-buffer-name defined in terminal.el."
   :group 'my-python
   :type 'string
   :local t
@@ -169,10 +177,18 @@ This variable is only used if `my-python-shell-program' is `k8s'."
   (python-x-setup))
 
 ;; function for creating a terminal shell running python
-(defun my-python-run-shell-in-terminal ()
-  "Run a python shell inside a terminal buffer."
-  (interactive)
+(defun my-python-run-shell-in-terminal (p &optional no-move and-run)
+  "Run a python shell inside a terminal buffer.
+
+Prefix P works like in get-or-create-terminal from terminal.el."
+  (interactive "P")
   (let (
+	;; save original terminal buffer name in case we need to change
+	;; it back
+	(orig-terminal-buffer-name terminal-buffer-name)
+	;; default prefix for the terminal buffer name, if unset
+	(terminal-buffer-name-default-prefix
+	 my-python-shell-buffer-name-default-prefix)
        ;; terminal name set to python shell name
        (terminal-buffer-name my-python-shell-buffer-name)
 	;; init commands are python-specific init commands
@@ -183,39 +199,43 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 		    (k8s-parse-exec-command my-python-k8s-pod-label
 					    my-python-k8s-pod-namespace
 					    my-python-k8s-exec-command)
-		  my-python-shell-program))))
-    (get-or-create-terminal my-python-shell-program nil t)))
+		  my-python-shell-program)))
+)
+
+    ;; get or create the shell
+    (get-or-create-terminal
+     p my-python-shell-program nil (not no-move) and-run)
+
+    ;; restore original terminal-buffer-name and set python shell buffer
+    ;; name to terminal buffer name, in case the buffer name is being
+    ;; permanently changed via the prefix argument
+    (customize-set-value
+     'my-python-shell-buffer-name terminal-buffer-name)
+    (customize-set-value
+     'terminal-buffer-name orig-terminal-buffer-name)
+    )
+  )
 
 ;; function for executing a python code block using terminal.el
-(defun my-python-execute-code-block ()
-  "Execute code block, or the visual selection if in visual mode."
-  (interactive)
-  (let
-      (
-       ;; terminal name set to python shell name
-       (terminal-buffer-name my-python-shell-buffer-name)
-       ;; init commands are python-specific init commands
-       (terminal-init-commands my-python-shell-init-commands)
-       ;; shell program needs to be parsed if running in k8s
-       (my-python-shell-program
-	(progn (if (string-equal my-python-shell-program "k8s")
-		   (k8s-parse-exec-command my-python-k8s-pod-label
-					   my-python-k8s-pod-namespace
-					   my-python-k8s-exec-command)
-		 my-python-shell-program))))
-    (get-or-create-terminal
-     my-python-shell-program nil nil
-     '(lambda (term-buffer)
-	  (comint-send-string term-buffer "%cpaste\n")
-	  (sleep-for 0 200)
-	  (when (evil-normal-state-p)
-	    (python-mark-fold-or-section))
-	  (evil-send-region-to-terminal term-buffer)
-	  (sleep-for 0 200)
-	  (comint-send-string term-buffer "--\n")
-	 )
-      )))
+(defun my-python-execute-code-block (p)
+  "Execute code block, or the visual selection if in visual mode.
 
+Prefix P works like in get-or-create-terminal from terminal.el."
+  (interactive "P")
+  (my-python-run-shell-in-terminal
+   p
+   t
+   '(lambda (term-buffer)
+      (comint-send-string term-buffer "%cpaste\n")
+      (sleep-for 0 200)
+      (when (evil-normal-state-p)
+	(python-mark-fold-or-section))
+      (evil-send-region-to-terminal term-buffer)
+      (sleep-for 0 200)
+      (comint-send-string term-buffer "\n--\n")
+      )
+   )
+  )
 
 (provide 'python)
 ;;; python.el ends here

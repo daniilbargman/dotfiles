@@ -100,8 +100,8 @@ alias la="ls -lahFtr --color=always"
 # alias update commands
 alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; sudo apt-get -y autoremove"
 
-# alias nmcli d wifi with "wifi"
-alias wifi="nmcli d wifi"
+# alias nmcli d wifi with "wifi"; add BSSID to output for choosing router alias
+alias wifi="nmcli -f in-use,chan,ssid,bssid,signal,bars,security d wifi"
 
 # alias poweroff / reboot to automatically envoke sudo
 alias off="sudo poweroff"

@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: classmethod-with-docstring-dbargman
 # key: classmethod
-# expand-env: ((yas-indent-line 'fixed) (yas-after-exit-snippet-hook (lambda () (whitespace-cleanup-region yas-snippet-beg yas-snippet-end) (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t))))
+# expand-env: ((yas-indent-line 'fixed) (yas-after-exit-snippet-hook 'cleanup-python-snippet))
 # --
 
 @classmethod

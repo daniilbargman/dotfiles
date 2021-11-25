@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: file header
-# key: dbpy
+# key: header
 # --
 # %% encoding: utf-8
 

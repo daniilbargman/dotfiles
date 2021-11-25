@@ -194,6 +194,11 @@ buffer name during each attempt to open a shell or send code to it."
 ;; show additional information about buffers in the buffer window
 (use-package ivy-rich
   :after ivy
+  :custom
+
+  ;; speed up buffer toggle
+  (ivy-rich-project-root-cache-mode t)
+
   :config
   (ivy-rich-mode 1)
   ;; (setcdr (assq t ivy-format-functions-alist)
@@ -229,8 +234,8 @@ buffer name during each attempt to open a shell or send code to it."
     ("C-n" . company-select-next)
     ("C-p" . company-select-previous)
     ("C-l" . company-complete-selection)  ; fill with C-l
-    ("<tab>" . yas-expand)  ; expand snippets with tab
-    ("TAB" . yas-expand)  ; expand snippets with tab
+    ("<tab>" . company-complete-selection)  ; fill with tab
+    ("TAB" . company-complete-selection)  ; fill with tab
     ("RET" . nil) ("<return>" . nil))  ; unmap return key
 
   :config
@@ -242,8 +247,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; set minimum prefix length to 1
   (setq company-minimum-prefix-length 1)
 
-  ;; set idle delay to 0.5 seconds
-  (setq company-idle-delay 0.5)
+  ;; set idle delay
+  (setq company-idle-delay ide-company-popup-active-delay)
 
 ;;   ;; toggle popup by changing delay between 0 and 10000
 ;;   (setq company-idle-delay ide-company-popup-active-delay)

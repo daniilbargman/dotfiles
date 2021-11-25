@@ -90,6 +90,13 @@
   :type '(repeat regexp)
   :safe (lambda (_) t))
 
+;: memo alist for caching matches between buffer names and group names
+(defcustom layout--buffer-mapping-cache (list)
+  "Alist for caching previously calculated name-to-group matches."
+  :group 'layout
+  :type '(alist :key-type string :value-type string)
+  :safe (lambda (_) t))
+
 
 ;;; Support for preserving and toggling views (tab-bar-mode)
 (tab-bar-mode 1)
@@ -279,130 +286,153 @@ Uses evil commands."
   ;; match headlin style
   (centaur-tabs-enable-buffer-reordering)
 
-  ;; default function for defining buffer groups
-  (defun default-centaur-tabs-buffer-groups ()
-    "`centaur-tabs-buffer-groups' control buffers' group rules.
+  )
 
-  Group awesome-tab with mode if buffer is derived from
-  `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-  All buffer name start with * will group to \"Systema\".
-  Other buffer group by `centaur-tabs-get-group-name' with project name."
-    (list
-    (cond
-      ((or (string-equal "*" (substring (buffer-name) 0 1))
-	  (memq major-mode '(magit-process-mode
-			     magit-status-mode
-			     magit-diff-mode
-			     magit-log-mode
-			     magit-file-mode
-			     magit-blob-mode
-			     magit-blame-mode
-			     )))
-      "*System*")
-      ((derived-mode-p 'eshell-mode)
-      "EShell")
-      ((derived-mode-p 'emacs-lisp-mode)
-      "Emacs-config")
-      ((derived-mode-p 'dired-mode)
-      "Dired")
-      ((memq major-mode '(org-mode org-agenda-mode diary-mode))
-      "OrgMode")
-      (t
-      (centaur-tabs-get-group-name (current-buffer))))))
+;; default function for defining buffer groups
+(defun default-centaur-tabs-buffer-groups ()
+  "`centaur-tabs-buffer-groups' control buffers' group rules.
+
+Group awesome-tab with mode if buffer is derived from
+`eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+All buffer name start with * will group to \"Systema\".
+Other buffer group by `centaur-tabs-get-group-name' with project name."
+  (list
+  (cond
+    ((or (string-equal "*" (substring (buffer-name) 0 1))
+	(memq major-mode '(magit-process-mode
+			    magit-status-mode
+			    magit-diff-mode
+			    magit-log-mode
+			    magit-file-mode
+			    magit-blob-mode
+			    magit-blame-mode
+			    )))
+    "*System*")
+    ((derived-mode-p 'eshell-mode)
+    "EShell")
+    ((derived-mode-p 'emacs-lisp-mode)
+    "Emacs-config")
+    ((derived-mode-p 'dired-mode)
+    "Dired")
+    ((memq major-mode '(org-mode org-agenda-mode diary-mode))
+    "OrgMode")
+    (t
+    (centaur-tabs-get-group-name (current-buffer))))))
 
 
-  ;; custom function for defining buffer groups in awesome tab
-  (defun centaur-tabs-buffer-groups ()
-    "Define centaur tabs buffer groups based on custom variables.
+;; custom function for defining buffer groups in awesome tab
+(defun centaur-tabs-buffer-groups ()
+  "Define centaur tabs buffer groups based on custom variables.
 
-  Variables are:
+Variables are:
 
-    `layout-buffer-groups-by-name-regex'
-    `layout-buffer-groups-by-major-mode'
+  `layout-buffer-groups-by-name-regex'
+  `layout-buffer-groups-by-major-mode'
 
-  Each variable is an alist mapping a buffer property to a group name.
+Each variable is an alist mapping a buffer property to a group name.
 
-  The first alist to match a buffer defines its group.
+The first alist to match a buffer defines its group.
 
-  If no alists match and the buffer points to a file, the file's
-  directory is used as the group name.
+If no alists match and the buffer points to a file, the file's
+directory is used as the group name.
 
-  "
+"
+  (let (
+	(bufname (buffer-name))
+	(buffer-group-name nil)
+	)
+
+    ;; first, try in memoization dictionary
+    (setq buffer-group-name
+	  (cdr (assoc bufname layout--buffer-mapping-cache)))
 
     ;; if name regex mapping is defined, apply it
-    (let ((buffer-group-name nil))
+    (unless buffer-group-name
       (setq buffer-group-name
 	    (cl-loop
 	    for (regex-value . group-name)
 	    in layout-buffer-groups-by-name-regex
-	    if (string-match regex-value (buffer-name))
+	    if (string-match regex-value bufname)
 	    return group-name
 		;; finally
 		;; 	;; return "unmatched")
 		;; 	(awesome-tab-get-group-name (current-buffer))
-	    ))
+	    )))
 
-      ;; if major mode mapping is defined, apply it
-      (unless buffer-group-name
+    ;; if major mode mapping is defined, apply it
+    (unless buffer-group-name
+      (setq buffer-group-name
+	    (cl-loop
+	    for (major-mode-value . group-name)
+	    in layout-buffer-groups-by-major-mode
+	    if (derived-mode-p major-mode-value)
+	    return group-name
+	    )))
+
+    ;; set group based on directory (i.e. group by directory)
+    (unless buffer-group-name
+      (setq buffer-group-name (expand-file-name default-directory))
+      )
+
+    ;; if at least one classification is present but tab hasn't been
+    ;; classified, return default group
+    (if
+	(and
+	  (null buffer-group-name)
+	  (not (and (null layout-buffer-groups-by-major-mode)
+		    (null layout-buffer-groups-by-name-regex)
+		    )))
 	(setq buffer-group-name
-	      (cl-loop
-	      for (major-mode-value . group-name)
-	      in layout-buffer-groups-by-major-mode
-	      if (derived-mode-p major-mode-value)
-	      return group-name
-	      )))
+	      (centaur-tabs-get-group-name (current-buffer))))
 
-      ;; set group based on directory (i.e. group by directory)
-      (unless buffer-group-name
-	(setq buffer-group-name (expand-file-name default-directory)))
-
-      ;; if at least one classification is present but tab hasn't been
-      ;; classified, return default group
-      (if
-	  (and
-	    (null buffer-group-name)
-	    (not (and (null layout-buffer-groups-by-major-mode)
-		      (null layout-buffer-groups-by-name-regex)
-		      )))
-	  (setq buffer-group-name
-		(centaur-tabs-get-group-name (current-buffer))))
-
-      ;; return final value or the output of the fallback function
-      (if (null buffer-group-name) (default-centaur-tabs-buffer-groups)
-	      (list buffer-group-name))))
-
-
-  ;; default buffer filter function
-  (defun default-centaur-tabs-hide-tab (x)
-    (let ((name (format "%s" x)))
-      (or
-      (string-prefix-p "*epc" name)
-      (string-prefix-p "*helm" name)
-      (string-prefix-p "*Compile-Log*" name)
-      (string-prefix-p "*lsp" name)
-      (and (string-prefix-p "magit" name)
-		(not (file-name-extension name)))
-      )))
-
-  ;; custom buffer filter function with fallback to default
-  (defun centaur-tabs-hide-tab (x)
-    "Hide buffer X from centaur-tabs buffer list based on custom variable.
-
-  The variable that determines the filter's behaviour is
-  `layout-buffer-filter-regexp-list'.  It is a list of regexp
-  values, and any positive match will eliminate the buffer from centaur
-  tab's grouping collage."
-    (if (null layout-buffer-filter-regexp-list)
-	(default-centaur-tabs-hide-tab x)
-	(let ((name (format "%s" x)))
-	  (cl-loop for buffer-regexp-value
-		  in layout-buffer-filter-regexp-list
-		    if (string-match buffer-regexp-value name)
-			return t
-		    finally
-			return nil))))
-
+    ;; return final value or the output of the fallback function
+    (if (null buffer-group-name) (default-centaur-tabs-buffer-groups)
+      (progn
+	(unless (assoc bufname layout--buffer-mapping-cache)
+	  (customize-set-value
+	   'layout--buffer-mapping-cache
+	   (append layout--buffer-mapping-cache
+		   `((,bufname . ,buffer-group-name))
+		   )
+	   )
+	  )
+	(list buffer-group-name)
+	)
+      )
+    )
   )
+
+
+;; default buffer filter function
+(defun default-centaur-tabs-hide-tab (x)
+  (let ((name (format "%s" x)))
+    (or
+    (string-prefix-p "*epc" name)
+    (string-prefix-p "*helm" name)
+    (string-prefix-p "*Compile-Log*" name)
+    (string-prefix-p "*lsp" name)
+    (and (string-prefix-p "magit" name)
+	      (not (file-name-extension name)))
+    )))
+
+;; custom buffer filter function with fallback to default
+(defun centaur-tabs-hide-tab (x)
+  "Hide buffer X from centaur-tabs buffer list based on custom variable.
+
+The variable that determines the filter's behaviour is
+`layout-buffer-filter-regexp-list'.  It is a list of regexp
+values, and any positive match will eliminate the buffer from centaur
+tab's grouping collage."
+  (if (null layout-buffer-filter-regexp-list)
+      (default-centaur-tabs-hide-tab x)
+      (let ((name (format "%s" x)))
+	(cl-loop for buffer-regexp-value
+		in layout-buffer-filter-regexp-list
+		  if (string-match buffer-regexp-value name)
+		      return t
+		  finally
+		      return nil))))
+
 
 
 ;;; Manage projects with treemacs

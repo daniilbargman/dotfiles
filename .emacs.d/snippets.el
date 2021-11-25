@@ -49,5 +49,13 @@
   )
 
 
+;; helper function for cleaning up unfilled parts of python templates
+(defun cleanup-python-snippet ()
+  "Helper function for cleaning up python function snippets."
+  (whitespace-cleanup-region yas-snippet-beg yas-snippet-end)
+  (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t)
+  )
+
+
 (provide 'snippets)
 ;;; snippets.el ends here

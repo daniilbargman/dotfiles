@@ -88,6 +88,9 @@
   ;; go to previous active buffer with C-x C-p
   (bind-key* "C-x C-p" 'previous-buffer)
 
+  ;; list buffers using ibuffer (prettier output)
+  (bind-key* "C-x C-b" 'ibuffer-list-buffers)
+
 
   ;;; visual window and buffer manipulation
 
@@ -320,14 +323,15 @@
   ; keybinding to open term buffer in emacs state in new window
   (global-set-key
    (kbd "M-s s")
-   '(lambda () (interactive)
-      (get-or-create-terminal nil nil t)))
+   '(lambda (p) (interactive "P")
+      (get-or-create-terminal p nil nil t)))
 
   ;; keybinding to send text region as commands to a terminal buffer
   (global-set-key
    (kbd "M-s M-s")
-   '(lambda () (interactive)
-      (get-or-create-terminal nil nil nil 'evil-send-region-to-terminal)
+   '(lambda (p) (interactive "P")
+      (get-or-create-terminal
+       p nil nil nil 'evil-send-region-to-terminal)
       )
    )
 
@@ -523,8 +527,8 @@
   (define-key python-mode-map
     (kbd "M-s M-p") 'my-python-execute-code-block)
   (define-key python-mode-map
-    (kbd "M-s M-<return>") '(lambda () (interactive)
-			      (my-python-execute-code-block)
+    (kbd "M-s M-<return>") '(lambda (p) (interactive "P")
+			      (my-python-execute-code-block p)
 			      (python-forward-fold-or-section)))
 
   ;; navigate code statements

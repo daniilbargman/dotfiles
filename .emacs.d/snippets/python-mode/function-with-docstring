@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: function-with-docstring-dbargman
 # key: def
-# expand-env: ((yas-indent-line 'fixed) (yas-after-exit-snippet-hook (lambda () (whitespace-cleanup-region yas-snippet-beg yas-snippet-end) (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t))))
+# expand-env: ((yas-indent-line 'fixed) (yas-after-exit-snippet-hook 'cleanup-python-snippet))
 # --
 
 def ${1:name}(${2:arguments})${3:$(unless (string-empty-p yas-text) " -> ")}${3:return-type}:
