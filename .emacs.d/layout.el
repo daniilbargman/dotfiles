@@ -537,14 +537,31 @@ ARGS are ignored but are a requirement for this advice."
 	(tab-name (assoc-default 'name (tab-bar--tab)))
 	)
 
+    ;; handling of default case as well as special tab names
+    (cond
+
     ;; if the name is "mu4e", load emails
-    (if (string-equal tab-name "email")
-	(mu4e)
-
-      ;; otherwise try to switch to treemacs workspace by the same name
-      (treemacs-do-switch-workspace (assoc-default 'name (tab-bar--tab)))
-
+     ((string-equal tab-name "email")
+      (mu4e)
       )
+
+    ;; if the name is "htop", run htop
+     ((string-equal tab-name "htop")
+      (let ((terminal-buffer-name "processes"))
+	(get-or-create-terminal
+	 nil nil nil t
+	 '(lambda (term)
+	    (comint-send-string term "htop\n")
+	    (delete-other-windows)))
+	)
+      )
+
+     ;; default: try to switch to treemacs workspace by the same name
+     (t
+      (treemacs-do-switch-workspace
+       (assoc-default 'name (tab-bar--tab)))
+      )
+     )
     )
   )
 
