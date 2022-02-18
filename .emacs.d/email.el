@@ -103,7 +103,9 @@
 
 ;; function for refiling specific incoming email directly to a
 ;; dedicated Org file for a project
-(defun link-emails-to-org-file (email-query capture-rules &optional mark-read do-refile refile-location)
+(defun link-emails-to-org-file (email-query capture-rules &optional
+					    mark-read do-refile
+					    refile-location)
   "Capture all emails matching EMAIL-QUERY using CAPTURE-RULES.
 
 CAPTURE-RULES must be an alist of the form:

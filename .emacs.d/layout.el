@@ -60,6 +60,7 @@
     (shell-mode . "terminals")
     (eshell-mode . "terminals")
     (vterm-mode . "terminals")
+    (org-mode . "org")
     )
   "Alist mapping buffer major modes to buffer group names."
   :group 'layout

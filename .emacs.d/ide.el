@@ -71,7 +71,8 @@ buffer name during each attempt to open a shell or send code to it."
   :safe (lambda (_) t))
 
 ;; Delay for company popup (when mode is toggled to active)
-(defcustom ide-paren-wrap-delimiters '(((before " ")))
+(defcustom ide-paren-wrap-delimiters
+  '(((after "&?[a-zA-Z0-9]+\\(?:-[a-zA-Z0-9]+\\)*\\>\\_>")))
   "List of lists of strings to use as delimiters inside parens.
 
   The function `ide/format-parens'iterates over several display options
@@ -421,7 +422,7 @@ buffer name during each attempt to open a shell or send code to it."
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (setq lsp-idle-delay 1)
+  (setq lsp-idle-delay 0.5)
 
   ;; lsp-ivy
   (use-package lsp-ivy
@@ -591,56 +592,77 @@ buffer name during each attempt to open a shell or send code to it."
 
 	;; try searching for elements of alists containing delimiters.
 	;; If found, assemble list of corresponding breakpoints
-	(setq breakpoint-list
-	  (cl-loop
-	  for delim-alist in ide-paren-wrap-delimiters
-
-	  ;; loop over each element in an alist and look for match
-	  if (cl-loop
-	      for delim in delim-alist
-
-	      ;; check if match exists
-	      if (cl-loop
-		  while t
-		  if (search-forward (cadr delim) match-paren-pos t)
-		  if (progn
-		       (goto-char (- it 1))
-		       (let ((match-found
-			     (and
-			      ;; check same ppss depth
-			      (= (ppss-depth (syntax-ppss)) sexp-depth)
-			      ;; check that it's not inside a string
-			      (not (in-string-p)))))
-
-			 ;; if match is successful, return breakpoint
-			 ;; depending on whether it is a "before" or
-			 ;; "after" keyword
-			 (forward-char)
-			 (when match-found
-			   (if (eq (car delim) 'after)
-			       `(,it ,(looking-at-p "$"))
-			     (save-excursion
-			       (goto-char (- it (length (cadr delim))))
-			       `(,(point)
-				 ,(looking-back
-				   "^ *" (- match-paren-pos 200))
-				 )
-			       )
-			     )
-			   )
-			 )
-		       )
-
-		  ;; append match to breakpoint list
-		  collect it into breakpoint-list-for-one-delim
-		  end
-		  else return breakpoint-list-for-one-delim
-		  )
-	      collect it into breakpoint-list
-	      finally return (apply 'append breakpoint-list)
+	(let (
+	    ;; allocate variables for saving start and end of each
+	      ;; delimeter match
+	      (match-exists nil)
+	      (match-start-pos nil)
+	      (match-end-pos nil)
 	      )
-	  return it
-	  ))
+
+	  (setq breakpoint-list
+	    (cl-loop
+	    for delim-alist in ide-paren-wrap-delimiters
+
+	    ;; loop over each element in an alist and look for match
+	    if (cl-loop
+		for delim in delim-alist
+
+		;; check if match exists
+		if (cl-loop
+		    while t
+		    if (progn
+			 (setq
+			  match-exists (re-search-forward
+					(cadr delim)
+					(- match-paren-pos 1)
+					t)
+			  match-start-pos (match-beginning 0)
+			  match-end-pos (match-end 0)
+			  )
+			  match-exists
+			 )
+
+		    if (progn
+			(goto-char (- match-end-pos 1))
+			(let ((match-valid
+			      (and
+				;; check same ppss depth
+				(= (ppss-depth (syntax-ppss)) sexp-depth)
+				;; check that it's not inside a string
+				(not (in-string-p)))))
+
+			  ;; if match is successful, return breakpoint
+			  ;; depending on whether it is a "before" or
+			  ;; "after" keyword
+			  (forward-char)
+			  (when match-valid
+			    (if (eq (car delim) 'after)
+				`(,it ,(looking-at-p "$"))
+			      (save-excursion
+				;; (goto-char (- it (length (cadr delim))))
+				(goto-char match-start-pos)
+				`(,(point)
+				  ,(looking-back
+				    "^ *" (- match-paren-pos 200))
+				  )
+				)
+			      )
+			    )
+			  )
+			)
+
+		    ;; append match to breakpoint list
+		    collect it into breakpoint-list-for-one-delim
+		    end
+		    else return breakpoint-list-for-one-delim
+		    )
+		collect it into breakpoint-list
+		finally return (apply 'append breakpoint-list)
+		)
+	    return it
+	    ))
+	)
 
 	;; only continue if any breakpoints have been found
 	(when breakpoint-list

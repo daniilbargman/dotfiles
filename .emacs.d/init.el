@@ -52,6 +52,9 @@
 
 ;;; Basic look and feel:
 
+;; set font to Fira Code
+(set-frame-font "Fira Code")
+
 ;; remove distractions
 (setq inhibit-startup-message t)  ; no startup screen
 (tool-bar-mode -1)                ; no toolbar
@@ -166,7 +169,32 @@
 ;; add org mode
 ;; (use-package org)
 (use-package org
-  :straight '(org :type built-in))
+  :straight '(org :type built-in)
+
+  :config
+
+  ;; prettify check boxes
+  (add-hook 'org-mode-hook (lambda ()
+  (push '("[ ]" .  "☐") prettify-symbols-alist)
+  (push '("[X]" . "☑" ) prettify-symbols-alist)
+  (push '("[-]" . "❍" ) prettify-symbols-alist)
+  (prettify-symbols-mode)))
+
+  )
+
+;; prettify unicode fonts
+(use-package unicode-fonts
+   :ensure t
+   :config
+    (unicode-fonts-setup))
+
+;; prettify org-mode bullets
+(use-package org-bullets
+  :straight (org-bullets :type git :host github :repo "sabof/org-bullets")
+
+  :hook (org-mode . org-bullets-mode)
+
+  )
 
 ;;; Colour theme management
 
@@ -232,7 +260,7 @@
 (use-package doom-themes
   :config
   ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+  (setq doom-themes-enable-bold nil    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
   (load-theme 'doom-tomorrow-night t)
 
@@ -248,6 +276,40 @@
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+
+;; ;; THIS WORKS BUT DOESN'T REALLY IMPROVE THE EXPERIENCE
+;; ;; ;; enable ligature fonts
+;; (use-package fira-code-mode
+;;   ;; :straight (:post-build 'fira-code-mode-install-fonts)
+;;   :config (global-fira-code-mode))
+
+;; ;; THIS WORKS WHEN FIRA CODE IS SET AS THE DEFAULT FONT, BUT DOESN'T
+;; ;; REALLY IMPROVE THE EXPERIENCE EITHER
+;; (use-package ligature
+
+;;   :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
+
+;;   :config
+
+;;   ;; Enable the www ligature in every possible major mode
+;;   (ligature-set-ligatures 't '("www"))
+
+;;   ;; Enable ligatures in programming modes                                                           
+;;   (ligature-set-ligatures 'prog-mode '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\" "{-" "::"
+;; 				      ":::" ":=" "!!" "!=" "!==" "-}" "----" "-->" "->" "->>"
+;; 				      "-<" "-<<" "-~" "#{" "#[" "##" "###" "####" "#(" "#?" "#_"
+;; 				      "#_(" ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*" "/**"
+;; 				      "/=" "/==" "/>" "//" "///" "&&" "||" "||=" "|=" "|>" "^=" "$>"
+;; 				      "++" "+++" "+>" "=:=" "==" "===" "==>" "=>" "=>>" "<="
+;; 				      "=<<" "=/=" ">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>" "<*"
+;; 				      "<*>" "<|" "<|>" "<$" "<$>" "<!--" "<-" "<--" "<->" "<+"
+;; 				      "<+>" "<=" "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<"
+;; 				      "<~" "<~~" "</" "</>" "~@" "~-"
+;; 				      "~>" "~~" "~~>" "%%"))
+
+;;   ;; Enables ligature checks globally in all buffers. You can also do it
+;;   ;; per mode with `ligature-mode'.
+;;   (global-ligature-mode t))
 
 ;;; Config file management:
 

@@ -71,8 +71,8 @@ sudo update-alternatives --set editor /usr/local/bin/vim
 sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
 sudo update-alternatives --set vi /usr/local/bin/vim
 
- # powerline fonts - mainly for tmux status line
- sudo apt-get install fonts-powerline
+ # install fonts
+ sudo apt-get install fonts-powerline fonts-firacode
 
  # vim plugin manager: vim-plug
  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
