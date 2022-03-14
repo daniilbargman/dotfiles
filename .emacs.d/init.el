@@ -122,6 +122,16 @@
 ;; don't auto-save files (undo-tree will do this for us)
 (setq auto-save-default nil)
 
+;; enable minibuffer history with a reasonable history length
+(savehist-mode t)
+(setq history-length 50)
+
+;; re-enter files where we left off
+(save-place-mode t)
+
+;; auto-sync files that have been edited externally
+(global-auto-revert-mode t)
+
 ;;; Package management:
 
 ; ;; initialize package manager with the right repositories
@@ -329,7 +339,7 @@
 
 ;; use custom file for auto-generated code and make sure it's loaded
 (setq custom-file (concat user-init-dir "custom-file.el"))
-(when (file-exists-p custom-file) (load-config-file custom-file))
+(load custom-file 'noerror 'nomessage)
 
 ;;; Load configuration files
 

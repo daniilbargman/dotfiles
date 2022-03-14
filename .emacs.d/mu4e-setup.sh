@@ -35,6 +35,9 @@ function error_exit {
     append_error
 }
 
+## VERSION TO USE
+VERSION=1.6
+
 ## install dependencies
 
 sudo apt-get install libgmime-3.0-dev libxapian-dev meson
@@ -51,8 +54,9 @@ sudo apt-get install guile-2.2-dev html2text xdg-utils
 ## install package itself
 
 # get from git (alternatively, use a github tarball)
-git clone git://github.com/djcb/mu.git
+git clone git://github.com/djcb/mu.git --branch release/${VERSION}
 cd mu
 ./autogen.sh && make
+sudo make install
 
 #

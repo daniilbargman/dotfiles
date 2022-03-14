@@ -50,7 +50,7 @@
   (bind-key* "M-<tab>" 'tab-bar-switch-to-next-tab)
   (bind-key* "M-S-<iso-lefttab>" 'tab-bar-switch-to-prev-tab)
   (bind-key* "M-S-<tab>" 'tab-bar-switch-to-prev-tab)
-  (bind-key* "M-p" 'tab-bar-switch-to-recent-tab)
+  (bind-key* "M-w" 'tab-bar-switch-to-recent-tab)
   (bind-key* "M-j" 'tab-bar-select-tab)
 
   ;; shortkey for ace-window

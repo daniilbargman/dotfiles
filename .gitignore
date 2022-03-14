@@ -16,6 +16,8 @@
 
 # in the emacs configuration folder, ignore auto-generated files and all subfolders
 .emacs.d/custom-file.el
+.emacs.d/history
+.emacs.d/places
 .emacs.d/network-security.data
 .emacs.d/recentf
 .emacs.d/tramp
