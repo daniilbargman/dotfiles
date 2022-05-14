@@ -488,7 +488,7 @@
   (define-key org-mode-map (kbd "C-c C-p") 'org-set-property)
 
   ;; trigger for verb command map
-  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+  (define-key org-mode-map (kbd "C-c C-r") 'verb-command-map)
 
   ;; toggle URL visibility with "C-c w w"
   (define-key org-mode-map (kbd "C-c w w") 'org-toggle-link-display)

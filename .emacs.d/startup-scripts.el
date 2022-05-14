@@ -34,7 +34,7 @@
 
 ;; mount encrypted project drive
 (start-process "mount-projects" "*startup-scripts--mount-projects*"
-	       "/home/daniilbargman/executables/decrypt-and-mount"
+	       "/home/daniil/executables/decrypt-and-mount"
 	       "nvme0n1p9"
 	       "projects")
 (with-current-buffer "*startup-scripts--mount-projects*"
@@ -53,7 +53,7 @@
 ;; start vpn client on startup
 (with-eval-after-load "openvpn"
   (ovpn-mode-start-vpn-conf
-   "/home/daniilbargman/.vpn/dbargman-server2.ovpn")
+   "/home/daniil/.vpn/dbargman-server2.ovpn")
  )
 
 

@@ -40,13 +40,13 @@ VERSION=1.6
 
 ## install dependencies
 
-sudo apt-get install libgmime-3.0-dev libxapian-dev meson
+sudo apt-get -y install libgmime-3.0-dev libxapian-dev meson
 
 # install autotools for git repo to work
-sudo apt-get install -y autotools-dev autoconf libtool texinfo
+sudo apt-get -y install autotools-dev autoconf libtool texinfo
 
 # optional
-sudo apt-get install guile-2.2-dev html2text xdg-utils
+sudo apt-get -y install guile-2.2-dev html2text xdg-utils
 
 # # optional: only needed for msg2pdf and mug (toy gtk+ frontend)
 # sudo apt-get install libwebkitgtk-3.0-dev
@@ -54,7 +54,7 @@ sudo apt-get install guile-2.2-dev html2text xdg-utils
 ## install package itself
 
 # get from git (alternatively, use a github tarball)
-git clone git://github.com/djcb/mu.git --branch release/${VERSION}
+git clone https://github.com/djcb/mu.git --branch release/${VERSION}
 cd mu
 ./autogen.sh && make
 sudo make install

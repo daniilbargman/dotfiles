@@ -10,7 +10,7 @@
 !.tmux.conf
 !.vim/
 !.vimrc
-!initial_setup.sh
+!initial-setup.sh
 !build-gccemacs.sh
 !.emacs.d/
 
@@ -22,7 +22,7 @@
 .emacs.d/recentf
 .emacs.d/tramp
 .emacs.d/bookmarks
-.emacs.d/*/*
+.emacs.d/**/*
 .emacs.d/*~
 .emacs.d/.*
 .emacs.d/\#*
@@ -38,6 +38,7 @@
 !.emacs.d/straight/versions/
 
 # ignore vim's undo directory and plugins, except vim-plug itself
+.vim/*.sw[mnop]
 .vim/undodir/
 .vim/view/
 .vim/plugged/*
@@ -49,10 +50,14 @@
 .tmux/*
 !.tmux/tmuxline_snapshot
 
-# back up in XFCE and herbstluftwm-related config files
+# back up XFCE terminal and herbstluftwm-related config files
 !.config/
 .config/*
-# !.config/xfce4/
+!.config/xfce4/
+.config/xfce4/*
+!.config/xfce4/terminal/
+.config/xfce4/terminal/*
+!.config/xfce4/terminal/terminalrc
 !.config/herbstluftwm/
 
 # # back up active XFCE theme

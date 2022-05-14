@@ -485,7 +485,7 @@ tab's grouping collage."
     ;; use all-the-icons with treemacs
     (use-package treemacs-all-the-icons
       :after (treemacs all-the-icons)
-      ;; :config (treemacs-load-theme "treemacs-all-the-icons")
+      :config (treemacs-load-theme "treemacs-all-the-icons")
       )
 
     ;; The default width and height of the icons is 22 pixels. If you are

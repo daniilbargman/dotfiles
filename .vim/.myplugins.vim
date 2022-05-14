@@ -43,12 +43,12 @@ Plug 'thomasfaingnaert/vim-lsp-ultisnips' " LSP integration with snippets
 Plug 'prabirshrestha/asyncomplete-ultisnips.vim' " ultisnips in asyncomplete
 Plug 'prabirshrestha/asyncomplete-file.vim' " autocomplete file paths
 
-" tmux integration
-Plug 'benmills/vimux' " talk to tmux from vim
-Plug 'christoomey/vim-tmux-navigator' " easily jump between vim/tmux panes
-Plug 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
-Plug 'edkolev/tmuxline.vim' " inherit airline theme in tmux
-" Plug 'wellle/tmux-complete.vim'  " asyncomplete from tmux panes
+" " tmux integration
+" Plug 'benmills/vimux' " talk to tmux from vim
+" Plug 'christoomey/vim-tmux-navigator' " easily jump between vim/tmux panes
+" Plug 'tmux-plugins/vim-tmux-focus-events' " bug fix for file auto-reloading
+" Plug 'edkolev/tmuxline.vim' " inherit airline theme in tmux
+" " Plug 'wellle/tmux-complete.vim'  " asyncomplete from tmux panes
 
 " Plugins with custom color schemes
 Plug 'jacoborus/tender.vim'
@@ -201,22 +201,22 @@ let g:indentLine_concealcursor = ""
 
 " ---------------- VIMUX ------------------------------------------------------
 
-" Save file and run in tmux
-au FileType sh nnoremap <buffer> <Leader>r :update<CR>:call VimuxRunCommand('sudo bash ' . expand('%:p'))<CR>
-" Run vim selection as tmux command
-vnoremap <Leader>r :<C-U>call VimuxRunCommand(@*)<CR>
-" Prompt for a command to run
-nnoremap <Leader>vp :VimuxPromptCommand<CR>
-" Run last command executed by VimuxRunCommand
-nnoremap <Leader>vl :VimuxRunLastCommand<CR>
-" Inspect runner pane
-nnoremap <Leader>vi :VimuxInspectRunner<CR>
-" Close vim tmux runner opened by VimuxRunCommand
-nnoremap <Leader>vq :VimuxCloseRunner<CR>
-" Interrupt any command running in the runner pane
-nnoremap <Leader>vx :VimuxInterruptRunner<CR>
-" Zoom the runner pane (use <bind-key> z to restore runner pane)
-nnoremap <Leader>vz :call VimuxZoomRunner()<CR>
+" " Save file and run in tmux
+" au FileType sh nnoremap <buffer> <Leader>r :update<CR>:call VimuxRunCommand('sudo bash ' . expand('%:p'))<CR>
+" " Run vim selection as tmux command
+" vnoremap <Leader>r :<C-U>call VimuxRunCommand(@*)<CR>
+" " Prompt for a command to run
+" nnoremap <Leader>vp :VimuxPromptCommand<CR>
+" " Run last command executed by VimuxRunCommand
+" nnoremap <Leader>vl :VimuxRunLastCommand<CR>
+" " Inspect runner pane
+" nnoremap <Leader>vi :VimuxInspectRunner<CR>
+" " Close vim tmux runner opened by VimuxRunCommand
+" nnoremap <Leader>vq :VimuxCloseRunner<CR>
+" " Interrupt any command running in the runner pane
+" nnoremap <Leader>vx :VimuxInterruptRunner<CR>
+" " Zoom the runner pane (use <bind-key> z to restore runner pane)
+" nnoremap <Leader>vz :call VimuxZoomRunner()<CR>
 
 
 " ---------------- AIRLINE ----------------------------------------------------

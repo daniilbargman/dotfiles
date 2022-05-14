@@ -57,7 +57,7 @@ function vterm_printf {
     fi
 }
 
-#################### project management settings ##############################
+#################### convenience maps and shortcuts ###########################
 
 # project launcher directory
 executables=~/executables
@@ -189,5 +189,15 @@ function alias_completion {
 source <(kubectl completion bash)
 alias k=kubectl
 complete -F __start_kubectl k
+
+############################### VARIOUS #######################################
+
+# add user-specific NPM global package directory to path
+NPM_GLOBAL="${HOME}/.npm-global"
+export PATH="$PATH:$NPM_GLOBAL/bin"
+export MANPATH="${MANPATH-$(manpath)}:$NPM_GLOBAL/share/man"
+
+# source conda script
+source /opt/conda/etc/profile.d/conda.sh
 
 ###############################################################################

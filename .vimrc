@@ -22,6 +22,10 @@ let mapleader = ','
 source ~/.vim/.myplugins.vim
 
 
+" --------------- auto-reload files changed by external command  --------------
+set autoread
+
+
 " --------------- Basic settings ----------------------------------------------
 
 " Set zero hold time on switch to normal mode, quarter-second for bindings
@@ -119,6 +123,16 @@ set undofile
 nnoremap <silent> <C-S> :update<CR>
 vnoremap <silent> <C-S> <Esc>:update<CR>
 inoremap <silent> <C-S> <Esc>:update<CR>
+
+" Save sudo-protected files with <leader>c-s
+function! SudoSaveFile() abort
+  execute (has('gui_running') ? '' : 'silent')
+    \ 'write !env SUDO_EDITOR=tee sudo -e % >/dev/null'
+  let &modified = v:shell_error
+endfunction
+nnoremap <leader><C-S> :call<space>SudoSaveFile()<CR>
+vnoremap <leader><C-S> <Esc>:call<space>SudoSaveFile()<CR>
+inoremap <leader><C-S> <Esc>:call<space>SudoSaveFile()<CR>
 
 " Quit window by typing (capital) Q
 nnoremap Q :q<CR>
@@ -221,9 +235,6 @@ augroup myvimrc " {
     au!
     au BufWritePost .vimrc,_vimrc,vimrc
              \ | so $MYVIMRC
-             \ | let b:backupname = '~/.backups/vim/.vimrc/'
-                                           \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe 'silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 
@@ -233,9 +244,6 @@ augroup myvimplugins " {
     au!
     au BufWritePost ~/.myplugins.vim
              \ | so $MYVIMRC
-             \ | let b:backupname = '~/.backups/vim/.myplugins.vim/'
-                                               \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe 'silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 
@@ -243,10 +251,6 @@ augroup END " }
 augroup myftplugin " {
     au!
     au BufWritePost ~/.vim/ftplugin*.vim
-             \ | let b:backupname = '~/.backups/vim/ftplugin/'
-                                           \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe ':!mkdir -p' b:backupname
-             \ | exe ':!cp -r ~/.vim/ftplugin/*' b:backupname . "/"
              \ | exe 'redraw'
 augroup END " }
 
@@ -255,9 +259,6 @@ augroup bash_settings " {
     au!
     au BufWritePost ~/.bashrc_ext
              \ | exe 'silent !source ' . $HOME . '/.bashrc'
-             \ | let b:backupname = '~/.backups/bash/.bashrc_ext/'
-                                          \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 
@@ -266,9 +267,6 @@ augroup tmux_conf " {
     au!
     au BufWritePost ~/.tmux.conf
              \ | exe 'silent !tmux source-file ~/.tmux.conf'
-             \ | let b:backupname = '~/.backups/tmux/.tmux.conf/'
-                                          \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 
@@ -276,17 +274,11 @@ augroup END " }
 augroup gitignore " {
     au!
     au BufWritePost ~/.gitignore
-             \ | let b:backupname = '~/.backups/git/.gitignore/'
-                                          \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 augroup gitignore_global " {
     au!
     au BufWritePost ~/.gitignore_global
-             \ | let b:backupname = '~/.backups/git/.gitignore_global/'
-                                          \ . strftime('%Y%m%d_%H-%M-%S')
-             \ | exe ':silent w!' b:backupname
              \ | exe 'redraw'
 augroup END " }
 
