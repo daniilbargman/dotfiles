@@ -26,22 +26,22 @@ sudo apt-get update && sudo apt-get -y upgrade
 
 # NOTE: need to install Termite from source - may be distro-dependent
 
-# # git
-# sudo apt-get install -y git
-# 
-# # tmux (and xclip to copy from tmux to clipboard)
-# sudo apt-get install -y tmux xclip
-# 
-# # create folders integrated with .vimrc and .bashrc
-# mkdir -p ~/executables  # for storing executable bash scripts
-# mkdir -p ~/.backups/{vim,git,tmux,bash}  # for backing up edited dotfiles
-# mkdir -p ~/.backups/bash/.bashrc_ext  # for backing up bashrc extensions
-# mkdir -p ~/.backups/git/{.gitignore,.gitignore_global}  # for backing up gitignore
-# mkdir -p ~/.backups/tmux/.tmux.conf  # for backing up tmux config
-# mkdir -p ~/.backups/vim/{ftplugin,.myplugins.vim,.vimrc}  # for backing up vim config
+ # git
+ sudo apt-get install -y git
+ 
+ # tmux (and xclip to copy from tmux to clipboard)
+ sudo apt-get install -y tmux xclip
+ 
+ # # create folders integrated with .vimrc and .bashrc
+ # mkdir -p ~/executables  # for storing executable bash scripts
+ # mkdir -p ~/.backups/{vim,git,tmux,bash}  # for backing up edited dotfiles
+ # mkdir -p ~/.backups/bash/.bashrc_ext  # for backing up bashrc extensions
+ # mkdir -p ~/.backups/git/{.gitignore,.gitignore_global}  # for backing up gitignore
+ # mkdir -p ~/.backups/tmux/.tmux.conf  # for backing up tmux config
+ # mkdir -p ~/.backups/vim/{ftplugin,.myplugins.vim,.vimrc}  # for backing up vim config
 
-# source .bashrc_ext from .bashrc
-cat >> ~/.bashrc <<EOF
+ # source .bashrc_ext from .bashrc
+ cat >> ~/.bashrc <<EOF
 
 # Source my personalized settings
 source ~/.bashrc_ext
@@ -72,7 +72,7 @@ sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
 sudo update-alternatives --set vi /usr/local/bin/vim
 
 # install fonts
-sudo apt-get -y install fonts-powerline fonts-firacode
+sudo apt-get -y install fonts-powerline fonts-firacode fonts-noto
 
 # # vim plugin manager: vim-plug
 # curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
@@ -80,6 +80,20 @@ sudo apt-get -y install fonts-powerline fonts-firacode
 
 # # tmux dependencies
 # git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm  # plugin manager
+
+# # optional: graphics managers
+# sudo apt-get -y install xorg
+# cd /etc/X11 && sudo Xorg -configure
+# cd ~
+# sudo apt-get -y install gdm3  # graphics managers
+
+# # optional: grub theme
+# mkdir ~/.grub-themes
+# cd ~/.grub-themes
+# git clone https://github.com/vandalsoul/darkmatter-grub2-theme dark-matter
+# cd dark-matter
+# sudo python3 install.py Debian
+# cd ~
 
 # install herbstluftwm and dependencies
 sudo apt-get -y install acpi  # for showing battery status
@@ -92,14 +106,19 @@ sudo apt-get -y install herbstluftwm
 sudo apt-get -y install compton  # compositor for setting transparency
 sudo apt-get -y install xdotool  # move mouse programmatically
 
-### INSTALL SNAP ###
-sudo apt-get -y install snap
+
+
+## INSTALL SNAP ###
+sudo apt-get -y install snapd
 
 ### INSTALL HELM ###
 sudo snap install --classic helm
 
 ### INSTALL NPM ###
 sudo snap install --classic node
+
+# wait a little for it to take
+sleep 10
 
 # make global packages directory-local
 mkdir "${HOME}/.npm-global"  # NOTE: this folder is added to PATH in .bashrc_ext
@@ -131,6 +150,7 @@ sudo apt-get update
 sudo apt-get -y install conda
 
 # do not modify PS1 as this is handled in .bashrc_ext
+source /opt/conda/etc/profile.d/conda.sh
 conda config --set changeps1 False
 
 #

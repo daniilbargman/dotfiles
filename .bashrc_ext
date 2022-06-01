@@ -112,8 +112,8 @@ alias reboot="sudo reboot"
 alias pg="ping -c 5 google.com"
 
 # alias to enable/disable kubernetes by starting/stopping docker and kubelet
-alias ke="sudo systemctl start docker; sudo systemctl start kubelet"
-alias kd="sudo systemctl stop kubelet; sudo systemctl stop docker"
+alias ke="sudo systemctl start docker; sudo systemctl start kubelet; sudo systemctl start containerd"
+alias kd="sudo systemctl stop kubelet; sudo systemctl stop docker; sudo systemctl stop containerd"
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {

@@ -18,20 +18,20 @@ sudo apt-get update && sudo apt-get -y upgrade
 # (see https://www.emacswiki.org/emacs/BuildingEmacs)
 
 # additional dependencies are for GCCEmacs and vterm-mode
-sudo apt-get install libc6-dev libjpeg62-turbo libncurses5-dev libpng-dev \
+sudo apt-get install -y libc6-dev libjpeg62-turbo libncurses5-dev libpng-dev \
      libtiff5-dev libgif-dev xaw3dg-dev zlib1g-dev libx11-dev \
      libgccjit-10-dev cmake libtool libtool-bin texinfo
 
 # install fonts
-sudo apt-get install fonts-powerline fonts-firacode
+sudo apt-get install -y fonts-powerline fonts-firacode
 
 # install recommended dependencies based on StackOverflow answer
 # (see https://superuser.com/questions/1128721/compiling-emacs-25-1-on-ubuntu-16-04/1129052#1129052)
-sudo apt-get install libgtk-3-dev libwebkit2gtk-4.0-dev gnutls-dev
+sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gnutls-dev
 
 # # clone the repo and go there
 sudo rm -rf emacs
-git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
+git clone --depth 1 https://git.savannah.gnu.org/git/emacs
 cd emacs
 
 # configure with considerations from StackOverflow

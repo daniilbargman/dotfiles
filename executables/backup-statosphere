@@ -1,7 +1,9 @@
+# -*- mode: sh; -*-
+
 #!/usr/bin/env bash
 # vim: set filetype=sh :
 #
-# setup scripts for mu and mu4e
+# backup statOsphere
 #
 # Author: Daniil Bargman (daniil.bargman@gmail.com)
 #
@@ -35,31 +37,23 @@ function error_exit {
     append_error
 }
 
-## VERSION TO USE
-VERSION=1.6
+# mount drive
+sudo mkdir -p /media/daniil/statosphere-backups
+sudo mount /dev/sda7 /media/daniil/statosphere-backups
 
-## install dependencies
+# make directory for current date (if one exists, raise error)
+target=/media/daniil/statosphere-backups/statOsphere_Backups/$(date +%Y-%m-%d)
+mkdir $target
+rsync -vr \
+      --exclude='*~' \  # exclude Emacs backup files
+      --exclude='_aux' \  # exclude data
+      --exclude 'services/keycloak/src' \  # exclude keycloak repo
+      --exclude 'services/mailu/_old' \  # old versions of mailu
+      --exclude 'services/mailu/mailu-github-repo' \  # exclude mailu repo
+      --exclude 'infrastructure/k8s/templates/ingress-nginx' \  # nginx helm
+      --exclude 'node_modules' \  # exclude installed JS modules
+      --exclude '__pycache__' \  # exclude compiled python code
+      --exclude '.log' \  # exclude logfiles
+      /mnt/projects/statosphere $target
 
-sudo apt-get -y install libgmime-3.0-dev libxapian-dev meson
-
-# install autotools for git repo to work
-sudo apt-get -y install autotools-dev autoconf libtool texinfo
-
-# optional
-sudo apt-get -y install guile-2.2-dev html2text xdg-utils
-
-# # optional: only needed for msg2pdf and mug (toy gtk+ frontend)
-# sudo apt-get install libwebkitgtk-3.0-dev
-
-# install getmail
-sudo apt-get -y install getmail
-
-## install package itself
-
-# get from git (alternatively, use a github tarball)
-git clone https://github.com/djcb/mu.git --branch release/${VERSION}
-cd mu
-./autogen.sh && make
-sudo make install
-
-#
+# done.

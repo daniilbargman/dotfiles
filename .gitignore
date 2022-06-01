@@ -73,3 +73,4 @@ executables/*
 !executables/tmux-project-template
 !executables/brightness
 !executables/decrypt-and-mount
+!executables/backup-statosphere

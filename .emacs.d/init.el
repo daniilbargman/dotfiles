@@ -27,6 +27,9 @@
 ;;; Code:
 
 
+;; add to exec-path
+(setq exec-path (append exec-path '("/usr/sbin" "/snap/bin")))
+
 ;; pre-compile packages as recommended by GCC Emacs branch
 (setq package-native-compile t)
 
@@ -132,45 +135,11 @@
 ;; auto-sync files that have been edited externally
 (global-auto-revert-mode t)
 
-;;; Package management:
 
-; ;; initialize package manager with the right repositories
-; (require 'package)
-; (add-to-list 'package-archives
-; 	     '("melpa" . "https://melpa.org/packages/") t)
-; (package-initialize)
+;;; global packages
 
-
-; ;; NOTE: this is no longer required with Emacs 27.1
-; ;; set this to make sure packages are installed from ELPA
-; (defvar gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-
-; ;; install "use-package" macro
-; (when (not (package-installed-p 'use-package))
-;   (package-refresh-contents)
-;   (package-install 'use-package))
-
-; ;; always "ensure" that package is installed
-; (require 'use-package-ensure)
-; (setq use-package-always-ensure t)
-
-; ;; install quelpa for getting packages directly from github
-; (unless (package-installed-p 'quelpa)
-;   (with-temp-buffer
-;     (url-insert-file-contents
-;      "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-;     (eval-buffer)
-;     (quelpa-self-upgrade)))
-; (quelpa
-;  '(quelpa-use-package
-;    :fetcher git
-;    :url "https://github.com/quelpa/quelpa-use-package.git"))
-; (require 'quelpa-use-package)
-
-;; ;; THIS DOES NOT WORK: update packages asynchronously on a daily basis
-;; (use-package spu
-;;   :defer 5 ;; defer package loading for 5 second
-;;   :config (spu-package-upgrade-daily))
+;; add magit
+(use-package magit)
 
 ;; add rainbow mode
 (use-package rainbow-mode
@@ -192,11 +161,14 @@
 
   )
 
-;; prettify unicode fonts
-(use-package unicode-fonts
-   :ensure t
-   :config
-    (unicode-fonts-setup))
+;; ;; NOTE: this package is not needed, plus it slows startup time
+;; ;; massively starting from Emacs 28.1
+;; ;;
+;; ;; prettify unicode fonts
+;; (use-package unicode-fonts
+;;    :ensure t
+;;    :config
+;;     (unicode-fonts-setup))
 
 ;; prettify org-mode bullets
 (use-package org-bullets

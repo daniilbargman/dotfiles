@@ -31,6 +31,18 @@
 (use-package kubernetes-evil
   :after kubernetes)
 
+;; kubernetes/helm syntax support
+(use-package k8s-mode
+  :hook (k8s-mode . yas-minor-mode)
+  )
+
+;; ;; enable LSP support for helm
+;; (use-package helm-lsp
+;;   :config
+;;   (define-key lsp-mode-map [remap xref-find-apropos]
+;; 	      #'helm-lsp-workspace-symbol)
+;;   )
+
 ;; function for inferring which pod/container should be the target of an
 ;; `exec' function based on namespace and deployment
 (defun k8s-parse-exec-command (label &optional namespace exec-command)

@@ -832,6 +832,7 @@ buffer name during each attempt to open a shell or send code to it."
   :custom
   (highlight-indent-guides-method 'character)
   (highlight-indent-guides-responsive nil)
+  (highlight-indent-guides-auto-character-face-perc 75)
   ;; (highlight-indent-guides-delay 0.4)
   :config
   )
