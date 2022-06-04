@@ -469,7 +469,7 @@ tab's grouping collage."
           treemacs-recenter-after-tag-follow     nil
           treemacs-recenter-after-project-jump   'always
           treemacs-recenter-after-project-expand 'on-distance
-          treemacs-show-cursor                   nil
+          treemacs-show-cursor                   t
           treemacs-show-hidden-files             t
           treemacs-silent-filewatch              nil
           treemacs-silent-refresh                nil
@@ -517,7 +517,7 @@ tab's grouping collage."
 	   (tag-node . treemacs-visit-node-ace)))
 
     ;; enable modes
-    (treemacs-follow-mode nil)
+    (treemacs-follow-mode 0)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode t)
 

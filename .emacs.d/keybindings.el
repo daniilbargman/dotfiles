@@ -170,6 +170,11 @@
     "C-s" 'swiper-all-thing-at-point ; search thing at point in all
 					; buffers with <leader>C-s
 
+    ;; avy jumps
+    "j" 'avy-goto-line-below
+    "k" 'avy-goto-line-above
+    "w" 'avy-goto-char-timer
+
     )
 
   ;;; Keybindings for normal mode
@@ -556,24 +561,36 @@
 		   (python-nav-backward-defun)
 		   (python-nav-forward-defun)))
 
-  ;; leader key mappings
-  (evil-leader/set-key
+  ;; jump code sections with C-M-j / C-M-k
+  (evil-define-key 'normal python-mode-map
+    (kbd "C-M-j") '(lambda () (interactive)
+		     (python-forward-fold-or-section)
+		     (evil-next-visual-line)))
+  (evil-define-key 'normal python-mode-map
+    (kbd "C-M-k") '(lambda () (interactive)
+		     (evil-previous-visual-line)
+		     (python-backward-fold-or-section)
+		     (evil-next-visual-line)))
 
-    ;; block-wise code navigation: forward
-    "j" (lambda () (interactive)
-	  (python-forward-fold-or-section)
-	  (evil-next-visual-line))
+  ;;; NOTE: <leader>[j,k] for python deprecated in favour of avy-jump
+  ;; ;; leader key mappings
+  ;; (evil-leader/set-key
 
-    ;; block-wise code navigation: backwards
-    "k" (lambda () (interactive)
-	  (python-backward-fold-or-section)
-	  (python-backward-fold-or-section)
-	  (evil-next-visual-line))
+  ;;   ;; block-wise code navigation: forward
+  ;;   "j" (lambda () (interactive)
+  ;; 	  (python-forward-fold-or-section)
+  ;; 	  (evil-next-visual-line))
 
-    ;; ;; block-wise code execution
-    ;; "r" (lambda () (interactive)
-    ;; 	  )
-    )
+  ;;   ;; block-wise code navigation: backwards
+  ;;   "k" (lambda () (interactive)
+  ;; 	  (python-backward-fold-or-section)
+  ;; 	  (python-backward-fold-or-section)
+  ;; 	  (evil-next-visual-line))
+
+  ;;   ;; ;; block-wise code execution
+  ;;   ;; "r" (lambda () (interactive)
+  ;;   ;; 	  )
+  ;;   )
 
     )
 

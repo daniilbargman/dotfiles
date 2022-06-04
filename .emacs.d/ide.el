@@ -337,6 +337,28 @@ buffer name during each attempt to open a shell or send code to it."
   
   )
 
+
+;; easy text navigation (easymotion-style)
+(use-package avy
+  :custom
+  (avy-timeout-seconds 0.2)
+  ;; (avy-background t)
+  ;; (avy-highlight-first t)
+  ;; (avy-indent-line-overlay t)
+  :config
+  (custom-set-faces
+   '(avy-lead-face
+     ((t (:foreground "red4" :background "gray10")))
+    )
+   '(avy-lead-face-0
+     ((t (:foreground "red4" :background "gray10")))
+    )
+   '(avy-lead-face-2
+     ((t (:foreground "red4" :background "gray10")))
+    )
+   )
+  )
+
 ;; code folding with origami mode and lsp-origami (instead of hideshow)
 ;; NOTE: this package is way too slow for large python files, especially
 ;; after creating many folds with origami-toggle-all-nodes
