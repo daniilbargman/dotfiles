@@ -145,8 +145,8 @@
 
 ;; remove tab-bar header line from popup frames
 (advice-add
- 'display-buffer-in-child-frame :filter-return
- #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
+  'display-buffer-in-child-frame :filter-return
+  #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
 
 
 ;; ;; automatically prompt to rename buffer after creating
@@ -517,7 +517,7 @@ tab's grouping collage."
 	   (tag-node . treemacs-visit-node-ace)))
 
     ;; enable modes
-    (treemacs-follow-mode 0)
+    ;; (treemacs-follow-mode 0)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode t)
 

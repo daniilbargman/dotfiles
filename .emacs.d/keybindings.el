@@ -121,8 +121,9 @@
 
   ;;; operations in/on the treemacs buffer
   
-  ;; toggle treemacs window with "C-x C-a"
-  (evil-define-key '(normal insert) 'global (kbd "C-x C-a") 'treemacs)
+  ;; activate treemacs window with "C-x C-a"
+  (evil-define-key '(normal insert) 'global (kbd "C-x C-a")
+    'treemacs-select-window)
   (define-key evil-treemacs-state-map (kbd "C-x C-a") #'treemacs-quit)
 
   ;; fold/unfold directories and tag lists with "za"
@@ -593,6 +594,22 @@
   ;;   )
 
     )
+
+;;; YAML keybindings
+
+(with-eval-after-load "yaml"
+
+  ;; apply manifest file in Kubernetes
+  (define-key yaml-mode-map
+    (kbd "M-s M-a") 'my-yaml-save-and-apply-manifest)
+
+  ;; delete manifest file in Kubernetes
+  (define-key yaml-mode-map
+    (kbd "M-s M-d") 'my-yaml-delete-manifest)
+  
+
+
+  )
 
 (provide 'keybindings)
 ;;; keybindings.el ends here

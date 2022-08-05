@@ -40,6 +40,9 @@
 ;; add Verb to run HTTP(S) requests from Org files
 (use-package verb)
 
+;; LaTeX support
+(use-package latex-preview-pane)
+
 (provide 'org)
 
 ;;; org.el ends here

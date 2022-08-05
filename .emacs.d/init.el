@@ -122,8 +122,9 @@
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
 
-;; don't auto-save files (undo-tree will do this for us)
+;; don't auto-save files or make backups; undo-tree will do this for us
 (setq auto-save-default nil)
+(setq make-backup-files nil)
 
 ;; enable minibuffer history with a reasonable history length
 (savehist-mode t)
@@ -345,6 +346,9 @@
 ;; customizations for markdown mode
 (load-config-file "markdown.el")
 
+;; customizations for LaTeX
+(load-config-file "latex.el")
+
 ;; YAML integration
 (load-config-file "yaml.el")
 
@@ -366,8 +370,8 @@
 ;; email client
 (load-config-file "email.el")
 
-;; openvpn client
-(load-config-file "openvpn.el")
+;; ;; openvpn client: DEPRECATED FOR WIREGUARD
+;; (load-config-file "openvpn.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; NOTE: DEPRECATED THIS BIT as it seems to hang with straight.el and

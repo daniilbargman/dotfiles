@@ -35,6 +35,47 @@
   (add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
   )
 
+;; function for executing a python code block using terminal.el
+(defun my-yaml-save-and-apply-manifest (p)
+  "Apply manifest(s) inside buffer file to active Kubernetes cluster.
+
+Saves the buffer before applying manifests.
+
+Prefix P works like in get-or-create-terminal from terminal.el."
+  (interactive "P")
+
+  ;; save buffer
+  (save-buffer)
+
+  ;; run "apply" on terminal file
+  (get-or-create-terminal
+   p nil nil nil
+   (lambda (term-buffer)
+     (comint-send-string
+      term-buffer
+      (concat "kubectl apply -f " buffer-file-name "\n")
+      )
+     )
+   )
+  )
+
+;; function for executing a python code block using terminal.el
+(defun my-yaml-delete-manifest (p)
+  "Delete manifest specified in buffer from active Kubernetes cluster.
+
+Prefix P works like in get-or-create-terminal from terminal.el."
+  (interactive "P")
+  (get-or-create-terminal
+   p nil nil nil
+   (lambda (term-buffer)
+     (comint-send-string
+      term-buffer
+      (concat "kubectl delete -f " buffer-file-name "\n")
+      )
+     )
+   )
+  )
+
 (provide 'yaml)
 
 ;;; yaml.el ends here

@@ -39,21 +39,25 @@ function error_exit {
 
 # mount drive
 sudo mkdir -p /media/daniil/statosphere-backups
-sudo mount /dev/sda7 /media/daniil/statosphere-backups
+sudo mount /dev/sda7 /media/daniil/statosphere-backups 2>&1 || true
 
-# make directory for current date (if one exists, raise error)
+# make directory for current date (if one exists and isn't empty, raise error)
 target=/media/daniil/statosphere-backups/statOsphere_Backups/$(date +%Y-%m-%d)
-mkdir $target
+mkdir -p $target
+[ "$(ls -A $target)" ] && error_exit "$target is not empty."
+
+# copy files
 rsync -vr \
-      --exclude='*~' \  # exclude Emacs backup files
-      --exclude='_aux' \  # exclude data
-      --exclude 'services/keycloak/src' \  # exclude keycloak repo
-      --exclude 'services/mailu/_old' \  # old versions of mailu
-      --exclude 'services/mailu/mailu-github-repo' \  # exclude mailu repo
-      --exclude 'infrastructure/k8s/templates/ingress-nginx' \  # nginx helm
-      --exclude 'node_modules' \  # exclude installed JS modules
-      --exclude '__pycache__' \  # exclude compiled python code
-      --exclude '.log' \  # exclude logfiles
+      --exclude='*~' \
+      --exclude='_aux' \
+      --exclude 'services/keycloak/src' \
+      --exclude 'services/mailu/_old' \
+      --exclude 'services/mailu/mailu-github-repo' \
+      --exclude 'infrastructure/k8s/templates/ingress-nginx' \
+      --exclude 'node_modules' \
+      --exclude '__pycache__' \
+      --exclude '.log' \
+      --exclude '#*#' \
       /mnt/projects/statosphere $target
 
 # done.

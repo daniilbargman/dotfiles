@@ -90,9 +90,8 @@ export -f vim
 alias vimsession='[[ -e .LastVimSession.vim ]] && vim -S .LastVimSession.vim || vim'
 
 # shortcut to open/close VPN connections and enable/disable UFW
-alias lock='sudo ufw enable && sudo -b openvpn --config ~/.vpn/dbargman-server2.ovpn --auth-nocache'
-alias novpn='sudo killall openvpn'
-alias unlock='sudo ufw disable && novpn'
+alias lock='wg-quick up wg0'
+alias unlock='wg-quick down wg0'
 
 # use human-readable, reverse-chronological directory lists
 alias la="ls -lahFtr --color=always"
@@ -108,12 +107,16 @@ alias off="sudo poweroff"
 alias poweroff="sudo poweroff"
 alias reboot="sudo reboot"
 
+# alias "myip" to get public IP address via curl
+alias myip="curl ifconfig.co"
+alias myip6="curl -6 ifconfig.co"
+
 # alias pg to ping google 5 times
 alias pg="ping -c 5 google.com"
 
 # alias to enable/disable kubernetes by starting/stopping docker and kubelet
-alias ke="sudo systemctl start docker; sudo systemctl start kubelet; sudo systemctl start containerd"
-alias kd="sudo systemctl stop kubelet; sudo systemctl stop docker; sudo systemctl stop containerd"
+alias kd="kubectl drain $(hostname) --disable-eviction=true --force=true --ignore-daemonsets --skip-wait-for-delete-timeout=30 &"
+alias ke="kubectl uncordon $(hostname)"
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {

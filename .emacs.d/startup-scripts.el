@@ -32,29 +32,29 @@
 ;;; Code:
 
 
-;; mount encrypted project drive
-(start-process "mount-projects" "*startup-scripts--mount-projects*"
-	       "/home/daniil/executables/decrypt-and-mount"
-	       "nvme0n1p9"
-	       "projects")
-(with-current-buffer "*startup-scripts--mount-projects*"
-  (comint-watch-for-password-prompt
-      (buffer-substring-no-properties (line-beginning-position)
-				      (line-end-position)))
-    (while (comint-check-proc (current-buffer))
-      (comint-watch-for-password-prompt
-      (buffer-substring-no-properties (line-beginning-position)
-				      (line-end-position)))
-      (sleep-for 1))
-    )
+;; ;; mount encrypted project drive
+;; (start-process "mount-projects" "*startup-scripts--mount-projects*"
+;; 	       "/home/daniil/executables/decrypt-and-mount"
+;; 	       "nvme0n1p9"
+;; 	       "projects")
+;; (with-current-buffer "*startup-scripts--mount-projects*"
+;;   (comint-watch-for-password-prompt
+;;       (buffer-substring-no-properties (line-beginning-position)
+;; 				      (line-end-position)))
+;;     (while (comint-check-proc (current-buffer))
+;;       (comint-watch-for-password-prompt
+;;       (buffer-substring-no-properties (line-beginning-position)
+;; 				      (line-end-position)))
+;;       (sleep-for 1))
+;;     )
 
 
 
-;; start vpn client on startup
-(with-eval-after-load "openvpn"
-  (ovpn-mode-start-vpn-conf
-   "/home/daniil/.vpn/dbargman-server2.ovpn")
- )
+;; ;; start vpn client on startup
+;; (with-eval-after-load "openvpn"
+;;   (ovpn-mode-start-vpn-conf
+;;    "/home/daniil/.vpn/dbargman-server2.ovpn")
+;;  )
 
 
 ;; set up email client

@@ -127,6 +127,29 @@ buffer name during each attempt to open a shell or send code to it."
   :safe (lambda (_) t))
 
 
+;; ;;; interactive actions on various objects; plus dipping a toe into a
+;; ;;; setup that replaces ivy/company with vertico/corfu/marginalia
+
+;; ;; actions on objects
+;; (use-package embark)
+
+;; ;; Enable richer annotations using the Marginalia package
+;; (use-package marginalia
+
+;;   ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+;;   :bind (("M-A" . marginalia-cycle)
+;;          :map minibuffer-local-map
+;;          ("M-A" . marginalia-cycle))
+
+;;   ;; The :init configuration is always executed (Not lazy!)
+;;   :init
+
+;;   ;; Must be in the :init section of use-package such that the mode gets
+;;   ;; enabled right away. Note that this forces loading the package.
+;;   (marginalia-mode))
+
+
+
 ;;; Better minibuffer (Ivy)
 
 ;; use counsel
@@ -348,13 +371,13 @@ buffer name during each attempt to open a shell or send code to it."
   :config
   (custom-set-faces
    '(avy-lead-face
-     ((t (:foreground "red4" :background "gray10")))
+     ((t (:foreground "red" :background "gray10")))
     )
    '(avy-lead-face-0
-     ((t (:foreground "red4" :background "gray10")))
+     ((t (:foreground "red" :background "gray10")))
     )
    '(avy-lead-face-2
-     ((t (:foreground "red4" :background "gray10")))
+     ((t (:foreground "red" :background "gray10")))
     )
    )
   )
@@ -435,11 +458,16 @@ buffer name during each attempt to open a shell or send code to it."
     ;; lsp-ui-peek
     ;; (lsp-ui-peek-enable t)
 
-    ;; :config
+    :config
+
+    ;; add hook for disabling tab-bar in child frame
+    (setq lsp-ui-doc-frame-hook
+	  #'(lambda (frame window) (toggle-frame-tab-bar frame))
+	  )
+
     ;; (lsp-ui-peek-mode)  ; disable peek mode
     ;; (lsp-ui-sideline-mode)  ; disable sideline mode
-    
-    )
+   )
 
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
@@ -498,6 +526,9 @@ buffer name during each attempt to open a shell or send code to it."
 
     ;; disable undo-redo in regions; use file-level only
     (undo-tree-enable-undo-in-region nil)
+
+    ;; ;; visualize changes in undo-tree
+    ;; (undo-tree-visualizer-diff t)
 
   :config
 
