@@ -102,11 +102,6 @@ alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; 
 # alias nmcli d wifi with "wifi"; add BSSID to output for choosing router alias
 alias wifi="nmcli -f in-use,chan,ssid,bssid,signal,bars,security d wifi"
 
-# alias poweroff / reboot to automatically envoke sudo
-alias off="sudo poweroff"
-alias poweroff="sudo poweroff"
-alias reboot="sudo reboot"
-
 # alias "myip" to get public IP address via curl
 alias myip="curl ifconfig.co"
 alias myip6="curl -6 ifconfig.co"
@@ -114,9 +109,42 @@ alias myip6="curl -6 ifconfig.co"
 # alias pg to ping google 5 times
 alias pg="ping -c 5 google.com"
 
-# alias to enable/disable kubernetes by starting/stopping docker and kubelet
-alias kd="kubectl drain $(hostname) --disable-eviction=true --force=true --ignore-daemonsets --skip-wait-for-delete-timeout=30 &"
-alias ke="kubectl uncordon $(hostname)"
+# alias to enable/disable/reset kubernetes
+function disable-k8s {
+    sudo echo "draining node and stopping services..."
+    kubectl drain $(hostname) --disable-eviction=true --force=true --ignore-daemonsets --skip-wait-for-delete-timeout=29
+    sudo service kubelet stop
+    sudo service docker stop
+    sudo service containerd stop
+}
+function enable-k8s {
+    sudo service containerd start
+    sudo service docker start
+    sudo service kubelet start
+    sleep 5
+    kubectl uncordon $(hostname)
+}
+function import-images {
+    img_dir="/mnt/projects/statosphere/_aux/containerd-image-backup"
+    all_tars=$(ls ${img_dir})
+    for i in ${all_tars[@]}; do
+	sudo ctr -n k8s.io image import ${img_dir}/$i
+    done
+}
+export -f disable-k8s
+export -f enable-k8s
+export -f import-images
+alias kd='disable-k8s'
+alias ke='enable-k8s'
+alias kun='kubectl uncordon $(hostname)'
+alias kr='sudo ctr -n k8s.io c rm $(sudo ctr -n k8s.io c ls -q) && sudo ctr -n k8s.io i rm $(sudo ctr -n k8s.io i ls -q)'
+alias ki='import-images'
+alias km='sudo ctr -n k8s.io c ls'
+
+# alias poweroff / reboot to automatically envoke sudo
+alias off="sudo poweroff"
+alias poweroff="sudo poweroff"
+alias reboot="sudo reboot"
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {

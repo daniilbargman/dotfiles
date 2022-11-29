@@ -81,11 +81,19 @@ sudo apt-get -y install fonts-powerline fonts-firacode fonts-noto
 # # tmux dependencies
 # git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm  # plugin manager
 
-# # optional: graphics managers
+# # optional: graphics manager: lightdm with autologin
 # sudo apt-get -y install xorg
 # cd /etc/X11 && sudo Xorg -configure
 # cd ~
-# sudo apt-get -y install gdm3  # graphics managers
+# sudo apt-get -y install lightdm
+
+# # enable passwordless autologin
+# cd ~/.config/lightdm
+# sudo addgroup autologin && sudo gpasswd -a $(logname) autologin
+# sed -i "s/autologin-user=.*/autologin-user=$(logname)/g" lightdm.conf 
+# sudo cp {lightdm.conf,lightdm-gtk-greeter.conf} /etc/lightdm/
+# sudo cp ~/.config/herbstluftwm/background.jpg /etc/lightdm/
+# cd ~
 
 # # optional: grub theme
 # mkdir ~/.grub-themes

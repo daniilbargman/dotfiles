@@ -26,7 +26,7 @@
 
 ;; add vim keybindings
 (use-package evil
-  :after (undo-tree smartparens)
+  :after (undo-fu smartparens)
   :init
 
   ;; other settings
@@ -44,8 +44,8 @@
   ;; use evil mode by default
   (evil-mode)
 
-  ;; set undo system via undo-tree
-  (evil-set-undo-system 'undo-tree)
+  ;; set undo system via undo-fu
+  (evil-set-undo-system 'undo-fu)
 
   ;; open term shells in emacs state
   (evil-set-initial-state 'term-mode 'emacs)

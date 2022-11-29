@@ -41,14 +41,17 @@
 
 ;; (based on defaults copied from mu4e manual)
 
-(add-to-list 'load-path "~/.emacs.d/mu/mu4e")
+;; NOTE as of 1.8 mu4e is installed in /usr/local/share/emacs/site-lisp,
+;; which is on the path
+;(add-to-list 'load-path "~/.emacs.d/mu/mu4e")
+;(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
 
 ;; point to mu binary
 (setq mu4e-mu-binary "/usr/local/bin/mu")
 
 ;; use mu4e for e-mail in emacs
-(setq mail-user-agent (mu4e-user-agent))
+(setq mail-user-agent 'mu4e-user-agent)
 
 ;; the next are relative to the root maildir
 ;; (see `mu info`).

@@ -227,6 +227,10 @@
   ;; fold level using zz
   (evil-define-key 'normal 'global (kbd "zz") 'hs-hide-level)
 
+  ;; open vundo tree
+  (evil-define-key 'normal 'global (kbd "C-x u") 'vundo)
+  
+
 
   ;; function and mapping to add line below and return to normal mode
   (defun evil-newline-after ()
@@ -266,11 +270,11 @@
   (evil-define-key 'insert 'global
     (kbd "TAB") 'tab-to-tab-stop)
 
-  ;; use C-h,l to jump out of parentheses
-  (evil-define-key 'insert 'global
-    (kbd "C-l") 'sp-forward-sexp)
-  (evil-define-key 'insert 'global
-    (kbd "C-h") 'sp-backward-sexp)
+  ;; use C-M-h,l to jump out of parentheses (also in normal and visual)
+  (evil-define-key '(insert normal visual) 'global
+    (kbd "C-M-l") 'sp-forward-sexp)
+  (evil-define-key '(insert normal visual) 'global
+    (kbd "C-M-h") 'sp-backward-sexp)
 
   ;; jump words with "C-f,b"
   (evil-define-key 'insert 'global
@@ -306,6 +310,17 @@
   ;; bind escape key in vterm-mode as well
   (evil-define-key 'emacs 'vterm-mode-map
     (kbd "<escape>") 'vterm-send-escape)
+
+  ;; unbind numbered prefixes
+  (define-key vterm-mode-map (kbd "M-1") nil)
+  (define-key vterm-mode-map (kbd "M-2") nil)
+  (define-key vterm-mode-map (kbd "M-3") nil)
+  (define-key vterm-mode-map (kbd "M-4") nil)
+  (define-key vterm-mode-map (kbd "M-5") nil)
+  (define-key vterm-mode-map (kbd "M-6") nil)
+  (define-key vterm-mode-map (kbd "M-7") nil)
+  (define-key vterm-mode-map (kbd "M-8") nil)
+  (define-key vterm-mode-map (kbd "M-9") nil)
 
   ;; prefix and command sequence bindings for opening terminal shells
   (global-unset-key (kbd "M-s"))
@@ -485,6 +500,11 @@
       'org-forward-heading-same-level)
     (evil-define-key 'normal org-mode-map (kbd "C-p")
       'org-backward-heading-same-level)
+
+    ;; create checkboxes with shorthand
+    (evil-define-key 'insert org-mode-map (kbd "[ SPC")
+      '(lambda () (interactive) (insert "- [ ] ")))
+
     )
 
   ;; toggle checkboxes more easily

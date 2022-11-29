@@ -50,7 +50,7 @@
 .tmux/*
 !.tmux/tmuxline_snapshot
 
-# back up XFCE terminal and herbstluftwm-related config files
+# back up XFCE terminal, herbstluftwm and lightdm config files
 !.config/
 .config/*
 !.config/xfce4/
@@ -59,6 +59,7 @@
 .config/xfce4/terminal/*
 !.config/xfce4/terminal/terminalrc
 !.config/herbstluftwm/
+!.config/lightdm/
 
 # # back up active XFCE theme
 # !.themes/

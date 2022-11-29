@@ -36,7 +36,7 @@ function error_exit {
 }
 
 ## VERSION TO USE
-VERSION=1.6
+VERSION=1.8
 
 ## install dependencies
 
@@ -59,7 +59,8 @@ sudo apt-get -y install getmail
 # get from git (alternatively, use a github tarball)
 git clone https://github.com/djcb/mu.git --branch release/${VERSION}
 cd mu
-./autogen.sh && make
-sudo make install
+# ./autogen.sh && make
+# sudo make install
+meson build && ninja -C build
 
 #

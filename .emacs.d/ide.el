@@ -431,7 +431,7 @@ buffer name during each attempt to open a shell or send code to it."
   (lsp-response-timeout 10)
   ;; (lsp-print-performance t)
   ;; (lsp-enable-file-watchers nil)
-  (lsp-restart 'auto-restart)
+  (lsp-restart 'interactive)
 
   :init
 
@@ -513,28 +513,47 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;;; other tweaks
 
-;; smartly versioned file editing
-(use-package undo-tree
-  :custom
+;; ;; smartly versioned file editing
+;; (use-package undo-tree
+;;   :custom
 
-    ;; save history across sessions
-    (undo-tree-auto-save-history t)
+;;     ;; save history across sessions
+;;     (undo-tree-auto-save-history t)
 
-    ;; avoid file clutter: save all undo files in emacs directory
-    (undo-tree-history-directory-alist
-    '(("." . "~/.emacs.d/undo-tree")))
+;;     ;; avoid file clutter: save all undo files in emacs directory
+;;     (undo-tree-history-directory-alist
+;;     '(("." . "~/.emacs.d/undo-tree")))
 
-    ;; disable undo-redo in regions; use file-level only
-    (undo-tree-enable-undo-in-region nil)
+;;     ;; disable undo-redo in regions; use file-level only
+;;     (undo-tree-enable-undo-in-region nil)
 
-    ;; ;; visualize changes in undo-tree
-    ;; (undo-tree-visualizer-diff t)
+;;     ;; ;; visualize changes in undo-tree
+;;     ;; (undo-tree-visualizer-diff t)
 
-  :config
+;;   :config
 
-    ;; enable globally by defualt
-    (global-undo-tree-mode 1)
+;;     ;; enable globally by defualt
+;;     (global-undo-tree-mode 1)
     
+;;   )
+
+;; retire undo-tree in favour of undo-fu, undo-fu-session, and vundo
+(use-package undo-fu
+  :custom
+  (undo-limit 6710886400) ;; 64mb.
+  (undo-strong-limit 100663296) ;; 96mb.
+  (undo-outer-limit 1006632960) ;; 960mb.
+  )
+(use-package undo-fu-session
+  :config
+  (global-undo-fu-session-mode)
+  )
+(use-package vundo
+  :custom
+  (vundo-window-side 'right)
+  (vundo-roll-back-on-quit nil)
+  (vundo-glyph-alist vundo-unicode-symbols)
+  (vundo-window-max-height 25)
   )
 
 ;; auto-insert parentheses

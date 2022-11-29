@@ -143,10 +143,15 @@
  )
 
 
-;; remove tab-bar header line from popup frames
-(advice-add
-  'display-buffer-in-child-frame :filter-return
-  #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
+;; NOTE: This has since been solved in the package and the workaround is
+;; no longer required.
+
+;; ;; remove tab-bar header line from popup frames
+;; (advice-add
+;;   'display-buffer-in-child-frame :filter-return
+;;   #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
+
+;; END NOTE
 
 
 ;; ;; automatically prompt to rename buffer after creating
@@ -541,12 +546,24 @@ ARGS are ignored but are a requirement for this advice."
     ;; handling of default case as well as special tab names
     (cond
 
-    ;; if the name is "mu4e", load emails
+     ;; if the name is "mu4e", load emails
      ((string-equal tab-name "email")
       (mu4e)
       )
 
-    ;; if the name is "htop", run htop
+     ;; create a terminal in a terminal tab
+     ((string-equal tab-name "terminal")
+      (let ((terminal-buffer-name "terminal")
+	    (terminal-program "/bin/bash")
+	    (terminal-init-commands
+	     '("source /mnt/projects/statosphere/config"))
+	    )
+	(get-or-create-terminal
+	 nil nil nil t '(lambda (term) (delete-other-windows)))
+	)
+      )
+
+     ;; if the name is "htop", run htop
      ((string-equal tab-name "htop")
       (let ((terminal-buffer-name "processes"))
 	(get-or-create-terminal

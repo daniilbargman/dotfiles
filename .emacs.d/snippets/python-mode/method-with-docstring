@@ -12,8 +12,8 @@ def ${1:name}(self${2:$(unless (string-empty-p yas-text) ", ")}${2:arguments})${
 		(concat
 		  ":"
 		  (caar x)
-		  (when (nth 1 (car x)) (concat ":" (when (cadr x) " optional ") (nth 1 (car x))))
-		  (when (cadr x) (concat ": (default: " (cadr x) ")"))
+		  (when (nth 1 (car x)) (concat ": " (nth 1 (car x))))
+		  (when (cadr x) (concat " (default: " (cadr x) ")"))
 		  ": TODO"))
 	    (python-split-args-dbargman yas-text)
 	    (concat "\n" (make-string (current-indentation) ?\s)))
@@ -21,7 +21,7 @@ def ${1:name}(self${2:$(unless (string-empty-p yas-text) ", ")}${2:arguments})${
 
     ${5:$(unless
 	    (and (string-empty-p yas-text) (string-empty-p (yas-field-value 3)))
-	    ":returns:")
+	    ":returns: ")
     }${3:$(unless (string-empty-p yas-text) (concat yas-text ":"))} ${5:TODO}
 
     """

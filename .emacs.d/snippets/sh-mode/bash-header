@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: bash-header
-# key: bh
+# key: bash-header-min
 # --
 #!/usr/bin/env bash
 # vim: set filetype=sh :

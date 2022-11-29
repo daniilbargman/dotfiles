@@ -22,8 +22,8 @@ class ${1:name}:
 		    (concat
 		    ":"
 		    (caar x)
-		    (when (nth 1 (car x)) (concat ":" (when (cadr x) " optional ") (nth 1 (car x))))
-		    (when (cadr x) (concat ": (default: " (cadr x) ")"))
+		    (when (nth 1 (car x)) (concat ": " (nth 1 (car x))))
+		    (when (cadr x) (concat " (default: " (cadr x) ")"))
 		    ": TODO"))
 		(python-split-args-dbargman yas-text)
 		(concat "\n" (make-string (current-indentation) ?\s)))
