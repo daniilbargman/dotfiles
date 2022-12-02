@@ -84,8 +84,8 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; make translucent (<active opacity> . <inactive opacity>)
-(set-frame-parameter (selected-frame) 'alpha '(95 . 95))
-(add-to-list 'default-frame-alist '(alpha . (95 . 95)))
+(set-frame-parameter (selected-frame) 'alpha '(92 . 92))
+(add-to-list 'default-frame-alist '(alpha . (92 . 92)))
 
 
 ;;; Basic settings for working with text

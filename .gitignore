@@ -60,6 +60,9 @@
 !.config/xfce4/terminal/terminalrc
 !.config/herbstluftwm/
 !.config/lightdm/
+!.config/i3/
+!.config/polybar/
+!.config/rofi/
 
 # # back up active XFCE theme
 # !.themes/

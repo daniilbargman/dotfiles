@@ -223,6 +223,9 @@ complete -F __start_kubectl k
 
 ############################### VARIOUS #######################################
 
+# add rofi launcher scripts to path
+export PATH="$PATH:$HOME/.config/rofi/scripts"
+
 # add user-specific NPM global package directory to path
 NPM_GLOBAL="${HOME}/.npm-global"
 export PATH="$PATH:$NPM_GLOBAL/bin"
