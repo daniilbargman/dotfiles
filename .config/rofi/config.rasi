@@ -7,7 +7,7 @@ configuration {
 /*	bw: 1;*/
 /*	location: 0;*/
 /*	padding: 5;*/
-	yoffset: -150;
+	yoffset: -200;
 /*	xoffset: 0;*/
 	fixed-num-lines: true;
 	show-icons: true;

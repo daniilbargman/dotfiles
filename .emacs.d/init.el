@@ -52,6 +52,9 @@
 ;; (setq straight-enable-use-package-integration t)
 (setq straight-fix-flycheck t)
 
+;; use melpa
+;(add-to-list 'package-archives
+;             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;;; Basic look and feel:
 
@@ -148,8 +151,7 @@
 
 ;; add org mode
 ;; (use-package org)
-(use-package org
-  :straight '(org :type built-in)
+(straight-use-package '(org :type built-in)
 
   :config
 

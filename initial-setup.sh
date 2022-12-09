@@ -131,7 +131,31 @@ cd ~
 # install additional layout management programs papirus-icon-theme
 sudo apt-get install -y i3 polybar rofi feh lxappearance  # window manager components
 
+### install alacritty terminal ###
 
+sudo apt-get -y install cmake pkg-config libfreetype6-dev libfontconfig1-dev \
+	libxcb-xfixes0-dev libxkbcommon-dev python3
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+git clone https://github.com/alacritty/alacritty.git
+cd alacritty
+source ~/.cargo/env
+rustup override set stable
+rustup update stable
+cargo build --release
+sudo cp target/release/alacritty /usr/local/bin
+sudo cp extra/logo/alacritty-term.svg /usr/share/pixmaps/Alacritty.svg
+sudo desktop-file-install extra/linux/Alacritty.desktop
+sudo update-desktop-database
+
+# bash completions
+echo "source $(pwd)/extra/completions/alacritty.bash" >> ~/.bashrc_ext
+
+# alacritty manpage
+sudo mkdir -p /usr/local/share/man/man1
+gzip -c extra/alacritty.man | \
+    sudo tee /usr/local/share/man/man1/alacritty.1.gz > /dev/null
+gzip -c extra/alacritty-msg.man | \
+    sudo tee /usr/local/share/man/man1/alacritty-msg.1.gz > /dev/null
 
 ## INSTALL SNAP ###
 sudo apt-get -y install snapd

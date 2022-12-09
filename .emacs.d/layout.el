@@ -119,27 +119,27 @@
 (custom-set-faces
  '(tab-bar
    ((t (:background "#202020"
-	:height 1.1
+	:height 1.7
 	))))
  '(tab-bar-tab
    ((t (:background "#202020"
-	:foreground "#78B9C5" ; "#7ec98f"
+	:foreground "#D0C654" ; "#7ec98f"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
-	:height 1.2
+	:height 0.6
 	;; :underline t
 	;; :overline t
 	))))
  '(tab-bar-tab-inactive
    ((t (:background "#202020"
-	:foreground "#999999"
+	:foreground "#aaaaaa"
 	:box nil ; '(:line-width 1 :style nil)
 	:inverse-video: nil
-	;; :height 0.9
+	:height 0.6
 	))))
- '(tab-line
-   ((t (:background "#101010"
-	))))
+ ;; '(tab-line
+ ;;   ((t (:background "#202020"
+ ;; 	))))
  )
 
 
@@ -148,8 +148,10 @@
 
 ;; ;; remove tab-bar header line from popup frames
 ;; (advice-add
-;;   'display-buffer-in-child-frame :filter-return
-;;   #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window))
+;;   'display-buffer-in-child-frame :after
+;;   ;; #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window)
+;;   #'(lambda (&rest r) (toggle-tab-bar-mode-from-frame 0))
+;;   )
 
 ;; END NOTE
 
@@ -193,7 +195,7 @@ Uses winner-mode-undo."
 Uses evil commands."
   (interactive)
   ;; choose new buffer from menu
-  (ivy-switch-buffer)
+  (consult-buffer)
   ;; go back to current buffer in this window
   (previous-buffer)
   ;; make empty split below current window and switch to new buffer there
@@ -208,7 +210,7 @@ Uses evil commands."
 Uses evil commands."
   (interactive)
   ;; choose new buffer from menu
-  (ivy-switch-buffer)
+  (consult-buffer)
   ;; go back to current buffer in this window
   (previous-buffer)
   ;; make empty split below current window and switch to new buffer there
@@ -222,7 +224,7 @@ Uses evil commands."
 Uses evil commands."
   (interactive)
   ;; choose new buffer from menu
-  (ivy-switch-buffer)
+  (consult-buffer)
   ;; make empty split below current window and switch to new buffer there
   (evil-window-split)
   ;; go back to current buffer in this window
@@ -239,7 +241,7 @@ Uses evil commands."
 Uses evil commands."
   (interactive)
   ;; choose new buffer from menu
-  (ivy-switch-buffer)
+  (consult-buffer)
   ;; make empty split below current window and switch to new buffer there
   (evil-window-vsplit)
   ;; go back to current buffer in this window

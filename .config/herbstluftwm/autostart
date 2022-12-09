@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
 # run compositor
-compton -b --config ~/.config/herbstluftwm/.compton.conf
+compton -b #--config ~/.config/herbstluftwm/.compton.conf
+
+# xsetroot -solid '#5A8E3A'
 
 # this is a simple config for herbstluftwm
-killall dzen2&
+# killall dzen2&
 
 hc() {
     herbstclient "$@"
@@ -14,10 +16,6 @@ hc emit_hook reload
 
 # replacing background with own bg image in .xinitrc
 feh --bg-scale ~/.config/herbstluftwm/background.jpg
-# feh --bg-scale /usr/share/backgrounds/mx_blue.jpg
-
-# exec compton -b
-# frame_bg_transparent = true
 
 # remove all existing keybindings
 hc keyunbind --all
@@ -27,24 +25,26 @@ hc keyunbind --all
 # Mod=Mod1    # Use alt as the main modifier
 Mod=Mod4   # Use the super key as the main modifier
 
-hc keybind $Mod-Shift-q quit
+hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-x close_or_remove
-hc keybind $Mod-Return spawn xfce4-terminal
-hc keybind $Mod-b spawn firefox
-hc keybind $Mod-e spawn emacs -bg 'gray10' -fg 'white'
+hc keybind $Mod-Shift-q close_or_remove
+hc keybind $Mod-Return chain , spawn alacritty , use_index "2"
+hc keybind $Mod-b chain , spawn firefox , use_index "1"
+hc keybind $Mod-e chain , spawn emacs -bg 'gray10' -fg 'white' , use_index "0"
 hc keybind $Mod-t spawn thunar
+hc keybind $Mod-space spawn rofi -show combi
 
 # basic movement
 # focusing clients
-hc keybind $Mod-Left  focus left
-hc keybind $Mod-Down  focus down
-hc keybind $Mod-Up    focus up
-hc keybind $Mod-Right focus right
-hc keybind $Mod-h     focus left
-hc keybind $Mod-j     focus down
-hc keybind $Mod-k     focus up
-hc keybind $Mod-l     focus right
+hc keybind $Mod-Left  focus --level=visible left
+hc keybind $Mod-Down  focus --level=visible down
+hc keybind $Mod-Up    focus --level=visible up
+hc keybind $Mod-Right focus --level=visible right
+hc keybind $Mod-h     focus --level=visible left
+hc keybind $Mod-j     focus --level=visible down
+hc keybind $Mod-k     focus --level=visible up
+hc keybind $Mod-l     focus --level=visible right
 
 # moving clients
 hc keybind $Mod-Shift-Left  shift left
@@ -75,7 +75,18 @@ hc keybind $Mod-Control-Up      resize up +$resizestep
 hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
-tag_names=( {1..10} )
+tag_names=( \
+  'Emacs' \
+  'Firefox' \
+  'Terminals' \
+  'Workspace4' \
+  'Workspace5' \
+  'Workspace6' \
+  'Workspace7' \
+  'Workspace8' \
+  'Workspace9' \
+  'Workspace10' \
+)
 tag_keys=( {1..10} 0 )
 
 hc rename default "${tag_names[0]}" || true
@@ -89,23 +100,28 @@ for i in ${!tag_names[@]} ; do
 done
 
 # cycle through tabs
-hc keybind $Mod-w use_index +1 --skip-visible
+# hc keybind $Mod-w use_index +1 --skip-visible
 hc keybind $Mod-Tab use_index +1 --skip-visible
-hc keybind $Mod-q  use_index -1 --skip-visible
+# hc keybind $Mod-q  use_index -1 --skip-visible
 hc keybind $Mod-Shift-Tab  use_index -1 --skip-visible
 
 # layouting
+hc keybind $Mod-r remove
 hc keybind $Mod-s floating toggle
 hc keybind $Mod-f fullscreen toggle
+hc keybind $Mod-Shift-f set_attr clients.focus.floating toggle
+hc keybind $Mod-Shift-d set_attr clients.focus.decorated toggle
+hc keybind $Mod-Shift-m set_attr clients.focus.minimized true
+hc keybind $Mod-Control-m jumpto last-minimized
 hc keybind $Mod-p pseudotile toggle
+
 # The following cycles through the available layouts within a frame, but skips
 # layouts, if the layout change wouldn't affect the actual window positions.
 # I.e. if there are two windows within a frame, the grid layout is skipped.
-hc keybind $Mod-space                                                           \
+hc keybind $Mod-w                                                           \
             or , and . compare tags.focus.curframe_wcount = 2                   \
                      . cycle_layout +1 vertical horizontal max vertical grid    \
                , cycle_layout +1
-
 # mouse
 hc mouseunbind --all
 hc mousebind $Mod-Button1 move
@@ -116,68 +132,98 @@ hc mousebind $Mod-Button3 resize
 hc keybind $Mod-BackSpace   cycle_monitor
 # hc keybind $Mod-Tab         cycle_all +1
 # hc keybind $Mod-Shift-Tab   cycle_all -1
-# hc keybind $Mod-c cycle
-# hc keybind $Mod-i jumpto urgent
+hc keybind $Mod-c cycle
+hc keybind $Mod-i jumpto urgent
 
 # theme
+
+# NOTE This has been merged but not in official repo yet. enable once available
+#hc set_layout tabbed_max
+
 # hc attr theme.tiling.reset 1
 # hc attr theme.floating.reset 1
 hc set frame_border_active_color '#2290B5'  # also active text color in top panel
 hc set frame_border_normal_color '#909090'  # also plain text color in top panel
 hc set frame_bg_normal_color '#101010'      # also background color in top panel
 hc set frame_bg_active_color '#222222'
-hc set frame_border_width 2
-hc set always_show_frame 0
+hc set frame_border_width 1
 hc set frame_bg_transparent 1
+hc set show_frame_decorations 'focused_if_multiple'
 # hc set frame_transparent_width 1
-hc set frame_gap 0
+hc set frame_gap 2
 hc set frame_normal_opacity 0
 hc set frame_active_opacity .5
+hc set focus_crosses_monitor_boundaries true
+hc set focus_stealing_prevention false
 
-hc attr theme.active.color '#EBEBEB'
-hc attr theme.normal.color '#EEEEEE'
+hc attr theme.title_height 15
+hc attr theme.title_align center
+hc attr theme.title_when 'one_tab'
+hc attr theme.title_font 'FiraCode-Regular:pixelsize=12'  # example using Xft
+# hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
+hc attr theme.title_depth 6  # space below the title's baseline
+# hc attr theme.active.color '#345F0Cef'
+# hc attr theme.normal.color '#323232dd'
+# hc attr theme.urgent.color '#7811A1dd'
+# hc attr theme.tab_color '#ffffff'
+hc attr theme.active.color '#1F1F1Fdd' # active window's title background color
+hc attr theme.title_color '#898989'  # active window's title text color
+hc attr theme.normal.color '#1F1F1Faa' # inactive window's title background color
+hc attr theme.normal.title_color '#898989'  # inactive window's title text color
 hc attr theme.urgent.color orange
-hc attr theme.inner_width 0
+hc attr theme.inner_width 1
 hc attr theme.inner_color black
-hc attr theme.border_width 0
-hc attr theme.floating.border_width 0
-hc attr theme.floating.outer_width 0
-hc attr theme.floating.outer_color black
-hc attr theme.active.inner_color '#eeeeee'
-hc attr theme.active.outer_color '#ebebeb'
-hc attr theme.background_color '#141414'
+hc attr theme.border_width 1
+hc attr theme.floating.border_width 2
+hc attr theme.floating.outer_width 1
+hc attr theme.floating.outer_color '#D0C654'  # outer outline of floating tile
+hc attr theme.active.inner_color '#909090'  # inner outline of active tile
+# hc attr theme.active.outer_color '#ebebeb'
+# hc attr theme.background_color '#141414'
+# hc attr theme.active.tab_color '#2B4F0Add'
+# hc attr theme.active.tab_outer_color '#6C8257dd'
+# hc attr theme.active.tab_title_color '#ffffff'
 
 hc set window_gap 0
 hc set frame_padding 1
-hc set smart_window_surroundings 1
-hc set smart_frame_surroundings 0
+hc set smart_window_surroundings on
+hc set smart_frame_surroundings off
 hc set mouse_recenter_gap 0
 
 # rules
 hc unrule -F
-#hc rule class=XTerm tag=3 # move all xterms to tag 3
-hc rule focus=on # normally focus new clients
+hc rule focus=on
+hc rule class=Emacs --tag='Emacs' --focus=on # move all xterms to tag 3
+hc rule class=Firefox --tag~'Firefox' --focus=on # move all xterms to tag 3
+hc rule class=Alacritty --tag="Terminals" --focus=on # move all xterms to tag 3
+hc rule floatplacement=center
 #hc rule focus=off # normally do not focus new clients
 # give focus to most common terminals
-#hc rule class~'(.*[Rr]xvt.*|.*[Tt]erm|Konsole)' focus=on
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on
 hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
+hc rule fixedsize floating=on
 
 # unlock, just to be sure
 hc unlock
 
-herbstclient set tree_style '╾│ ├└╼─┐'
+hc set tree_style '╾│ ├└╼─┐'
 
 # do multi monitor setup here, e.g.:
 # hc set_monitors 1280x1024+0+0 1280x1024+1280+0
 # or simply:
-# hc detect_monitors
+hc detect_monitors
 
-# find the panel
-panel=~/.config/herbstluftwm/panel.sh
-# [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
-for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
-    # start it on each monitor
-    "$panel" $monitor &
-done
+# spawn polybar
+hc spawn ~/.config/polybar/launch.sh
+
+# # find the panel
+# panel=~/.config/herbstluftwm/panel.sh
+# # [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
+# for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
+#     # start it on each monitor
+#     "$panel" $monitor &
+# done
+
+# # run emacs daemon
+# emacs --daemon

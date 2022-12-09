@@ -63,6 +63,7 @@
 !.config/i3/
 !.config/polybar/
 !.config/rofi/
+!.config/alacritty/
 
 # # back up active XFCE theme
 # !.themes/

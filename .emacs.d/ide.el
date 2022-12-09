@@ -34,7 +34,6 @@
 
 ;;; Code:
 
-
 ;;; Global configuration group
 
 ;; group under "bind-interactive-shell"
@@ -128,112 +127,181 @@ buffer name during each attempt to open a shell or send code to it."
 
 
 ;; ;;; interactive actions on various objects; plus dipping a toe into a
-;; ;;; setup that replaces ivy/company with vertico/corfu/marginalia
+;; ;;; setup that replaces ivy/company with vertico/consult/marginalia
 
-;; ;; actions on objects
-;; (use-package embark)
+;; minibuffer
+(use-package vertico
+  :init
+  (vertico-mode)
+  :custom
+  (enable-recursive-minibuffers t)
+  (vertico-cycle t)
+  )
 
-;; ;; Enable richer annotations using the Marginalia package
-;; (use-package marginalia
+;; (use-package vertico-quick
+;;   :after vertico
+;;   :ensure nil)
 
-;;   ;; Either bind `marginalia-cycle` globally or only in the minibuffer
-;;   :bind (("M-A" . marginalia-cycle)
-;;          :map minibuffer-local-map
-;;          ("M-A" . marginalia-cycle))
+;; `orderless' completion style.
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(substring orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+	  '((file (styles partial-completion)))
+	)
+  )
 
-;;   ;; The :init configuration is always executed (Not lazy!)
-;;   :init
+;; like counsel
+(use-package consult
 
-;;   ;; Must be in the :init section of use-package such that the mode gets
-;;   ;; enabled right away. Note that this forces loading the package.
-;;   (marginalia-mode))
-
-
-
-;;; Better minibuffer (Ivy)
-
-;; use counsel
-(use-package counsel
-  :after ivy
   :config
 
-  ;; enable globally
-  (counsel-mode)
-
-  ;; define some functions around counsel-yank-pop to make it consistent
-  (defun my/counsel-paste-pop ()
-    "Interactive like counsel-yank-pop, but removes previous paste if
-  running after an evil-paste command (like evil-paste-pop)"
-    (interactive)
-
-    ;; if running after an evil-paste command...
-    (if (memq last-command
-	      '(evil-paste-after
-		evil-paste-before
-		evil-visual-paste))
-
-	;; save paste location
-	(let ((BEG (evil-get-marker ?\[))
-	      (END (evil-get-marker ?\])))
-
-	  ;; then visually select and run visual equivalent of this func
-	  (evil-visual-select BEG END)
-	  (my/counsel-yank-pop-selection))
-
-      ;;; if not running after an evil-paste command, just run as normal
-      (counsel-yank-pop))
-    )
-
-  ;; replace visual selection with selection from kill-buffer
-  (defun my/counsel-yank-pop-selection ()
+  ;; when running yank-pop in visual mode, remove selected text prior.
+  (defun my/consult-replace-selection-from-kill-ring ()
     "Replace visual selection with an item selected from the kill-ring."
     (interactive)
     (let* ((target-range (evil-visual-range))
 	    (BEG (nth 0 target-range))
 	    (END (nth 1 target-range))
 	    )
-      (goto-char END)
-      (counsel-yank-pop)
       (evil-delete BEG END) ; type)
+      ;; (goto-char END)
+      (consult-yank-pop)
       ))
 
-  )
+  ;; when searching for visual selection with consult-line, do not move point
+  (defun start-with-current-line (lines)
+    (cl-loop
+    with current = (line-number-at-pos (point) consult-line-numbers-widen)
+    for (line . after) on (cdr lines)
+    while (< (cdr (get-text-property 0 'consult-location line)) current)
+    collect line into before
+    finally (return (cons (car lines) (append after before)))))
 
-;; use ivy
-(use-package ivy
-  ;; :defer 0.1
-  ;; :diminish
-  ;; :bind (("C-c C-r" . ivy-resume)
-  ;;        ("C-x B" . ivy-switch-buffer-other-window))
+  (advice-add 'consult--line-candidates :filter-return #'start-with-current-line)
+
   :custom
-  (enable-recursive-minibuffers t)
-  (ivy-count-format "(%d/%d) ")
-  (ivy-use-virtual-buffers t)
-  (ivy-use-selectable-prompt t)
-  :config
-  (ivy-mode)
-  ;; (evil-collection-init 'ivy)
+  ;; search text from the top of the buffer
+  (consult-line-start-from-top t)
   )
 
-;; show additional information about buffers in the buffer window
-(use-package ivy-rich
-  :after ivy
-  :custom
-
-  ;; speed up buffer toggle
-  (ivy-rich-project-root-cache-mode t)
-
-  :config
-  (ivy-rich-mode 1)
-  ;; (setcdr (assq t ivy-format-functions-alist)
-  ;; 	  #'ivy-format-function-line)
+;; actions on objects
+(use-package embark
+  :straight '(embark :includes embark-consult)
   )
 
-;; use swiper
-(use-package swiper
-  :after ivy)
-  ;; :bind (("C-s" . swiper)
-  ;;        ("C-r" . swiper)))
+;; (use-package embark-consult
+;;   :straight '(embark-consult :local-repo "embark")
+;;   :after (embark consult)
+;;   ;; :hook
+;;   ;; (embark-collect-mode . consult-preview-at-point-mode)
+;;   )
+
+;; Enable richer annotations using the Marginalia package
+(use-package marginalia
+
+  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+  :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
+
+
+;;; Better minibuffer (Ivy)
+
+;; ;; use counsel
+;; (use-package counsel
+;;   :after ivy
+;;   :config
+
+;;   ;; enable globally
+;;   (counsel-mode)
+
+;;   ;; define some functions around counsel-yank-pop to make it consistent
+;;   (defun my/counsel-paste-pop ()
+;;     "Interactive like counsel-yank-pop, but removes previous paste if
+;;   running after an evil-paste command (like evil-paste-pop)"
+;;     (interactive)
+
+;;     ;; if running after an evil-paste command...
+;;     (if (memq last-command
+;; 	      '(evil-paste-after
+;; 		evil-paste-before
+;; 		evil-visual-paste))
+
+;; 	;; save paste location
+;; 	(let ((BEG (evil-get-marker ?\[))
+;; 	      (END (evil-get-marker ?\])))
+
+;; 	  ;; then visually select and run visual equivalent of this func
+;; 	  (evil-visual-select BEG END)
+;; 	  (my/counsel-yank-pop-selection))
+
+;;       ;;; if not running after an evil-paste command, just run as normal
+;;       (counsel-yank-pop))
+;;     )
+
+;;   ;; replace visual selection with selection from kill-buffer
+;;   (defun my/counsel-yank-pop-selection ()
+;;     "Replace visual selection with an item selected from the kill-ring."
+;;     (interactive)
+;;     (let* ((target-range (evil-visual-range))
+;; 	    (BEG (nth 0 target-range))
+;; 	    (END (nth 1 target-range))
+;; 	    )
+;;       (goto-char END)
+;;       (counsel-yank-pop)
+;;       (evil-delete BEG END) ; type)
+;;       ))
+
+;;   )
+
+;; ;; use ivy
+;; (use-package ivy
+;;   ;; :defer 0.1
+;;   ;; :diminish
+;;   ;; :bind (("C-c C-r" . ivy-resume)
+;;   ;;        ("C-x B" . ivy-switch-buffer-other-window))
+;;   :custom
+;;   (enable-recursive-minibuffers t)
+;;   (ivy-count-format "(%d/%d) ")
+;;   (ivy-use-virtual-buffers t)
+;;   (ivy-use-selectable-prompt t)
+;;   :config
+;;   (ivy-mode)
+;;   ;; (evil-collection-init 'ivy)
+;;   )
+
+;; ;; show additional information about buffers in the buffer window
+;; (use-package ivy-rich
+;;   :after ivy
+;;   :custom
+
+;;   ;; speed up buffer toggle
+;;   (ivy-rich-project-root-cache-mode t)
+
+;;   :config
+;;   (ivy-rich-mode 1)
+;;   ;; (setcdr (assq t ivy-format-functions-alist)
+;;   ;; 	  #'ivy-format-function-line)
+;;   )
+
+;; ;; use swiper
+;; (use-package swiper
+;;   :after ivy)
+;;   ;; :bind (("C-s" . swiper)
+;;   ;;        ("C-r" . swiper)))
 
 
 ;;; Code essentials
@@ -474,9 +542,9 @@ buffer name during each attempt to open a shell or send code to it."
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (setq lsp-idle-delay 0.5)
 
-  ;; lsp-ivy
-  (use-package lsp-ivy
-    :commands lsp-ivy-workspace-symbol)
+  ;; ;; lsp-ivy
+  ;; (use-package lsp-ivy
+  ;;   :commands lsp-ivy-workspace-symbol)
 
   ;; lsp-treemacs
   (use-package lsp-treemacs

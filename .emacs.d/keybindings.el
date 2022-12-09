@@ -99,7 +99,7 @@
     (kbd "C-w o") 'view-single-window-toggle)
   ;; load different buffer in same window with "C-w w"
   (evil-define-key 'normal 'global
-    (kbd "C-w w") 'ivy-switch-buffer)
+    (kbd "C-w w") 'consult-buffer)
   ;; split and prompt for new buffer
   (evil-define-key 'normal 'global
     (kbd "C-w j") 'view-new-buffer-below)
@@ -167,8 +167,11 @@
     "p" 'flycheck-previous-error ; goto previous error with <leader>e
 
     ;; search
-    "s" 'swiper-thing-at-point ; search thing at point with <leader>s
-    "C-s" 'swiper-all-thing-at-point ; search thing at point in all
+    ;; "s" 'swiper-thing-at-point ; search thing at point with <leader>s
+    ;; "C-s" 'swiper-all-thing-at-point ; search thing at point in all
+    ;; 					; buffers with <leader>C-s
+    "s" 'embark-act ; search thing at point with <leader>s
+    "C-s" 'embark-act-all ; search thing at point in all
 					; buffers with <leader>C-s
 
     ;; avy jumps
@@ -212,14 +215,14 @@
 
   ;; use swiper as default search backend
   (evil-define-key '(normal motion) 'global
-    (kbd "/") 'swiper)
-  (evil-define-key '(normal motion) 'global
-    (kbd "?") 'swiper-backward)
+    (kbd "/") 'consult-line)
+  ;; (evil-define-key '(normal motion) 'global
+  ;;   (kbd "?") 'swiper-backward)
 
   ;; search all buffers using swiper
   (global-unset-key (kbd "C-s"))
   (evil-define-key '(normal motion) 'global
-    (kbd "C-s") 'swiper-all)
+    (kbd "C-s") 'consult-line-multi)
 
   ;; fold everything using zA
   (evil-define-key 'normal 'global (kbd "zA") 'hs-hide-all)
@@ -383,9 +386,15 @@
 
 (with-eval-after-load "ide"
 
-  ;; escape ivy minibuffer with escape key
-  (define-key ivy-minibuffer-map (kbd "<escape>")
-    'minibuffer-keyboard-quit)
+  ;; ;; escape ivy minibuffer with escape key
+  ;; (define-key ivy-minibuffer-map (kbd "<escape>")
+  ;;   'minibuffer-keyboard-quit)
+
+  ;; add embark bindings for cycling through instances of thing at point
+  (evil-define-key '(normal visual) 'embark-general-map (kbd "C-n")
+    '(lambda (thing) (consult-line thing) (vertico-next)))
+  (evil-define-key '(normal visual) 'embark-general-map (kbd "C-p")
+    '(lambda (thing) (consult-line thing) (vertico-previous)))
 
   ;; use "C-a" to show company popup in normal and insert states
   ;; (evil-define-key '(normal insert) 'global (kbd "C-a") 'toggle-company-idle-delay)
@@ -399,10 +408,11 @@
   (evil-define-key 'insert 'yas-minor-mode-map (kbd "TAB") yas-maybe-expand)
 
   ;; browse kill-ring with counsel
-  (evil-define-key 'normal 'global (kbd "M-y") 'my/counsel-paste-pop)
+  (evil-define-key 'normal 'global (kbd "M-y") 'consult-yank-pop)
 
   ;; also, when in visual mode, delete highlighted text first
-  (evil-define-key 'visual 'global (kbd "M-y") 'my/counsel-yank-pop-selection)
+  (evil-define-key 'visual 'global (kbd "M-y")
+    'my/consult-replace-selection-from-kill-ring)
 
   ;; format braces
   (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)

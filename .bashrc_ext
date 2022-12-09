@@ -235,3 +235,4 @@ export MANPATH="${MANPATH-$(manpath)}:$NPM_GLOBAL/share/man"
 source /opt/conda/etc/profile.d/conda.sh
 
 ###############################################################################
+source /home/daniil/alacritty/extra/completions/alacritty.bash
