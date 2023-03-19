@@ -109,15 +109,21 @@ alias myip6="curl -6 ifconfig.co"
 # alias pg to ping google 5 times
 alias pg="ping -c 5 google.com"
 
+# s3 command aliases for synchronizing files with private bucket
+alias s3sync="s3cmd -c ~/sync/.s3cfg"
+
 # alias to enable/disable/reset kubernetes
 function disable-k8s {
     sudo echo "draining node and stopping services..."
-    kubectl drain $(hostname) --disable-eviction=true --force=true --ignore-daemonsets --skip-wait-for-delete-timeout=29
+    kubectl drain $(hostname) --disable-eviction=true --force=true \
+	    --ignore-daemonsets # --skip-wait-for-delete-timeout=300
+    sudo service nfs-server stop
     sudo service kubelet stop
     sudo service docker stop
     sudo service containerd stop
 }
 function enable-k8s {
+    sudo service nfs-server start
     sudo service containerd start
     sudo service docker start
     sudo service kubelet start

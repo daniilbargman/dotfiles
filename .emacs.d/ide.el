@@ -44,7 +44,7 @@
   :version '0.1.0)
 
 ;; Delay for company popup (when mode is toggled to active)
-(defcustom ide-company-popup-active-delay 0.2
+(defcustom ide-completion-popup-active-delay 0.2
   "Name of (the buffer containing) the desired interactive shell.
 
 If the buffer by the specified name does not exist, it will typically be
@@ -131,7 +131,20 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; minibuffer
 (use-package vertico
-  :init
+  :straight (vertico :files (:defaults "extensions/*")
+                     :includes (vertico-indexed
+                                vertico-flat
+                                vertico-grid
+                                vertico-mouse
+                                vertico-quick
+                                vertico-buffer
+                                vertico-repeat
+                                vertico-reverse
+                                vertico-directory
+                                vertico-multiform
+                                vertico-unobtrusive
+                                ))
+  :config
   (vertico-mode)
   :custom
   (enable-recursive-minibuffers t)
@@ -142,18 +155,43 @@ buffer name during each attempt to open a shell or send code to it."
 ;;   :after vertico
 ;;   :ensure nil)
 
-;; `orderless' completion style.
-(use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(substring orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides
-	  '((file (styles partial-completion)))
-	)
+;;; NOTE: Decommissionnig orderless in favour of prescient.el
+;; ;; `orderless' completion style.
+;; (use-package orderless
+;;   :init
+;;   ;; Configure a custom style dispatcher (see the Consult wiki)
+;;   ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+;;   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+;;   (setq completion-styles
+;; 	;; '(substring orderless basic)
+;; 	'(orderless basic flex)
+;;         completion-category-defaults nil
+;;         completion-category-overrides
+;; 	  '((file (styles partial-completion)))
+;; 	  )
+
+;;   ;; :custom
+
+;;   ;; ;; matching styles should match at the beginning of each word
+;;   ;; (orderless-matching-styles '(orderless-prefixes orderless-flex))
+
+;;   ;; ;; do not use smart case matching
+;;   ;; (orderless-match-faces nil)
+
+;;   )
+(use-package prescient
+  :custom
+  (prescient-persist-mode t)
+  (prescient-sort-length-enable nil)
+  (prescient-sort-full-matches-first t)
+  (prescient-filter-method '(literal-prefix regexp))
   )
+(use-package vertico-prescient
+  :custom
+  (vertico-prescient-override-sorting t)
+  :config (vertico-prescient-mode)
+  )
+
 
 ;; like counsel
 (use-package consult
@@ -161,28 +199,32 @@ buffer name during each attempt to open a shell or send code to it."
   :config
 
   ;; when running yank-pop in visual mode, remove selected text prior.
-  (defun my/consult-replace-selection-from-kill-ring ()
+  (defun dbargman/consult-replace-selection-from-kill-ring (string)
     "Replace visual selection with an item selected from the kill-ring."
-    (interactive)
+    (interactive (list (consult--read-from-kill-ring)))
     (let* ((target-range (evil-visual-range))
 	    (BEG (nth 0 target-range))
 	    (END (nth 1 target-range))
 	    )
+      (evil-normal-state)
+      (goto-char END)
+      (consult-yank-replace string)
       (evil-delete BEG END) ; type)
-      ;; (goto-char END)
-      (consult-yank-pop)
       ))
 
   ;; when searching for visual selection with consult-line, do not move point
   (defun start-with-current-line (lines)
     (cl-loop
-    with current = (line-number-at-pos (point) consult-line-numbers-widen)
+     with current = (line-number-at-pos (point)
+					consult-line-numbers-widen)
     for (line . after) on (cdr lines)
     while (< (cdr (get-text-property 0 'consult-location line)) current)
     collect line into before
     finally (return (cons (car lines) (append after before)))))
 
-  (advice-add 'consult--line-candidates :filter-return #'start-with-current-line)
+  (advice-add 'consult--line-candidates
+	      :filter-return #'start-with-current-line)
+
 
   :custom
   ;; search text from the top of the buffer
@@ -191,15 +233,9 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; actions on objects
 (use-package embark
-  :straight '(embark :includes embark-consult)
-  )
+  :straight '(embark :files (:defaults "*") :includes embark-consult))
+;; (straight-use-package 'embark-consult)
 
-;; (use-package embark-consult
-;;   :straight '(embark-consult :local-repo "embark")
-;;   :after (embark consult)
-;;   ;; :hook
-;;   ;; (embark-collect-mode . consult-preview-at-point-mode)
-;;   )
 
 ;; Enable richer annotations using the Marginalia package
 (use-package marginalia
@@ -216,92 +252,15 @@ buffer name during each attempt to open a shell or send code to it."
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
 
+;; add icon support in marginalia
+(use-package all-the-icons-completion
+  :after (marginalia all-the-icons)
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
 
-
-;;; Better minibuffer (Ivy)
-
-;; ;; use counsel
-;; (use-package counsel
-;;   :after ivy
-;;   :config
-
-;;   ;; enable globally
-;;   (counsel-mode)
-
-;;   ;; define some functions around counsel-yank-pop to make it consistent
-;;   (defun my/counsel-paste-pop ()
-;;     "Interactive like counsel-yank-pop, but removes previous paste if
-;;   running after an evil-paste command (like evil-paste-pop)"
-;;     (interactive)
-
-;;     ;; if running after an evil-paste command...
-;;     (if (memq last-command
-;; 	      '(evil-paste-after
-;; 		evil-paste-before
-;; 		evil-visual-paste))
-
-;; 	;; save paste location
-;; 	(let ((BEG (evil-get-marker ?\[))
-;; 	      (END (evil-get-marker ?\])))
-
-;; 	  ;; then visually select and run visual equivalent of this func
-;; 	  (evil-visual-select BEG END)
-;; 	  (my/counsel-yank-pop-selection))
-
-;;       ;;; if not running after an evil-paste command, just run as normal
-;;       (counsel-yank-pop))
-;;     )
-
-;;   ;; replace visual selection with selection from kill-buffer
-;;   (defun my/counsel-yank-pop-selection ()
-;;     "Replace visual selection with an item selected from the kill-ring."
-;;     (interactive)
-;;     (let* ((target-range (evil-visual-range))
-;; 	    (BEG (nth 0 target-range))
-;; 	    (END (nth 1 target-range))
-;; 	    )
-;;       (goto-char END)
-;;       (counsel-yank-pop)
-;;       (evil-delete BEG END) ; type)
-;;       ))
-
-;;   )
-
-;; ;; use ivy
-;; (use-package ivy
-;;   ;; :defer 0.1
-;;   ;; :diminish
-;;   ;; :bind (("C-c C-r" . ivy-resume)
-;;   ;;        ("C-x B" . ivy-switch-buffer-other-window))
-;;   :custom
-;;   (enable-recursive-minibuffers t)
-;;   (ivy-count-format "(%d/%d) ")
-;;   (ivy-use-virtual-buffers t)
-;;   (ivy-use-selectable-prompt t)
-;;   :config
-;;   (ivy-mode)
-;;   ;; (evil-collection-init 'ivy)
-;;   )
-
-;; ;; show additional information about buffers in the buffer window
-;; (use-package ivy-rich
-;;   :after ivy
-;;   :custom
-
-;;   ;; speed up buffer toggle
-;;   (ivy-rich-project-root-cache-mode t)
-
-;;   :config
-;;   (ivy-rich-mode 1)
-;;   ;; (setcdr (assq t ivy-format-functions-alist)
-;;   ;; 	  #'ivy-format-function-line)
-;;   )
-
-;; ;; use swiper
-;; (use-package swiper
-;;   :after ivy)
-;;   ;; :bind (("C-s" . swiper)
-;;   ;;        ("C-r" . swiper)))
+;; fast search across multiple files
+(use-package rg)
 
 
 ;;; Code essentials
@@ -340,7 +299,7 @@ buffer name during each attempt to open a shell or send code to it."
   (setq company-minimum-prefix-length 1)
 
   ;; set idle delay
-  (setq company-idle-delay ide-company-popup-active-delay)
+  (setq company-idle-delay ide-completion-popup-active-delay)
 
 ;;   ;; toggle popup by changing delay between 0 and 10000
 ;;   (setq company-idle-delay ide-company-popup-active-delay)
@@ -361,10 +320,19 @@ buffer name during each attempt to open a shell or send code to it."
   ;; wrap around
   (setq company-selection-wrap-around t)
 
+  ;; configure dabbrev backend to be more helpful and less slow
+  (setq
+   company-dabbrev-downcase nil
+   company-dabbrev-code-everywhere t
+   ;; company-dabbrev-time-limit 0.05
+   ;; company-dabbrev-code-time-limit 0.05
+   )
+
   ;; open company popup on any command in insert state, disable otherwise
   (setq company-begin-commands
 	;; this works for auto-toggle but slows down emacs
 	'(self-insert-command
+	  org-self-insert-command
 	  evil-insert
 	  evil-insert-line
 	  evil-insert-newline-above
@@ -414,7 +382,6 @@ buffer name during each attempt to open a shell or send code to it."
   (add-hook 'after-init-hook 'global-company-mode)
   )
 
-
 ;; beautified popup
 (use-package company-box
   :hook (company-mode . company-box-mode)
@@ -428,6 +395,111 @@ buffer name during each attempt to open a shell or send code to it."
   
   )
 
+(use-package company-prescient
+  :config (company-prescient-mode)
+  )
+
+;; ;; alternative to company: corfu
+;; (use-package corfu
+;;   :straight (corfu :files (:defaults "extensions/*")
+;;                      :includes (corfu-echo
+;;                                 ;; corfu-info
+;;                                 corfu-popupinfo
+;;                                 ;; corfu-quick
+;;                                 ))
+
+
+;;   ;; Optional customizations
+;;   :custom
+;;   (corfu-cycle t)
+;;   (corfu-auto t)
+;;   ;; (corfu-quit-at-boundary nil)
+;;   (corfu-quit-no-match t)
+;;   (corfu-preview-current nil)
+;;   (corfu-preselect 'prompt)      ;; Preselect the prompt
+;;   (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+;;   (corfu-scroll-margin 2)        ;; Use scroll margin
+
+;;   (corfu-auto-prefix 1)
+;;   (corfu-auto-delay ide-completion-popup-active-delay)
+
+;;   (corfu-popupinfo-delay '(1.0 . 1.0))
+
+;;   (:map corfu-map
+;;     ;; ("<tab>" . company-select-next)  ; cycle with <tab> / shift-<tab>
+;;     ;; ("<backtab>" . company-select-previous)  ; cycle with tab / shift-tab
+;;     ("C-n" . corfu-next)
+;;     ("C-p" . corfu-previous)
+;;     ("C-l" . corfu-complete)  ; fill with C-l
+;;     ("<tab>" . corfu-insert)  ; fill with tab
+;;     ("TAB" . corfu-insert)  ; fill with tab
+;;     ("RET" . nil) ("<return>" . nil)  ; unmap return key
+;;     ("M-g" . corfu-info-location)
+;;     ("M-h" . corfu-info-documentation)
+;;     ("M-SPC" . corfu-insert-separator)
+;;     ("C-g" . corfu-quit)
+;;     )
+
+;;   ;; Enable Corfu only for certain modes.
+;;   ;; :hook ((prog-mode . corfu-mode)
+;;   ;;        (shell-mode . corfu-mode)
+;;   ;;        (eshell-mode . corfu-mode))
+
+;;   ;; ;; Recommended: Enable Corfu globally.
+;;   ;; ;; This is recommended since Dabbrev can be used globally (M-/).
+;;   ;; ;; See also `corfu-excluded-modes'.
+;;   :init
+;;   (global-corfu-mode)
+
+;;   :config
+;;   (corfu-popupinfo-mode)
+
+;;   )
+
+;; ;; Add completion functions
+;; (use-package cape
+;;   ;; Bind dedicated completion commands
+;;   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+;;   ;; :bind (("C-c p p" . completion-at-point) ;; capf
+;;   ;;        ("C-c p t" . complete-tag)        ;; etags
+;;   ;;        ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+;;   ;;        ("C-c p h" . cape-history)
+;;   ;;        ("C-c p f" . cape-file)
+;;   ;;        ("C-c p k" . cape-keyword)
+;;   ;;        ("C-c p s" . cape-symbol)
+;;   ;;        ("C-c p a" . cape-abbrev)
+;;   ;;        ("C-c p i" . cape-ispell)
+;;   ;;        ("C-c p l" . cape-line)
+;;   ;;        ("C-c p w" . cape-dict)
+;;   ;;        ("C-c p \\" . cape-tex)
+;;   ;;        ("C-c p _" . cape-tex)
+;;   ;;        ("C-c p ^" . cape-tex)
+;;   ;;        ("C-c p &" . cape-sgml)
+;;   ;;        ("C-c p r" . cape-rfc1345))
+;;   :init
+;;   ;; Add `completion-at-point-functions', used by `completion-at-point'.
+;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+;;   (add-to-list 'completion-at-point-functions #'cape-file)
+;;   ;; (add-to-list 'completion-at-point-functions #'cape-history)
+;;   ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+;;   ;; (add-to-list 'completion-at-point-functions #'cape-tex)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+;;   ;; ;;(add-to-list 'completion-at-point-functions #'cape-line)
+;;   )
+
+;; (use-package kind-icon
+;;   :ensure t
+;;   :after corfu
+;;   :custom
+;;   (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+;;   (kind-icon-extra-space t)
+;;   :config
+;;   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 ;; easy text navigation (easymotion-style)
 (use-package avy
@@ -449,6 +521,7 @@ buffer name during each attempt to open a shell or send code to it."
     )
    )
   )
+
 
 ;; code folding with origami mode and lsp-origami (instead of hideshow)
 ;; NOTE: this package is way too slow for large python files, especially
@@ -499,7 +572,11 @@ buffer name during each attempt to open a shell or send code to it."
   (lsp-response-timeout 10)
   ;; (lsp-print-performance t)
   ;; (lsp-enable-file-watchers nil)
-  (lsp-restart 'interactive)
+  (lsp-restart 'auto-restart) ; 'interactive)
+
+  ;; try disabling this so LSP doesn't automatically try to connect to
+  ;; servers with wrong roots on startup
+  (lsp-auto-select-workspace nil)
 
   :init
 
@@ -514,7 +591,7 @@ buffer name during each attempt to open a shell or send code to it."
     :custom
 
     ;; lsp-ui-doc
-    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-position 'top) ; 'at-point
     (lsp-ui-doc-show-with-cursor nil)
     ;; (lsp-ui-doc-header t)
     (lsp-ui-doc-max-height 50)
@@ -528,10 +605,12 @@ buffer name during each attempt to open a shell or send code to it."
 
     :config
 
-    ;; add hook for disabling tab-bar in child frame
-    (setq lsp-ui-doc-frame-hook
-	  #'(lambda (frame window) (toggle-frame-tab-bar frame))
-	  )
+    ;; ;; NOTE: manual hack no longer required as of the latest update
+    ;; ;;
+    ;; ;; add hook for disabling tab-bar in child frame
+    ;; (setq lsp-ui-doc-frame-hook
+    ;; 	  #'(lambda (frame window) (toggle-frame-tab-bar frame))
+    ;; 	  )
 
     ;; (lsp-ui-peek-mode)  ; disable peek mode
     ;; (lsp-ui-sideline-mode)  ; disable sideline mode
@@ -549,8 +628,16 @@ buffer name during each attempt to open a shell or send code to it."
   ;; lsp-treemacs
   (use-package lsp-treemacs
     :commands lsp-treemacs-sync-mode
-    :config
-      (lsp-treemacs-sync-mode 1))
+    ;; :config
+
+    ;; ;; note: this may be useful for some setups, but it's not a great
+    ;; ;; idea for my current project setup for statOsphere where one of
+    ;; ;; the Treemacs workspaces points to a global project root. This
+    ;; ;; forces LSP to try to connect to the global root (which doesn't
+    ;; ;; have any actual project roots in it) and scan a bunch
+    ;; ;; of files which should not be scanned.
+    ;; (lsp-treemacs-sync-mode 1)
+    )
 
   ;; NOTE: this throws an error
   ;; trying out code folding support with lsp mode
@@ -574,7 +661,9 @@ buffer name during each attempt to open a shell or send code to it."
 		 (mapcar 'company-mode/backend-with-yas
 			 company-backends)
 		 :test 'equal-including-properties
-		 :from-end t)))
+		 :from-end t)
+		)
+	  )
     ))
 
   :commands lsp)
@@ -618,7 +707,7 @@ buffer name during each attempt to open a shell or send code to it."
   )
 (use-package vundo
   :custom
-  (vundo-window-side 'right)
+  (vundo-window-side 'top)
   (vundo-roll-back-on-quit nil)
   (vundo-glyph-alist vundo-unicode-symbols)
   (vundo-window-max-height 25)

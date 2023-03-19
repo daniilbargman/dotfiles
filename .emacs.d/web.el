@@ -46,6 +46,16 @@
 	 )
    )
  )
+(add-hook
+ 'css-mode-hook
+ (lambda ()
+   (setq fill-column 79
+	 ide-format-parens-opening-paren-alist '("(" "[" "{")
+	 ide-paren-wrap-delimiters
+	 '(((after ".+[;]")))
+	 )
+   )
+ )
 
 ;;; add svelte support
 (use-package svelte-mode

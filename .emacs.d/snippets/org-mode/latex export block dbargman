@@ -1,0 +1,12 @@
+# key: leq
+# name: latex export block dbargman
+# --
+#+BEGIN_EXPORT latex
+\begin{equation}
+\begin{align}
+
+$0
+
+\end{align}
+\end{equation}
+#+END_EXPORT

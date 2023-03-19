@@ -32,12 +32,13 @@
 
 ;; pre-compile packages as recommended by GCC Emacs branch
 (setq package-native-compile t)
+(defvar native-comp-deferred-compilation-deny-list nil)
 
 ;; use straight.el instead of package.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+      (bootstrap-version 6))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -87,8 +88,8 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; make translucent (<active opacity> . <inactive opacity>)
-(set-frame-parameter (selected-frame) 'alpha '(92 . 92))
-(add-to-list 'default-frame-alist '(alpha . (92 . 92)))
+(set-frame-parameter (selected-frame) 'alpha '(99 . 99))
+(add-to-list 'default-frame-alist '(alpha . (99 . 99)))
 
 
 ;;; Basic settings for working with text
@@ -149,20 +150,24 @@
 (use-package rainbow-mode
   :hook prog-mode org-mode)
 
-;; add org mode
-;; (use-package org)
-(straight-use-package '(org :type built-in)
 
-  :config
+;;; NOTE: MOVED TO org.el
 
-  ;; prettify check boxes
-  (add-hook 'org-mode-hook (lambda ()
-  (push '("[ ]" .  "☐") prettify-symbols-alist)
-  (push '("[X]" . "☑" ) prettify-symbols-alist)
-  (push '("[-]" . "❍" ) prettify-symbols-alist)
-  (prettify-symbols-mode)))
+;; ;; add org mode
+;; ;; (use-package org)
+;; (straight-use-package '(org :type built-in)
 
-  )
+;;   :config
+
+;;   ;; prettify check boxes
+;;   (add-hook 'org-mode-hook (lambda ()
+;;   (push '("[ ]" .  "☐") prettify-symbols-alist)
+;;   (push '("[X]" . "☑" ) prettify-symbols-alist)
+;;   (push '("[-]" . "❍" ) prettify-symbols-alist)
+;;   (prettify-symbols-mode)))
+
+;;   )
+;;; END NOTE
 
 ;; ;; NOTE: this package is not needed, plus it slows startup time
 ;; ;; massively starting from Emacs 28.1
@@ -172,14 +177,6 @@
 ;;    :ensure t
 ;;    :config
 ;;     (unicode-fonts-setup))
-
-;; prettify org-mode bullets
-(use-package org-bullets
-  :straight (org-bullets :type git :host github :repo "sabof/org-bullets")
-
-  :hook (org-mode . org-bullets-mode)
-
-  )
 
 ;;; Colour theme management
 
@@ -318,8 +315,8 @@
 
 ;;; Load configuration files
 
-;; run startup scripts
-(load-config-file "startup-scripts.el")
+;; ;; run startup scripts
+;; (load-config-file "startup-scripts.el")
 
 ;; centralized keybinding configuration
 (load-config-file "keybindings.el")
@@ -339,11 +336,11 @@
 ;; window and tab management
 (load-config-file "layout.el")
 
-;; ELisp configuration
-(load-config-file "elisp.el")
-
 ;; customizations for Org mode
 (load-config-file "org.el")
+
+;; ELisp configuration
+(load-config-file "elisp.el")
 
 ;; customizations for markdown mode
 (load-config-file "markdown.el")
@@ -372,23 +369,15 @@
 ;; email client
 (load-config-file "email.el")
 
-;; ;; openvpn client: DEPRECATED FOR WIREGUARD
-;; (load-config-file "openvpn.el")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; NOTE: DEPRECATED THIS BIT as it seems to hang with straight.el and
-;; i'm not really using EAF widgets anyway.
-;;
-;; ;; add widget support
-;; (load-config-file "widgets.el")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; user-specific / pc-specific / session-specific configurations
+(load-config-file "personalizations.el")
 
 ;;; Session management:
+(load-config-file "ecm.el")
 
-;; reopen previous session on startup
-(desktop-save-mode 1)
-(defvar desktop-load-locked-desktop)
-(setq desktop-load-locked-desktop t)
+;; ask for user's session preference (don't use a default session)
+(setq ecm-default-session-name nil)
+(ecm-session-init)
 
 ;; the end
 (provide 'init)

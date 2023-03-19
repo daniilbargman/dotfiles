@@ -6,13 +6,12 @@
 !.gitignore_global
 !.gitconfig
 !.bashrc_ext
-!.vim
-!.tmux.conf
 !.vim/
 !.vimrc
 !initial-setup.sh
 !build-gccemacs.sh
 !.emacs.d/
+!.password-store/
 
 # in the emacs configuration folder, ignore auto-generated files and all subfolders
 .emacs.d/custom-file.el
@@ -22,13 +21,13 @@
 .emacs.d/recentf
 .emacs.d/tramp
 .emacs.d/bookmarks
-.emacs.d/**/*
+.emacs.d/mu
+.emacs.d/*/*
 .emacs.d/*~
 .emacs.d/.*
 .emacs.d/\#*
 
 # do not ignore snippet files
-# !.emacs.d/snippets
 !.emacs.d/snippets/**
 .emacs.d/snippets/**/*~
 
@@ -37,45 +36,40 @@
 .emacs.d/straight/*
 !.emacs.d/straight/versions/
 
-# ignore vim's undo directory and plugins, except vim-plug itself
+# ignore vim's undo directory and plugins
 .vim/*.sw[mnop]
 .vim/undodir/
 .vim/view/
-.vim/plugged/*
-!.vim/autoload/
-.vim/autoload/plug.vim.old
+.vim/plugged/
+.vim/autoload/
 
-# back up tmux statusline config file
-!.tmux/
-.tmux/*
-!.tmux/tmuxline_snapshot
+# # back up tmux statusline config file
+# !.tmux/
+# .tmux/*
+# !.tmux/tmuxline_snapshot
 
-# back up XFCE terminal, herbstluftwm and lightdm config files
+# back up generic config files
 !.config/
 .config/*
-!.config/xfce4/
-.config/xfce4/*
-!.config/xfce4/terminal/
-.config/xfce4/terminal/*
-!.config/xfce4/terminal/terminalrc
+# !.config/xfce4/
+# .config/xfce4/*
+# !.config/xfce4/terminal/
+# .config/xfce4/terminal/*
+# !.config/xfce4/terminal/terminalrc
 !.config/herbstluftwm/
 !.config/lightdm/
 !.config/i3/
+.config/i3/i3-gaps
 !.config/polybar/
 !.config/rofi/
 !.config/alacritty/
+!.config/gtk-3.0/
+!.config/gtk-2.0/
 
 # # back up active XFCE theme
 # !.themes/
 # .themes/*
 # !.themes/Adapta-Teal-Nokto-Eta/
 
-# back up a subset of executables
+# back up executable files
 !executables/
-executables/*
-!executables/projectLaunchers
-!executables/IDEconfig
-!executables/tmux-project-template
-!executables/brightness
-!executables/decrypt-and-mount
-!executables/backup-statosphere

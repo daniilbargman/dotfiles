@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: TODO box
+# key: - 
+# --
+[ ] $0

@@ -60,7 +60,7 @@
     (shell-mode . "terminals")
     (eshell-mode . "terminals")
     (vterm-mode . "terminals")
-    (org-mode . "org")
+    ;; (org-mode . "org")
     )
   "Alist mapping buffer major modes to buffer group names."
   :group 'layout
@@ -105,41 +105,43 @@
 
 
 ;; customize tab bar design
-(setq tab-bar-position t)
-(setq tab-bar-back-button "")
-(setq tab-bar-forward-button "")
-(setq tab-bar-close-button-show nil)
-(setq tab-bar-button-margin 0)
-(setq tab-bar-button-relief 0)
-(setq tab-bar-border 2)
+(custom-set-variables
+  '(tab-bar-auto-width nil)
+  ;; '(tab-bar-auto-width-max '(125 12))
+  ;; '(tab-bar-auto-width-min '(10 1))
+  '(tab-bar-position t)
+  '(tab-bar-back-button "")
+  '(tab-bar-forward-button "")
+  '(tab-bar-close-button-show nil)
+  '(tab-bar-button-margin 0)
+  '(tab-bar-button-relief 0)
+  ;; '(tab-bar-border 4)
+  '(tab-bar-new-button-show nil)
+  '(tab-bar-new-tab-choice "*scratch*")
+  '(tab-bar-tab-hints t)
+  '(tab-bar-history-limit 100)
+  )
 ;; (setq tab-bar-separator "|")
-(setq tab-bar-new-button-show nil)
-(setq tab-bar-new-tab-choice "*scratch*")
-(setq tab-bar-tab-hints t)
 (custom-set-faces
  '(tab-bar
-   ((t (:background "#202020"
-	:height 1.7
+   ((t (:background "#171717"
+	:height 1.0
+	:box nil
 	))))
  '(tab-bar-tab
-   ((t (:background "#202020"
-	:foreground "#D0C654" ; "#7ec98f"
-	:box nil ; '(:line-width 1 :style nil)
-	:inverse-video: nil
-	:height 0.6
-	;; :underline t
-	;; :overline t
+   ((t (:background "#171717"
+	:foreground "#D0C654"
+	:height 1.1
+	;; :underline (:color "#D0C654" :position t)
+	;; :box (:line-width (10 . 8) :color "#282A2E")
+	:box (:line-width (10 . 6) :color "#171717")
 	))))
  '(tab-bar-tab-inactive
-   ((t (:background "#202020"
+   ((t (:background "#171717"
 	:foreground "#aaaaaa"
-	:box nil ; '(:line-width 1 :style nil)
-	:inverse-video: nil
-	:height 0.6
+	:box (:line-width (10 . 6) :color "#171717")
+	:height 1.1
 	))))
- ;; '(tab-line
- ;;   ((t (:background "#202020"
- ;; 	))))
  )
 
 
@@ -149,8 +151,8 @@
 ;; ;; remove tab-bar header line from popup frames
 ;; (advice-add
 ;;   'display-buffer-in-child-frame :after
-;;   ;; #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window)
-;;   #'(lambda (&rest r) (toggle-tab-bar-mode-from-frame 0))
+;;   #'(lambda (window) (toggle-frame-tab-bar (window-frame window)) window)
+;;   ;; #'(lambda (&rest r) (toggle-tab-bar-mode-from-frame 0))
 ;;   )
 
 ;; END NOTE
@@ -188,68 +190,59 @@ Uses winner-mode-undo."
       (tab-bar-history-back))
    ))
 
-;; create new window below current and open switch-buffer prompt
-(defun view-new-buffer-below ()
-  "Split current window horizontally and open a buffer prompt.
 
-Uses evil commands."
-  (interactive)
-  ;; choose new buffer from menu
-  (consult-buffer)
-  ;; go back to current buffer in this window
-  (previous-buffer)
-  ;; make empty split below current window and switch to new buffer there
-  (evil-window-split)
-  (next-buffer))
+;;; opening objects in splits
 
+;; helper functions for moving buffers around
+(defun dbargman/move-buffer-to-split-above ()
+  "Move buffer to window above current."
+  (evil-window-split) (previous-buffer) (evil-window-up 1))
+(defun dbargman/move-buffer-to-split-below ()
+  "Move buffer to window below current."
+  (previous-buffer) (evil-window-split) (next-buffer))
+(defun dbargman/move-buffer-to-split-right ()
+  "Move buffer to window right of current."
+  (previous-buffer) (evil-window-vsplit) (next-buffer))
+(defun dbargman/move-buffer-to-split-left ()
+  "Move buffer to window left of current."
+  (evil-window-vsplit) (previous-buffer) (evil-window-left 1))
 
-;; create new window right of current and open switch-buffer prompt
-(defun view-new-buffer-right ()
-  "Split current window horizontally and open a buffer prompt.
+;; macro: create function that opens an object in a buffer then moves it
+(defmacro dbargman/splitfunc (funcname direction object-open-func)
+  "create a function that opens an object in a chosen window split.
 
-Uses evil commands."
-  (interactive)
-  ;; choose new buffer from menu
-  (consult-buffer)
-  ;; go back to current buffer in this window
-  (previous-buffer)
-  ;; make empty split below current window and switch to new buffer there
-  (evil-window-vsplit)
-  (next-buffer))
+DIRECTION (of the window split) can be 'above, 'below, 'right, or 'left.
+FUNCNAME and DIRECTION together define the name of the function, which
+will be 'dbargman/<FUNCNAME>-<DIRECTION>
 
-;; create new window above current and open switch-buffer prompt
-(defun view-new-buffer-above ()
-  "Split current window horizontally and open a buffer prompt.
-
-Uses evil commands."
-  (interactive)
-  ;; choose new buffer from menu
-  (consult-buffer)
-  ;; make empty split below current window and switch to new buffer there
-  (evil-window-split)
-  ;; go back to current buffer in this window
-  (previous-buffer)
-  ;; go to window above current
-  (evil-window-up 1)
+OBJECT-OPEN-FUNC should be an interactive function that opens an object
+in a buffer, such as 'find-file, 'consult-buffer, or similar."
+  (list 'defun (intern (format "dbargman/%s-%s" funcname direction)) (list)
+	(list 'interactive)
+	(list 'call-interactively object-open-func)
+	(list (intern (format "dbargman/move-buffer-to-split-%s" direction)))
+	)
   )
 
+;; use macro to create functions for buffers and files
+(dbargman/splitfunc open-file above 'find-file)
+(dbargman/splitfunc open-file below 'find-file)
+(dbargman/splitfunc open-file right 'find-file)
+(dbargman/splitfunc open-file left 'find-file)
+(dbargman/splitfunc open-buffer above 'consult-buffer)
+(dbargman/splitfunc open-buffer below 'consult-buffer)
+(dbargman/splitfunc open-buffer right 'consult-buffer)
+(dbargman/splitfunc open-buffer left 'consult-buffer)
 
-;; create new window right of current and open switch-buffer prompt
-(defun view-new-buffer-left ()
-  "Split current window horizontally and open a buffer prompt.
-
-Uses evil commands."
-  (interactive)
-  ;; choose new buffer from menu
-  (consult-buffer)
-  ;; make empty split below current window and switch to new buffer there
-  (evil-window-vsplit)
-  ;; go back to current buffer in this window
-  (previous-buffer)
-  ;; go to window left of current
-  (evil-window-left 1)
+;; do not live-preview buffers
+(consult-customize
+  consult-buffer
+  dbargman/open-buffer-above
+  dbargman/open-buffer-below
+  dbargman/open-buffer-right
+  dbargman/open-buffer-left
+  :preview-key nil
   )
-
 
 ;;; support for tabs and tab groups via awesome-tab
 
@@ -263,7 +256,7 @@ Uses evil commands."
 
   ;; shape and size of the tabs
   (centaur-tabs-style "rounded")
-  (centaur-tabs-height 32)
+  (centaur-tabs-height 28)
 
   ;; support for plain icons
   (centaur-tabs-set-icons t)
@@ -282,6 +275,9 @@ Uses evil commands."
 
   ;; adjust ordering of buffers based on usage
   (centaur-tabs-adjust-buffer-order 'left)
+
+  ;; do not venture outside current tab group while cycling
+  (centaur-tabs-cycle-scope 'tabs)
   
   :config
 
@@ -342,9 +338,7 @@ Each variable is an alist mapping a buffer property to a group name.
 The first alist to match a buffer defines its group.
 
 If no alists match and the buffer points to a file, the file's
-directory is used as the group name.
-
-"
+directory is used as the group name."
   (let (
 	(bufname (buffer-name))
 	(buffer-group-name nil)
@@ -499,17 +493,40 @@ tab's grouping collage."
     ;; using a Hi-DPI display, uncomment this to double the icon size.
     ;;(treemacs-resize-icons 44)
 
+
+    ;; close treemacs after opening a file
+    (defmacro dbargman/treemacs-visit-node-function (&rest direction)
+      "Visit node treemacs in DIRECTION with ace and close treemacs."
+      (let ((direction-suffix
+	     (if direction (format "-%s-split" (car direction)) "")))
+	(list
+	 'defun
+	 (intern (concat "dbargman/treemacs-visit-node" direction-suffix))
+	 (list '&rest '_)
+	 (list 'interactive)
+	 (list
+	  'funcall
+	  `(intern ,(concat "treemacs-visit-node-ace" direction-suffix))
+	  '(list 16)
+	  )
+	 )
+	)
+      )
+
     ;; actions to perform with the tab key (open files in new tab)
+    (dbargman/treemacs-visit-node-function)
+    (dbargman/treemacs-visit-node-function horizontal)
+    (dbargman/treemacs-visit-node-function vertical)
     (setq treemacs-TAB-actions-config
 	  '((root-node-open . treemacs-toggle-node)
 	   (root-node-closed . treemacs-toggle-node)
 	   (dir-node-open . treemacs-toggle-node)
 	   (dir-node-closed . treemacs-toggle-node)
-	   (file-node-open . treemacs-visit-node-ace-horizontal-split)
-	   (file-node-closed . treemacs-visit-node-ace-horizontal-split)
-	   (tag-node-open . treemacs-visit-node-ace-horizontal-split)
-	   (tag-node-closed . treemacs-visit-node-ace-horizontal-split)
-	   (tag-node . treemacs-visit-node-ace-horizontal-split)))
+	   (file-node-open . dbargman/treemacs-visit-node-horizontal-split)
+	   (file-node-closed . dbargman/treemacs-visit-node-horizontal-split)
+	   (tag-node-open . dbargman/treemacs-visit-node-horizontal-split)
+	   (tag-node-closed . dbargman/treemacs-visit-node-horizontal-split)
+	   (tag-node . dbargman/treemacs-visit-node--horizontal-split)))
 
     ;; actions to perform with the return key (open files in vsplit)
     (setq treemacs-RET-actions-config
@@ -517,11 +534,11 @@ tab's grouping collage."
 	   (root-node-closed . treemacs-toggle-node)
 	   (dir-node-open . treemacs-toggle-node)
 	   (dir-node-closed . treemacs-toggle-node)
-	   (file-node-open . treemacs-visit-node-ace)
-	   (file-node-closed . treemacs-visit-node-ace)
-	   (tag-node-open . treemacs-visit-node-ace)
-	   (tag-node-closed . treemacs-visit-node-ace)
-	   (tag-node . treemacs-visit-node-ace)))
+	   (file-node-open . dbargman/treemacs-visit-node)
+	   (file-node-closed . dbargman/treemacs-visit-node)
+	   (tag-node-open . dbargman/treemacs-visit-node)
+	   (tag-node-closed . dbargman/treemacs-visit-node)
+	   (tag-node . dbargman/treemacs-visit-node)))
 
     ;; enable modes
     ;; (treemacs-follow-mode 0)
@@ -551,6 +568,7 @@ ARGS are ignored but are a requirement for this advice."
      ;; if the name is "mu4e", load emails
      ((string-equal tab-name "email")
       (mu4e)
+      (delete-other-windows)
       )
 
      ;; create a terminal in a terminal tab
@@ -583,6 +601,10 @@ ARGS are ignored but are a requirement for this advice."
       )
      )
     )
+
+  ;; add hook for restarting LSP session if lsp-mode is enabled
+  (if lsp-mode (lsp))
+
   )
 
 ;; add post hooks as advice

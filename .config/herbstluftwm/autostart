@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# run compositor
-compton -b #--config ~/.config/herbstluftwm/.compton.conf
-
 # xsetroot -solid '#5A8E3A'
 
 # this is a simple config for herbstluftwm
@@ -137,65 +134,64 @@ hc keybind $Mod-i jumpto urgent
 
 # theme
 
-# NOTE This has been merged but not in official repo yet. enable once available
-#hc set_layout tabbed_max
-
-# hc attr theme.tiling.reset 1
-# hc attr theme.floating.reset 1
+# overall theme settings
+hc set_layout tabbed_max
 hc set frame_border_active_color '#2290B5'  # also active text color in top panel
 hc set frame_border_normal_color '#909090'  # also plain text color in top panel
-hc set frame_bg_normal_color '#101010'      # also background color in top panel
-hc set frame_bg_active_color '#222222'
 hc set frame_border_width 1
 hc set frame_bg_transparent 1
 hc set show_frame_decorations 'focused_if_multiple'
-# hc set frame_transparent_width 1
 hc set frame_gap 2
 hc set frame_normal_opacity 0
 hc set frame_active_opacity .5
 hc set focus_crosses_monitor_boundaries true
 hc set focus_stealing_prevention false
-
-hc attr theme.title_height 15
-hc attr theme.title_align center
-hc attr theme.title_when 'one_tab'
-hc attr theme.title_font 'FiraCode-Regular:pixelsize=12'  # example using Xft
-# hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
-hc attr theme.title_depth 6  # space below the title's baseline
-# hc attr theme.active.color '#345F0Cef'
-# hc attr theme.normal.color '#323232dd'
-# hc attr theme.urgent.color '#7811A1dd'
-# hc attr theme.tab_color '#ffffff'
-hc attr theme.active.color '#1F1F1Fdd' # active window's title background color
-hc attr theme.title_color '#898989'  # active window's title text color
-hc attr theme.normal.color '#1F1F1Faa' # inactive window's title background color
-hc attr theme.normal.title_color '#898989'  # inactive window's title text color
-hc attr theme.urgent.color orange
 hc attr theme.inner_width 1
 hc attr theme.inner_color black
 hc attr theme.border_width 1
-hc attr theme.floating.border_width 2
+
+# special windows: urgent and floating
+hc attr theme.urgent.color orange
+hc attr theme.floating.border_width 1
 hc attr theme.floating.outer_width 1
 hc attr theme.floating.outer_color '#D0C654'  # outer outline of floating tile
-hc attr theme.active.inner_color '#909090'  # inner outline of active tile
-# hc attr theme.active.outer_color '#ebebeb'
-# hc attr theme.background_color '#141414'
-# hc attr theme.active.tab_color '#2B4F0Add'
-# hc attr theme.active.tab_outer_color '#6C8257dd'
-# hc attr theme.active.tab_title_color '#ffffff'
 
+# common and inactive tab settings
+hc attr theme.title_align center
+hc attr theme.title_height 16
+hc attr theme.minimal.title_height 16
+hc attr theme.title_when 'multiple_tabs'
+hc attr theme.minimal.title_when 'multiple_tabs'
+hc attr theme.title_font 'FiraCode-Regular:pixelsize=13'  # example using Xft
+hc attr theme.active.title_font 'FiraCode-Regular:pixelsize=13'  # example using Xft
+hc attr theme.title_depth 8  # space below the title's baseline
+hc attr theme.title_color '#898989'  # inactive window's title text color
+
+# active focused tab
+hc attr theme.active.color '#333333'
+hc attr theme.active.title_color '#D0C654'
+hc attr theme.active.outer_color '#D0C654'
+hc attr theme.active.outer_width 0
+hc attr theme.active.border_width 0
+
+# active UNfocused tab
+hc attr theme.active.tab_color '#222222'  # inner outline of active tile
+hc attr theme.active.tab_title_color '#898989'  # inner outline of active tile
+hc attr theme.active.tab_outer_color '#898989'
+hc attr theme.active.tab_outer_width 0
+hc attr theme.active.tab_border_width 0
 hc set window_gap 0
 hc set frame_padding 1
-hc set smart_window_surroundings on
+hc set smart_window_surroundings off
 hc set smart_frame_surroundings off
 hc set mouse_recenter_gap 0
 
 # rules
 hc unrule -F
 hc rule focus=on
-hc rule class=Emacs --tag='Emacs' --focus=on # move all xterms to tag 3
-hc rule class=Firefox --tag~'Firefox' --focus=on # move all xterms to tag 3
-hc rule class=Alacritty --tag="Terminals" --focus=on # move all xterms to tag 3
+hc rule class=Emacs --tag='Emacs' --focus=on # move emacs windows to tag 1
+hc rule class=Firefox --tag~'Firefox' --focus=on # move browser windows to tag 2
+hc rule class=Alacritty --tag="Terminals" --focus=on # move terminals to tag 3
 hc rule floatplacement=center
 #hc rule focus=off # normally do not focus new clients
 # give focus to most common terminals
@@ -227,3 +223,7 @@ hc spawn ~/.config/polybar/launch.sh
 
 # # run emacs daemon
 # emacs --daemon
+
+# run compositor (NOTE: tried picom with custom config but very slow and buggy)
+compton -b
+# picom # --config ~/.config/herbstluftwm/.compton.conf --backend xrender

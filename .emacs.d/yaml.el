@@ -33,6 +33,11 @@
 (use-package yaml-mode
   :config
   (add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
+
+  ;; auto-insert whitespaces around curly braces for helm
+  (sp-local-pair 'yaml-mode "{ " " }")
+  (sp-local-pair 'yaml-mode "{- " " }")
+
   )
 
 ;; function for executing a python code block using terminal.el

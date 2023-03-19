@@ -1,9 +1,7 @@
-# -*- mode: sh; -*-
-
 #!/usr/bin/env bash
 # vim: set filetype=sh :
 #
-# backup statOsphere
+# s3 synchronization command for all contents of this directory.
 #
 # Author: Daniil Bargman (daniil.bargman@gmail.com)
 #
@@ -37,27 +35,15 @@ function error_exit {
     append_error
 }
 
-# mount drive
-sudo mkdir -p /media/daniil/statosphere-backups
-sudo mount /dev/sda7 /media/daniil/statosphere-backups 2>&1 || true
+# temporarily save s3cfg file to script's directory
+cfg=$BASE_DIR/daniilbargman-backups.s3cfg
+pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
-# make directory for current date (if one exists and isn't empty, raise error)
-target=/media/daniil/statosphere-backups/statosphere-backups/$(date +%Y-%m-%d)
-sudo mkdir -p $target && sudo chown -R 1000:1000 $target
-[ "$(ls -A $target)" ] && error_exit "$target is not empty."
+# run sync command
+s3cmd -c $cfg --recursive --follow-symlinks --skip-existing --delete-removed \
+      --exclude="**/.tmp" sync ~/sync/documents "s3://daniilbargman-backups/"
 
-# copy files
-rsync -vr \
-      --exclude='*~' \
-      --exclude='_aux' \
-      --exclude 'services/keycloak/src' \
-      --exclude 'services/mailu/_old' \
-      --exclude 'services/mailu/mailu-github-repo' \
-      --exclude 'infrastructure/k8s/templates/ingress-nginx' \
-      --exclude 'node_modules' \
-      --exclude '__pycache__' \
-      --exclude '.log' \
-      --exclude '#*#' \
-      /mnt/projects/statosphere $target
+# delete config file
+rm $cfg
 
-# done.
+# Done.

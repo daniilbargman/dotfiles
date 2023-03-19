@@ -40,6 +40,9 @@
 ;; toggle syntax type for a character between symbol and word
 (bind-key* "C-c s" 'toggle-syntax-entry)
 
+;; unset some keys for which we don't need the defaults
+(global-unset-key (kbd "C-l"))
+
 ;;; layout keybindings
 
 (with-eval-after-load "layout"
@@ -56,20 +59,6 @@
   ;; shortkey for ace-window
   (bind-key* "M-o" 'ace-window)
   
-
-  ;; ;;; buffer tab manipulation via awesome-tab
-  
-  ;; ;; previous tab, next tab, jump to tab
-  ;; (global-set-key (kbd "C-x C-l") 'awesome-tab-forward-tab)
-  ;; (global-set-key (kbd "C-x C-h") 'awesome-tab-backward-tab)
-  ;; (global-set-key (kbd "C-x j") 'awesome-tab-ace-jump)
-
-  ;; ;; next/previous tab group
-  ;; (global-set-key (kbd "C-x C-j") 'awesome-tab-forward-group)
-  ;; (global-set-key (kbd "C-x C-k") 'awesome-tab-backward-group)
-
-  ;; ;; open minibuffer prompt for group name
-  ;; (global-set-key (kbd "C-x C-n") 'awesome-tab-counsel-switch-group)
 
   ;;; buffer tab manipulation via centaur-tabs
   
@@ -97,18 +86,35 @@
   ;; toggle single-window mode with "C-w o" in normal state
   (evil-define-key 'normal 'global
     (kbd "C-w o") 'view-single-window-toggle)
-  ;; load different buffer in same window with "C-w w"
+
+  ;; opening buffers and files in dedicated splits with w, h, j, k, l
+
   (evil-define-key 'normal 'global
     (kbd "C-w w") 'consult-buffer)
-  ;; split and prompt for new buffer
   (evil-define-key 'normal 'global
-    (kbd "C-w j") 'view-new-buffer-below)
+    (kbd "C-w j") 'dbargman/open-buffer-below)
   (evil-define-key 'normal 'global
-    (kbd "C-w l") 'view-new-buffer-right)
+    (kbd "C-w l") 'dbargman/open-buffer-right)
   (evil-define-key 'normal 'global
-    (kbd "C-w k") 'view-new-buffer-above)
+    (kbd "C-w k") 'dbargman/open-buffer-above)
   (evil-define-key 'normal 'global
-    (kbd "C-w h") 'view-new-buffer-left)
+    (kbd "C-w h") 'dbargman/open-buffer-left)
+
+  ;; files (prefix: C-f C-w)
+  (global-unset-key (kbd "C-f"))
+  (define-prefix-command 'dbargman/file-split-window-keymap)
+  (global-set-key (kbd "C-f") 'dbargman/file-split-window-keymap)
+  (evil-define-key 'normal 'dbargman/file-split-window-keymap
+    (kbd "C-f C-w w") 'find-file)
+  (evil-define-key 'normal 'dbargman/file-split-window-keymap
+    (kbd "C-f C-w j") 'dbargman/open-file-below)
+  (evil-define-key 'normal 'dbargman/file-split-window-keymap
+    (kbd "C-f C-w l") 'dbargman/open-file-right)
+  (evil-define-key 'normal 'dbargman/file-split-window-keymap
+    (kbd "C-f C-w k") 'dbargman/open-file-above)
+  (evil-define-key 'normal 'dbargman/file-split-window-keymap
+    (kbd "C-f C-w h") 'dbargman/open-file-left)
+  
 
   ;; keybindings for resizing windows (M-<arrows>)
   (bind-key* "M-<left>" 'shrink-window-horizontally)
@@ -139,17 +145,22 @@
 
   ;; open new files in hsplit with "C-return"
   (define-key evil-treemacs-state-map (kbd "<C-return>")
-    #'treemacs-visit-node-ace-vertical-split)
+    #'dbargman/treemacs-visit-node-vertical-split)
 
 
   )
 
 ;;; "evil" keybindings
 
-(with-eval-after-load "evil" (with-no-warnings
+(with-eval-after-load "evil"
+(with-no-warnings
 
 
   ;;; Global settings
+
+  ;; unbind keys that can/should be used elsewhere
+  (define-key evil-motion-state-map (kbd "C-f") nil)
+  (define-key evil-motion-state-map (kbd "C-b") nil)
 
   ;; close current buffer with Q
   (evil-define-key '(normal visual) 'global (kbd "Q") 'evil-quit)
@@ -182,6 +193,12 @@
     )
 
   ;;; Keybindings for normal mode
+
+  ;; go to last change (rather than last jump) with C-o, forward with C-O
+  (evil-define-key 'normal 'global (kbd "C-o")
+    'evil-goto-last-change)
+  (evil-define-key 'normal 'global (kbd "C-S-o")
+    'evil-goto-last-change-reverse)
 
   ;; map j to gj, k to gk
   (evil-define-key 'normal 'global (kbd "j") 'evil-next-visual-line)
@@ -222,7 +239,7 @@
   ;; search all buffers using swiper
   (global-unset-key (kbd "C-s"))
   (evil-define-key '(normal motion) 'global
-    (kbd "C-s") 'consult-line-multi)
+    (kbd "C-s") #'rg-menu)
 
   ;; fold everything using zA
   (evil-define-key 'normal 'global (kbd "zA") 'hs-hide-all)
@@ -296,6 +313,7 @@
   ;; continue with comments or indentation on newline with C-RET
   (evil-define-key 'insert 'global
     (kbd "C-<return>") 'comment-indent-new-line)
+
 
   ))
 
@@ -386,15 +404,44 @@
 
 (with-eval-after-load "ide"
 
-  ;; ;; escape ivy minibuffer with escape key
-  ;; (define-key ivy-minibuffer-map (kbd "<escape>")
-  ;;   'minibuffer-keyboard-quit)
+  ;; escape minibuffer with escape key
+  (define-key vertico-map (kbd "<escape>")
+    'minibuffer-keyboard-quit)
+
+  ;; auto-complete from candidate with C-l
+  (define-key vertico-map (kbd "C-l")
+    'vertico-insert)
+
+  ;; faster scrolling with C-M-n/p
+  (define-key vertico-map (kbd "C-M-n")
+    'vertico-next-group)
+  (define-key vertico-map (kbd "C-M-p")
+    'vertico-previous-group)
+
+  ;; special treatment of directories when deleting subfolder
+  (define-key vertico-map (kbd "<backspace>")
+    'vertico-directory-delete-char)
+  (define-key vertico-map (kbd "M-<backspace>")
+    'vertico-directory-delete-word)
+  
 
   ;; add embark bindings for cycling through instances of thing at point
   (evil-define-key '(normal visual) 'embark-general-map (kbd "C-n")
     '(lambda (thing) (consult-line thing) (vertico-next)))
   (evil-define-key '(normal visual) 'embark-general-map (kbd "C-p")
     '(lambda (thing) (consult-line thing) (vertico-previous)))
+
+  ;; use C-x C-b for embark-become in minibuffer
+  (evil-define-key '(normal insert) 'minibuffer-mode-map (kbd "C-x C-b")
+    'embark-become)
+
+  ;; use "n" and "N" to continue previous consult-line search
+ (define-key evil-normal-state-map (kbd "n")
+	     (lambda () (interactive)
+	       (evil-search (car consult--line-history) t t)))
+ (define-key evil-normal-state-map (kbd "N")
+	     (lambda () (interactive)
+	       (evil-search (car consult--line-history) nil t)))
 
   ;; use "C-a" to show company popup in normal and insert states
   ;; (evil-define-key '(normal insert) 'global (kbd "C-a") 'toggle-company-idle-delay)
@@ -408,11 +455,11 @@
   (evil-define-key 'insert 'yas-minor-mode-map (kbd "TAB") yas-maybe-expand)
 
   ;; browse kill-ring with counsel
-  (evil-define-key 'normal 'global (kbd "M-y") 'consult-yank-pop)
+  (evil-define-key 'normal 'global (kbd "M-y") 'consult-yank-replace)
 
   ;; also, when in visual mode, delete highlighted text first
   (evil-define-key 'visual 'global (kbd "M-y")
-    'my/consult-replace-selection-from-kill-ring)
+    'dbargman/consult-replace-selection-from-kill-ring)
 
   ;; format braces
   (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)
@@ -448,31 +495,34 @@
 
   )
 
-;;; "k8s" keybindings
+;; ;NOTE: k8s keybindings have been deprecated as I only tend to use the
+;; k8s module as a library for other modules (e.g. python)
+;;
+;; ;;; "k8s" keybindings
 
-(with-eval-after-load "k8s"
+;; (with-eval-after-load "k8s"
 
-  ;; prefix for Kubernetes commands
-  (global-unset-key (kbd "M-k"))
+;;   ;; prefix for Kubernetes commands
+;;   (global-unset-key (kbd "M-k"))
 
-  ;; open kubetneres buffer
-  (global-set-key (kbd "M-k k")
-		  '(lambda()
-		    (interactive)
-		    (tab-new)
-		    (kubernetes-overview)
-		    (tab-close)
-		    (other-window 1)
-		    (evil-split-buffer "*kubernetes overview*")
-		    ))
+;;   ;; open kubetneres buffer
+;;   (global-set-key (kbd "M-k k")
+;; 		  '(lambda()
+;; 		    (interactive)
+;; 		    (tab-new)
+;; 		    (kubernetes-overview)
+;; 		    (tab-close)
+;; 		    (other-window 1)
+;; 		    (evil-split-buffer "*kubernetes overview*")
+;; 		    ))
 
-  ;; change namespace in kubernetes buffer
-  (global-set-key (kbd "M-k n") 'kubernetes-set-namespace)
+;;   ;; change namespace in kubernetes buffer
+;;   (global-set-key (kbd "M-k n") 'kubernetes-set-namespace)
 
-  ;; exec into pod from kubernetes buffer
-  (global-set-key (kbd "M-k e") 'kubernetes-exec-into)
+;;   ;; exec into pod from kubernetes buffer
+;;   (global-set-key (kbd "M-k e") 'kubernetes-exec-into)
 
-  )
+;;   )
 
 ;; ;;; "openvpn" keybindings
 
@@ -483,10 +533,15 @@
 ;; 		  '(lambda() (interactive) (other-window 1)
 ;; 		     (evil-split-buffer "*scratch*") (ovpn)))
 ;;   )
+;;
+;; ;END NOTE
 
 ;;; "org" keybindings
 
 (with-eval-after-load "org"
+
+  ;; org-agenda with C-c a
+  (global-set-key (kbd "C-c a") 'org-agenda)
 
   ;; preserve tab-bar movement commads; move headings around differently
   (define-key outline-mode-map (kbd "M-j") nil)
@@ -494,11 +549,28 @@
   (with-eval-after-load "evil"
     (evil-define-key 'normal outline-mode-map (kbd "M-j") nil)
     (evil-define-key 'normal outline-mode-map (kbd "M-k") nil)
-    (evil-define-key 'normal org-mode-map (kbd "C-M-j") \
+    (evil-define-key 'normal org-mode-map (kbd "C-M-j")
       'outline-move-subtree-down)
-    (evil-define-key 'normal org-mode-map (kbd "C-M-k") \
+    (evil-define-key 'normal org-mode-map (kbd "C-M-k")
       'outline-move-subtree-up)
     )
+
+  ;; org-roam bindings
+  (with-eval-after-load "org-roam"
+
+    ;; (define-key org-mode-map (kbd "C-c n") 'org-roam-map)
+    (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
+    (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+    (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+    (global-set-key (kbd "C-c n e") 'dbargman/capture-email-to-org-roam-node)
+    (global-set-key (kbd "C-c d") 'org-roam-dailies-map)
+
+    ;; refile using custom command
+    (define-key org-mode-map (kbd "C-c C-w")
+		'dbargman/org-roam-refile-to-daily)
+
+    )
+
 
   ;; preserve window movement commands; jump around headings differently
   (define-key org-mode-map (kbd "C-j") nil)
@@ -511,9 +583,12 @@
     (evil-define-key 'normal org-mode-map (kbd "C-p")
       'org-backward-heading-same-level)
 
-    ;; create checkboxes with shorthand
-    (evil-define-key 'insert org-mode-map (kbd "[ SPC")
-      '(lambda () (interactive) (insert "- [ ] ")))
+    ;; ;; NOTE: going with yasnippet for this instead so that there are
+    ;; ;; no hitches when trying to insert actual square brackets
+    ;;
+    ;; ;; create checkboxes with shorthand
+    ;; (evil-define-key 'insert org-mode-map (kbd "[ SPC")
+    ;;   '(lambda () (interactive) (insert "- [ ] ")))
 
     )
 
@@ -535,19 +610,39 @@
     (lambda () (interactive)
       (evil-window-vsplit) (eaf-open-url-at-point)))
 
+  ;; run revert to previous layout with "q"; alternative would be to
+  ;; run org-agenda-quit twice
+  (add-hook
+   'org-agenda-mode-hook
+   #'(lambda ()
+       (define-key
+	org-agenda-mode-map (kbd "q")
+	'tab-bar-history-back
+	;; #'(lambda () (interactive) (org-agenda-quit) (org-agenda-quit))
+	)
+       )
+   )
+  
+
   ;; add useful keybindings to emails as well
   (with-eval-after-load "email"
 
     ;; open messages with org keybinding in mu4e-view-mode
     (define-key mu4e-view-mode-map (kbd "C-c C-o") 'org-open-at-point)
-    (define-key mu4e-view-mode-map (kbd "C-c w w")
-      (lambda () (interactive)
-	(evil-window-vsplit) (eaf-open-mail-as-html)))
-    (define-key mu4e-view-mode-map (kbd "C-c w o")
-      (lambda () (interactive)
-	(evil-window-vsplit) (eaf-open-url-at-point)))
+
+    ;; refile messages with C-c c
+    (define-key mu4e-main-mode-map (kbd "C-c c")
+		'dbargman/capture-emails-quietly)
+    (define-key mu4e-headers-mode-map (kbd "C-c c")
+		'dbargman/capture-emails-quietly)
+
+    ;; When using a "previous buffer" keypress, go back two buffers.
+    ;; It's still possible to go to the header view by pressing "Q".
+    (evil-define-key 'normal mu4e-view-mode-map (kbd "C-x C-p")
+		'(lambda () (interactive) (previous-buffer 2)))
 
     )
+
 
   )
 
@@ -637,6 +732,22 @@
   (define-key yaml-mode-map
     (kbd "M-s M-d") 'my-yaml-delete-manifest)
   
+
+
+  )
+
+;;; LaTeX keybindings
+
+(with-eval-after-load "latex"
+
+  ;; launch ebib
+  (global-set-key (kbd "C-c b") 'ebib)
+
+  ;; from org-mode, export to PDF with a keybinding
+  (with-eval-after-load "org"
+    (define-key org-mode-map (kbd "C-c C-x C-p")
+		'dbargman/org-latex-export-to-pdf)
+    )
 
 
   )

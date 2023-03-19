@@ -24,16 +24,21 @@
 
 ;;; Code:
 
-; 79-column files
-(add-hook 'sh-mode-hook (lambda () (setq fill-column 79)))
+;; 79-column files
+(add-hook 'sh-mode-hook (lambda () (setq-local fill-column 79)))
 
 ;;; set tab width to 2
 (add-hook 'sh-mode-hook
 	  (lambda ()
-	    (defvar evil-shift-width) (setq evil-shift-width 2)))
+	    (defvar evil-shift-width) (setq-local evil-shift-width 2)))
 
-; auto-indents in increments of 2 as well
-(add-hook 'sh-mode-hook (lambda () (setq tab-stop-list '(2 4))))
+;; auto-indents in increments of 2 as well
+(add-hook 'sh-mode-hook (lambda () (setq-local tab-stop-list '(2 4))))
+
+;; use the basic completion at point function
+(add-hook 'sh-mode-hook
+	  (lambda () (setq-local completion-at-point-functions
+				 '(tags-completion-at-point-function t))))
 
 (provide 'bash)
 ;;; bash.el ends here

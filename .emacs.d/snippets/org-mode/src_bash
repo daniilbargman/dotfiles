@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: bash source code dbargman
+# key: bash
+# --
+${1:$(unless (string-empty-p yas-text) "#+name: ")}${1:script_name}
+#+begin_src sh${2:$(unless (string-empty-p yas-text) " :session ")}${2:main} :result ${3:output} :noweb yes${4:$(unless (string-empty-p yas-text) " :tangle /mnt/projects/statosphere/org-scripts/")}${4:export file name}.sh :shebang "#!/usr/bin/env bash" :comments org
+
+  # ${0:leading comment for first command...}
+
+#+end_src

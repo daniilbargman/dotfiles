@@ -24,6 +24,9 @@
 
 ;;; Code:
 
+;; use elisp-format
+(use-package elisp-format)
+
 ;;; set tab width to 2
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()

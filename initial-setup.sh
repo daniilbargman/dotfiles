@@ -29,8 +29,8 @@ sudo apt-get update && sudo apt-get -y upgrade
  # git
  sudo apt-get install -y git
  
- # tmux (and xclip to copy from tmux to clipboard)
- sudo apt-get install -y tmux xclip
+ # # tmux (and xclip to copy from tmux to clipboard)
+ # sudo apt-get install -y tmux xclip
  
  # # create folders integrated with .vimrc and .bashrc
  # mkdir -p ~/executables  # for storing executable bash scripts
@@ -52,12 +52,13 @@ sudo apt-get install -y libncurses5-dev \
     libgtk2.0-dev libatk1.0-dev \
     libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev \
     python3-dev ruby-dev lua5.1 lua5.1-dev libperl-dev git
-git clone https://github.com/vim/vim.git && cd vim
+rm -rf vim && git clone https://github.com/vim/vim.git && cd vim
 ./configure --with-features=huge \
             --enable-multibyte \
             --enable-rubyinterp=yes \
-            --enable-python3interp=yes \
-            --with-python3-config-dir=$(python3-config --configdir) \
+            --enable-python3interp \
+            --with-python3-command=/usr/bin/python3 \
+            --with-python3-config-dir=$(/usr/bin/python3-config --configdir) \
             --enable-perlinterp=yes \
             --enable-luainterp=yes \
             --enable-cscope \
@@ -72,64 +73,81 @@ sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
 sudo update-alternatives --set vi /usr/local/bin/vim
 
 # install fonts
+git clone --depth=1 https://github.com/ryanoasis/nerd-fonts
 sudo apt-get -y install fonts-powerline fonts-firacode fonts-noto
 
-# # vim plugin manager: vim-plug
-# curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-#     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+# bash completion
+sudo apt-get -y install bash-completion
+
+# vim plugin manager: vim-plug
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # # tmux dependencies
 # git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm  # plugin manager
 
-# # optional: graphics manager: lightdm with autologin
-# sudo apt-get -y install xorg
-# cd /etc/X11 && sudo Xorg -configure
-# cd ~
-# sudo apt-get -y install lightdm
+# optional: graphics manager: lightdm with autologin
+sudo apt-get -y install xorg
+cd /etc/X11 && sudo Xorg -configure
+cd ~
+sudo apt-get -y install lightdm
 
-# # enable passwordless autologin
-# cd ~/.config/lightdm
-# sudo addgroup autologin && sudo gpasswd -a $(logname) autologin
-# sed -i "s/autologin-user=.*/autologin-user=$(logname)/g" lightdm.conf 
-# sudo cp {lightdm.conf,lightdm-gtk-greeter.conf} /etc/lightdm/
-# sudo cp ~/.config/herbstluftwm/background.jpg /etc/lightdm/
-# cd ~
+# enable passwordless autologin
+cd ~/.config/lightdm
+sudo addgroup autologin && sudo gpasswd -a $(logname) autologin
+sed -i "s/autologin-user=.*/autologin-user=$(logname)/g" lightdm.conf 
+sudo cp {lightdm.conf,lightdm-gtk-greeter.conf} /etc/lightdm/
+sudo cp ~/.config/herbstluftwm/background.jpg /etc/lightdm/
+cd ~
 
-# # optional: grub theme
-# mkdir ~/.grub-themes
-# cd ~/.grub-themes
-# git clone https://github.com/vandalsoul/darkmatter-grub2-theme dark-matter
-# cd dark-matter
-# sudo python3 install.py Debian
-# cd ~
+# optional: grub theme
+mkdir ~/.grub-themes
+cd ~/.grub-themes
+git clone https://github.com/vandalsoul/darkmatter-grub2-theme dark-matter
+cd dark-matter
+sudo python3 install.py Debian
+cd ~
 
 # install herbstluftwm and dependencies
 sudo apt-get -y install acpi  # for showing battery status
 sudo apt-get -y install sysstat  # for showing CPU percentages
-sudo apt-get -y install bash-completion
-# sudo apt-get -y install dzen2  # window/panel render
-# sudo apt-get -y install conky  # system info display
-# sudo apt-get -y install feh    # set background
-# sudo apt-get -y install herbstluftwm
-sudo apt-get -y install compton  # compositor for setting transparency
-sudo apt-get -y install xdotool  # move mouse programmatically
+sudo apt-get -y install herbstluftwm
+# sudo apt-get -y install xdotool  # move mouse programmatically
 
-# i3-gaps
-sudo apt-get install -y meson dh-autoreconf libxcb-keysyms1-dev libpango1.0-dev \
-     libxcb-util0-dev xcb libxcb1-dev libxcb-icccm4-dev libyajl-dev libev-dev \
-     libxcb-xkb-dev libxcb-cursor-dev libxkbcommon-dev libxcb-xinerama0-dev \
-     libxkbcommon-x11-dev libstartup-notification0-dev libxcb-randr0-dev \
-     libxcb-xrm0 libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev
-git clone https://github.com/Airblader/i3 i3-gaps
-cd i3-gaps
-mkdir -p build && cd build
-meson --prefix /usr/local
-ninja
-sudo ninja install
-cd ~
+# install compositor (compton)
+sudo apt-get -y install compton
 
-# install additional layout management programs papirus-icon-theme
-sudo apt-get install -y i3 polybar rofi feh lxappearance  # window manager components
+# # ALTERNATIVE: build compositor (picom)
+# sudo apt-get install -y libxext-dev libxcb1-dev libxcb-damage0-dev \
+#      libxcb-dpms0-dev libxcb-xfixes0-dev libxcb-shape0-dev \
+#      libxcb-render-util0-dev libxcb-render0-dev libxcb-randr0-dev \
+#      libxcb-composite0-dev libxcb-image0-dev libxcb-present-dev \
+#      libxcb-xinerama0-dev libxcb-glx0-dev libpixman-1-dev libdbus-1-dev \
+#      libconfig-dev libgl-dev libegl-dev libpcre2-dev libevdev-dev uthash-dev \
+#      libev-dev libx11-xcb-dev meson asciidoc
+
+# git clone https://github.com/yshui/picom picom && cd picom
+# git submodule update --init --recursive
+# meson setup --buildtype=release . build
+# sudo ninja -C build install
+
+# install additional layout management programs
+sudo apt-get install -y polybar rofi feh lxappearance
+
+# # i3-gaps
+# sudo apt install -y meson dh-autoreconf libxcb-keysyms1-dev libpango1.0-dev \
+#      libxcb-util0-dev xcb libxcb1-dev libxcb-icccm4-dev libyajl-dev libev-dev \
+#      libxcb-xkb-dev libxcb-cursor-dev libxkbcommon-dev libxcb-xinerama0-dev \
+#      libxkbcommon-x11-dev libstartup-notification0-dev libxcb-randr0-dev \
+#      libxcb-xrm0 libxcb-xrm-dev libxcb-shape0 libxcb-shape0-dev
+# git clone https://github.com/Airblader/i3 i3-gaps
+# cd i3-gaps
+# mkdir -p build && cd build
+# meson --prefix /usr/local
+# ninja
+# sudo ninja install
+# cd ~
+
 
 ### install alacritty terminal ###
 

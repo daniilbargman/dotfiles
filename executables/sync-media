@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vim: set filetype=sh :
 #
-# setup scripts for mu and mu4e
+# s3 synchronization command for all contents of this directory.
 #
 # Author: Daniil Bargman (daniil.bargman@gmail.com)
 #
@@ -35,36 +35,15 @@ function error_exit {
     append_error
 }
 
-## VERSION TO USE
-VERSION=1.8
+# temporarily save s3cfg file to script's directory
+cfg=$BASE_DIR/bargman-private-media-archive.s3cfg
+pass show private/S3/bargman-private-media-archive.s3cfg > $cfg
 
-## install dependencies
+# run sync command
+s3cmd -c $cfg --recursive --skip-existing --no-delete-removed \
+      sync ~/sync/media "s3://bargman-private-media-archive/Daniil/"
 
-sudo apt-get -y install libgmime-3.0-dev libxapian-dev meson
+# delete config file
+rm $cfg
 
-# install autotools for git repo to work
-sudo apt-get -y install autotools-dev autoconf libtool texinfo
-
-# optional
-sudo apt-get -y install guile-2.2-dev html2text xdg-utils
-
-# # optional: only needed for msg2pdf and mug (toy gtk+ frontend)
-# sudo apt-get install libwebkitgtk-3.0-dev
-
-# # install getmail
-# sudo apt-get -y install getmail
-
-# install mbsync with pass for managing mailboxes and credentials
-sudo apt-get install -y isync pass
-
-## install package itself
-
-# get from git (alternatively, use a github tarball)
-cd ~/.git-clones
-git clone https://github.com/djcb/mu.git --branch release/${VERSION}
-cd mu
-# ./autogen.sh && make
-# sudo make install
-meson build && ninja -C build
-
-#
+# Done.
