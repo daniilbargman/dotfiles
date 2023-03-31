@@ -396,7 +396,26 @@ buffer name during each attempt to open a shell or send code to it."
   )
 
 (use-package company-prescient
-  :config (company-prescient-mode)
+  :config
+
+  ;; ;; change filter method for company completions to avoid suggesting
+  ;; ;; candidates that match in the middle
+  ;; (advice-add
+  ;;  'company-complete :before
+  ;;  #'(lambda () (setq prescient-filter-method '(literal-prefix initialism)))
+  ;;  )
+
+  ;; enable
+  (company-prescient-mode)
+
+  ;; ;; don't suggest completions that match in the middle
+  ;; :hook (
+  ;; 	 (company-completion-finished
+  ;; 	  . (lambda (&optional _)
+  ;; 	      (setq prescient-filter-method '(literal-prefix regexp)))
+  ;; 	  )
+  ;; 	 )
+
   )
 
 ;; ;; alternative to company: corfu
@@ -560,8 +579,8 @@ buffer name during each attempt to open a shell or send code to it."
 (use-package lsp-mode
 
   :hook (
-  	;; if you want which-key integration
-  	(lsp-mode . lsp-enable-which-key-integration))
+  	 ;; if you want which-key integration
+  	 (lsp-mode . lsp-enable-which-key-integration))
 
   :custom
 
@@ -603,6 +622,10 @@ buffer name during each attempt to open a shell or send code to it."
     ;; lsp-ui-peek
     ;; (lsp-ui-peek-enable t)
 
+    ;; set 'lsp-completion-provider' to :none as described here:
+    ;; https://github.com/emacs-lsp/lsp-mode/issues/3173
+    (lsp-completion-provider :none)
+
     :config
 
     ;; ;; NOTE: manual hack no longer required as of the latest update
@@ -614,7 +637,7 @@ buffer name during each attempt to open a shell or send code to it."
 
     ;; (lsp-ui-peek-mode)  ; disable peek mode
     ;; (lsp-ui-sideline-mode)  ; disable sideline mode
-   )
+    )
 
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
@@ -651,20 +674,47 @@ buffer name during each attempt to open a shell or send code to it."
   (with-eval-after-load 'lsp-mode
     (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
 
-  ;; make sure to enable yasnippet support in lsp completion
-  (with-eval-after-load 'lsp-mode
-    (add-hook
-      'lsp-completion-mode-hook
-	(lambda ()
-	  (setq company-backends
-		(cl-remove-duplicates
-		 (mapcar 'company-mode/backend-with-yas
-			 company-backends)
-		 :test 'equal-including-properties
-		 :from-end t)
+
+  ;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
+  ;;; 'lsp-completion-provider' to :none as described in
+  ;;; https://github.com/emacs-lsp/lsp-mode/issues/3173
+
+  ;; ;; make sure to enable yasnippet support in lsp completion
+  ;; (with-eval-after-load 'lsp-mode
+  ;;   (add-hook
+  ;;     'lsp-completion-mode-hook
+  ;; 	(lambda ()
+  ;; 	  (setq company-backends
+  ;; 		(cl-remove-duplicates
+  ;; 		 (mapcar 'company-mode/backend-with-yas
+  ;; 			 company-backends)
+  ;; 		 :test 'equal-including-properties
+  ;; 		 :from-end t)
+  ;; 		)
+  ;; 	  )
+  ;;   ))
+
+  ;; instead of the above, simply make sure company-capf with yasnippet
+  ;; is on top in lsp-enabled buffers
+  :hook (
+	 (lsp-mode
+	  . (lambda ()
+	      (setq-local
+	       company-backends
+	       (cl-remove-duplicates
+		(append
+		 `(,(company-mode/backend-with-yas 'company-capf))
+		 company-backends
+		 )
+		:test 'equal-including-properties
+		:from-end t
 		)
+	       )
+	      )
 	  )
-    ))
+	 )
+
+  ;;; END NOTE
 
   :commands lsp)
 

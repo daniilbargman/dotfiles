@@ -617,8 +617,7 @@
    #'(lambda ()
        (define-key
 	org-agenda-mode-map (kbd "q")
-	'tab-bar-history-back
-	;; #'(lambda () (interactive) (org-agenda-quit) (org-agenda-quit))
+	#'(lambda () (interactive) (org-agenda-quit) (org-agenda-quit))
 	)
        )
    )

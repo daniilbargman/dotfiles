@@ -90,9 +90,10 @@
   :hook (
 	 (org-mode
 	  . (lambda ()
+	      (make-local-variable 'company-backends)
 	      (add-to-list
 	       'company-backends
-	       (cons 'company-org-block '(:with company-yasnippet))
+	       (company-mode/backend-with-yas 'company-org-block)
 	       )
 	      )
 	  )
@@ -247,7 +248,11 @@ For the second point this function relies on 'auto-revert-mode'."
 	 ;; file name
 	 (pdf-preview-file (org-latex-export-to-pdf))
 	 (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
-	 (pdf-preview-window (get-buffer-window pdf-preview-buffer))
+	 (pdf-preview-window
+	  (when pdf-preview-buffer
+	    (get-buffer-window pdf-preview-buffer)
+	    )
+	  )
 	 )
 
     ;; ;; if the buffer is visible, do nothing

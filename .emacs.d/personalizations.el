@@ -490,7 +490,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	    (tags-todo "+infrastructure+TODOtree")
 	    )
 	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down)
+	     '(todo-state-down priority-down timestamp-down)
 	     )
 	    )
 	   )
