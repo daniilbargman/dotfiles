@@ -107,7 +107,7 @@ alias myip="curl ifconfig.co"
 alias myip6="curl -6 ifconfig.co"
 
 # alias pg to ping google 5 times
-alias pg="ping -c 5 google.com"
+alias pg="ping -c 3 google.com"
 
 # s3 command aliases for synchronizing files with private bucket
 alias s3sync="s3cmd -c ~/sync/.s3cfg"

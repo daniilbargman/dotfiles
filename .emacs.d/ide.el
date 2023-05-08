@@ -199,41 +199,98 @@ buffer name during each attempt to open a shell or send code to it."
   :config
 
   ;; when running yank-pop in visual mode, remove selected text prior.
-  (defun dbargman/consult-replace-selection-from-kill-ring (string)
+  (defun dbargman/consult-replace-selection-from-kill-ring ()
     "Replace visual selection with an item selected from the kill-ring."
-    (interactive (list (consult--read-from-kill-ring)))
+    (interactive)
+
+    ;; advice: when command is being cancelled, simply reinsert the text
+    ;; that was just removed.
+    (defun undo-after-abort ()
+      "reinsert old text when canceling consult-yank-replace command"
+      (interactive)
+
+      ;; remove the advice before doing anything else
+      (advice-remove 'abort-minibuffers 'undo-after-abort)
+
+      ;; move to beginning of line in case there is existing manual
+      ;; input in the minibuffer
+      (move-beginning-of-line nil)
+
+      ;; reinsert last killed text (this will be the text that is being
+      ;; replaced, except in some edge cases where something was killed
+      ;; inside the minibuffer while the kill ring was being browsed)
+      (yank)
+
+      ;; we just pasted the text at the very beginning of the line. if
+      ;; the line is not empty, delete the rest of it.
+      (unless (= (point) (save-excursion (end-of-visual-line) (point)))
+	(kill-line)
+	)
+
+      ;; select what is left in the manual input field (this will be the
+      ;; text that was just deleted as part of the replace function)
+      (vertico-exit-input)
+
+      )
+    (advice-add 'abort-minibuffers :override 'undo-after-abort)
+
+    ;; delete current contents of selection
     (let* ((target-range (evil-visual-range))
 	    (BEG (nth 0 target-range))
 	    (END (nth 1 target-range))
 	    )
       (evil-normal-state)
       (goto-char END)
-      (consult-yank-replace string)
-      (evil-delete BEG END) ; type)
-      ))
+      (evil-delete BEG END)
 
-  ;; when searching for visual selection with consult-line, do not move point
-  (defun start-with-current-line (lines)
-    (cl-loop
-     with current = (line-number-at-pos (point)
-					consult-line-numbers-widen)
-    for (line . after) on (cdr lines)
-    while (< (cdr (get-text-property 0 'consult-location line)) current)
-    collect line into before
-    finally (return (cons (car lines) (append after before)))))
+      ;; select replacement from kill ring interactively
+      (funcall-interactively 'consult-yank-replace
+			     (consult--read-from-kill-ring))
+      )
+    )
 
-  (advice-add 'consult--line-candidates
-	      :filter-return #'start-with-current-line)
+
+  ;; run consult searches on symbol at point
+  (defun dbargman/consult-line-symbol-at-point ()
+    "Select symbol at point and run consult-line."
+    (interactive)
+    (funcall 'consult-line (symbol-name (symbol-at-point)))
+    )
+  (defun dbargman/consult-rg-symbol-at-point ()
+    "Select symbol at point and run consult-ripgrep."
+    (interactive)
+    (consult-ripgrep nil (symbol-name (symbol-at-point)))
+    )
+
+  ;; ;; when searching for visual selection with consult-line, do not move point
+  ;; (defun start-with-current-line (lines)
+  ;;   (cl-loop
+  ;;    with current = (line-number-at-pos (point)
+  ;; 					consult-line-numbers-widen)
+  ;;   for (line . after) on (cdr lines)
+  ;;   while (< (cdr (get-text-property 0 'consult-location line)) current)
+  ;;   collect line into before
+  ;;   finally (return (cons (car lines) (append after before)))))
+
+  ;; (advice-add 'consult--line-candidates
+  ;; 	      :filter-return #'start-with-current-line)
 
 
   :custom
   ;; search text from the top of the buffer
-  (consult-line-start-from-top t)
+  (consult-line-start-from-top nil)
   )
 
 ;; actions on objects
 (use-package embark
-  :straight '(embark :files (:defaults "*") :includes embark-consult))
+  :straight '(embark :files (:defaults "*") :includes embark-consult)
+
+  :init
+
+  ;; use embark window for key help
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  )
 ;; (straight-use-package 'embark-consult)
 
 
@@ -567,11 +624,16 @@ buffer name during each attempt to open a shell or send code to it."
      messages-buffer-mode))
   )
 
-;; use which-key for emacs function completion
-(use-package which-key
-  :init
-  (setq which-key-popup-type 'minibuffer)
-  (which-key-mode))
+;;; NOTE: going with embark and manual "?" as key suggestion trigger
+
+;; ;; use which-key for emacs function completion
+;; (use-package which-key
+;;   :init
+;;   (setq which-key-popup-type 'minibuffer)
+;;   (which-key-mode)
+;;   )
+
+;;; END NOTE
 
 ;;; LSP support
 

@@ -177,13 +177,9 @@
     "e" 'flycheck-next-error ; goto next error with <leader>e
     "p" 'flycheck-previous-error ; goto previous error with <leader>e
 
-    ;; search
-    ;; "s" 'swiper-thing-at-point ; search thing at point with <leader>s
-    ;; "C-s" 'swiper-all-thing-at-point ; search thing at point in all
-    ;; 					; buffers with <leader>C-s
-    "s" 'embark-act ; search thing at point with <leader>s
-    "C-s" 'embark-act-all ; search thing at point in all
-					; buffers with <leader>C-s
+    ;; search symbol at point in current buffer or in all buffers
+    "s" 'dbargman/consult-line-symbol-at-point
+    "C-s" 'dbargman/consult-rg-symbol-at-point
 
     ;; avy jumps
     "j" 'avy-goto-line-below
@@ -423,13 +419,10 @@
     'vertico-directory-delete-char)
   (define-key vertico-map (kbd "M-<backspace>")
     'vertico-directory-delete-word)
-  
 
-  ;; add embark bindings for cycling through instances of thing at point
-  (evil-define-key '(normal visual) 'embark-general-map (kbd "C-n")
-    '(lambda (thing) (consult-line thing) (vertico-next)))
-  (evil-define-key '(normal visual) 'embark-general-map (kbd "C-p")
-    '(lambda (thing) (consult-line thing) (vertico-previous)))
+  ;; set embark to a universal keybinding for non-evil setups
+  (define-key global-map (kbd "M-e") 'embark-act)
+  (define-key global-map (kbd "M-a") 'embark-act-all)
 
   ;; use C-x C-b for embark-become in minibuffer
   (evil-define-key '(normal insert) 'minibuffer-mode-map (kbd "C-x C-b")
