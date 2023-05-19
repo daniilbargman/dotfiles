@@ -60,6 +60,13 @@
   (bind-key* "M-o" 'ace-window)
   
 
+
+  ;; go to previous active buffer with C-x C-p
+  (bind-key* "C-x C-p" 'previous-buffer)
+
+  ;; list buffers using ibuffer (prettier output)
+  (bind-key* "C-x C-b" 'ibuffer-list-buffers)
+
   ;;; buffer tab manipulation via centaur-tabs
   
   ;; previous tab, next tab, jump to tab
@@ -73,13 +80,6 @@
 
   ;; open minibuffer prompt for group name
   (bind-key* "C-x C-n" 'centaur-tabs-counsel-switch-group)
-
-  ;; go to previous active buffer with C-x C-p
-  (bind-key* "C-x C-p" 'previous-buffer)
-
-  ;; list buffers using ibuffer (prettier output)
-  (bind-key* "C-x C-b" 'ibuffer-list-buffers)
-
 
   ;;; visual window and buffer manipulation
 
@@ -459,6 +459,12 @@
 
   ;; leader key mappings
   (evil-leader/set-key
+
+    ;; look up and go to symbol using consult-lsp-file-symbols
+    "a" 'consult-lsp-file-symbols
+
+    ;; look up and go to symbol globally using consult-lsp-symbols
+    "C-a" 'consult-lsp-symbols
 
     ;; show documentation in LSP-UI
     "d" 'lsp-ui-doc-show

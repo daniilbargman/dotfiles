@@ -20,7 +20,7 @@ sudo apt-get update && sudo apt-get -y upgrade
 # additional dependencies are for GCCEmacs and vterm-mode
 sudo apt-get install -y libc6-dev libjpeg62-turbo libncurses5-dev libpng-dev \
      libtiff5-dev libgif-dev xaw3dg-dev zlib1g-dev libx11-dev \
-     libgccjit-12-dev cmake libtool libtool-bin texinfo
+     libgccjit-12-dev cmake libtool libtool-bin texinfo librsvg2-dev
 
 # install fonts
 sudo apt-get install -y fonts-powerline fonts-firacode
@@ -32,7 +32,7 @@ sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gnutls-dev
 # install libjansson for faster LSP mode
 mkdir -p ~/.git-clones
 cd ~/.git-clones
-rm -rf libjansson
+rm -rf jansson
 git clone https://github.com/akheron/jansson
 cd jansson
 autoreconf -i
@@ -48,7 +48,8 @@ cd emacs
 
 # configure with considerations from StackOverflow
 ./autogen.sh
-./configure --with-json --with-cairo --with-xwidgets --with-x-toolkit=gtk3 \
+./configure --with-json --with-cairo --with-xwidgets \
+	    --with-x-toolkit=gtk3 \
 	    --with-native-compilation  # this is for the GCC branch of Emacs
 
 # make and make install

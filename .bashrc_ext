@@ -13,6 +13,9 @@
 # Add snap directory to path
 PATH=$PATH:/snap/bin
 
+# add XDG config home to environment
+export XDG_CONFIG_HOME=$HOME/.config
+
 # SET 256-COLOR SUPPORT IN TERMINAL
 export TERM='xterm-256color'
 

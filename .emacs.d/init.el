@@ -57,7 +57,8 @@
 ;(add-to-list 'package-archives
 ;             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
-;;; Basic look and feel:
+;; ;;; Basic look and feel:
+;; (setq image-types (append '(svg) image-types))
 
 ;; set font to Fira Code
 (set-frame-font "Fira Code")

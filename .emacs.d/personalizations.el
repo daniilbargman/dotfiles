@@ -49,13 +49,14 @@
        (when msg
 	 (string-match-p "^/statosphere/daniil.bargman/Inbox"
 			 (mu4e-message-field msg :maildir)))
-	 ;; (mu4e-message-contact-field-matches
-	 ;;  msg '(:to :cc :bcc) "daniil.bargman@statosphere.com"))
+       ;; (mu4e-message-contact-field-matches
+       ;;  msg '(:to :cc :bcc) "daniil.bargman@statosphere.com"))
        )
 
      :vars
      `(
-       (mu4e-get-mail-command . "mbsync -a -c /mnt/projects/statosphere/admin/email/.mbsyncrc")
+       (mu4e-get-mail-command
+	. "mbsync -a -c /mnt/projects/statosphere/admin/email/.mbsyncrc")
        (user-mail-address . "daniil.bargman@statosphere.com")
        (user-full-name . "Daniil Bargman")
        (message-user-organization . "statOsphere")
@@ -75,12 +76,58 @@
        )
      )
 
+   ;; UCL email
+   ,(make-mu4e-context
+     :name "UCL"
+     :enter-func (lambda () (mu4e-message "UCL emails"))
+     ;; :leave-func (lambda () (mu4e-message "eaving Private context"))
+     ;; we match based on the contact-fields of the message
+     :match-func
+     (lambda (msg)
+       (when msg
+	 (string-match-p "^/UCL/daniil.bargman.22/Inbox"
+			 (mu4e-message-field msg :maildir)))
+       ;; (mu4e-message-contact-field-matches
+       ;;  msg '(:to :cc :bcc) "daniil.bargman@statosphere.com"))
+       )
+
+     :vars
+     `(
+       (dbargman/email-oauth2ms-config-file
+	. "UCL/ucesdb2@ucl.ac.uk-oauth2ms-config")
+       (mu4e-get-mail-command . "mbsync -a -c ~/Email/UCL/.mbsyncrc")
+       (user-mail-address . "ucesdb2@ucl.ac.uk")
+       (user-full-name . "Daniil Bargman")
+       (message-user-organization . "UCL")
+       ;; (org-msg-signature
+       ;; 	.
+       ;; 	,(dbargman/contents-of-file
+       ;; 	  "/mnt/projects/statosphere/admin/email/default-signature.html"))
+       (mu4e-compose-reply-to-address . "daniil.bargman.22@ucl.ac.uk")
+       ;; (send-mail-function . smtpmail-send-it)
+       ;; (message-send-mail-function . smtpmail-send-it)
+       (smtpmail-default-smtp-server . "smtp.office365.com")
+       (smtpmail-smtp-server . "smtp.office365.com")
+       (smtpmail-local-domain . "ucl.ac.uk")
+       (smtpmail-stream-type . starttls)
+       (smtpmail-smtp-service . 587)
+       (smtpmail-debug-info t)
+       (smtpmail-debug-verb t)
+       ;; (smtpmail-local-domain . "statosphere.com")
+       (mu4e-sent-folder . "/UCL/daniil.bargman.22/Sent Items")
+       (mu4e-drafts-folder . "/UCL/daniil.bargman.22/Drafts")
+       (mu4e-trash-folder . "/UCL/daniil.bargman.22/Deleted Items")
+       (mu4e-refile-folder . "/UCL/daniil.bargman.22/Archive")
+       (dbargman/inbox-folder . "/UCL/daniil.bargman.22/Inbox")
+       )
+     )
+
    ;; notes-to-self from Gmail
-,(make-mu4e-context
+   ,(make-mu4e-context
      :name "Notes from Gmail"
      :enter-func (lambda () (mu4e-message
 			     "Notes from Gmail"))
-     ;; :leave-func (lambda () (mu4e-message "eaving Private context"))
+     ;; :leave-func (lambda () (mu4e-message "leaving Private context"))
      ;; we match based on the contact-fields of the message
      :match-func
      (lambda (msg)
@@ -97,8 +144,8 @@
        (mu4e-compose-reply-to-address . "daniil.bargman@gmail.com")
        (smtpmail-default-smtp-server . "imap.gmail.com")
        (smtpmail-smtp-server . "mail.gmail.com")
-       (smtpmail-local-domain . "statosphere.com")
-       (mu4e-sent-folder . "/") ; setting to "/" hides the shortcut
+       ;; (smtpmail-local-domain . "statosphere.com")
+       (mu4e-sent-folder . "/")	     ; setting to "/" hides the shortcut
        (mu4e-drafts-folder . "/")
        (mu4e-trash-folder . "/personal/Gmail/Trash")
        (mu4e-refile-folder . "/personal/Gmail/Archive")

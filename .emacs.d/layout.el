@@ -283,11 +283,12 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
 
   ;; enable mode
   (centaur-tabs-mode t)
+  ;; (global-tab-line-mode 1)
 
-  ;; match headlin style
+  ;; match headline style
   (centaur-tabs-headline-match)
 
-  ;; match headlin style
+  ;; reorder buffers
   (centaur-tabs-enable-buffer-reordering)
 
   )
@@ -323,7 +324,6 @@ Other buffer group by `centaur-tabs-get-group-name' with project name."
     (t
     (centaur-tabs-get-group-name (current-buffer))))))
 
-
 ;; custom function for defining buffer groups in awesome tab
 (defun centaur-tabs-buffer-groups ()
   "Define centaur tabs buffer groups based on custom variables.
@@ -339,71 +339,67 @@ The first alist to match a buffer defines its group.
 
 If no alists match and the buffer points to a file, the file's
 directory is used as the group name."
-  (let (
-	(bufname (buffer-name))
-	(buffer-group-name nil)
-	)
+  (let* (
+	 (bufname (buffer-name))
+	 (buffer-group-name
+	  (cdr (assoc bufname layout--buffer-mapping-cache)))
+	 )
 
     ;; first, try in memoization dictionary
-    (setq buffer-group-name
-	  (cdr (assoc bufname layout--buffer-mapping-cache)))
-
-    ;; if name regex mapping is defined, apply it
     (unless buffer-group-name
+
+      ;; if name regex mapping is defined, apply it
       (setq buffer-group-name
 	    (cl-loop
-	    for (regex-value . group-name)
-	    in layout-buffer-groups-by-name-regex
-	    if (string-match regex-value bufname)
-	    return group-name
-		;; finally
-		;; 	;; return "unmatched")
-		;; 	(awesome-tab-get-group-name (current-buffer))
-	    )))
+	     for (regex-value . group-name)
+	     in layout-buffer-groups-by-name-regex
+	     if (string-match regex-value bufname)
+	     return group-name
+	     ;; finally
+	     ;; 	;; return "unmatched")
+	     ;; 	(awesome-tab-get-group-name (current-buffer))
+	     ))
 
-    ;; if major mode mapping is defined, apply it
-    (unless buffer-group-name
-      (setq buffer-group-name
-	    (cl-loop
-	    for (major-mode-value . group-name)
-	    in layout-buffer-groups-by-major-mode
-	    if (derived-mode-p major-mode-value)
-	    return group-name
-	    )))
+      ;; if major mode mapping is defined, apply it
+      (unless buffer-group-name
+	(setq buffer-group-name
+	      (cl-loop
+	       for (major-mode-value . group-name)
+	       in layout-buffer-groups-by-major-mode
+	       if (derived-mode-p major-mode-value)
+	       return group-name
+	       )))
 
-    ;; set group based on directory (i.e. group by directory)
-    (unless buffer-group-name
-      (setq buffer-group-name (expand-file-name default-directory))
-      )
+      ;; set group based on directory (i.e. group by directory)
+      (unless buffer-group-name
+	(setq buffer-group-name (expand-file-name default-directory))
+	)
 
-    ;; if at least one classification is present but tab hasn't been
-    ;; classified, return default group
-    (if
-	(and
-	  (null buffer-group-name)
-	  (not (and (null layout-buffer-groups-by-major-mode)
-		    (null layout-buffer-groups-by-name-regex)
-		    )))
+      ;; if at least one classification is present but tab hasn't been
+      ;; classified, return default group
+      (when
+	  (and
+	   (null buffer-group-name)
+	   (not (and (null layout-buffer-groups-by-major-mode)
+		     (null layout-buffer-groups-by-name-regex)
+		     )))
 	(setq buffer-group-name
 	      (centaur-tabs-get-group-name (current-buffer))))
 
-    ;; return final value or the output of the fallback function
-    (if (null buffer-group-name) (default-centaur-tabs-buffer-groups)
-      (progn
-	(unless (assoc bufname layout--buffer-mapping-cache)
-	  (customize-set-value
-	   'layout--buffer-mapping-cache
-	   (append layout--buffer-mapping-cache
-		   `((,bufname . ,buffer-group-name))
-		   )
-	   )
-	  )
-	(list buffer-group-name)
-	)
+      ;; return final value or the output of the fallback function
+      (when (null buffer-group-name) (default-centaur-tabs-buffer-groups))
+
+      ;; save to name cache
+      (customize-set-value
+       'layout--buffer-mapping-cache
+       (append layout--buffer-mapping-cache
+	       `((,bufname . ,buffer-group-name))
+	       )
+       )
       )
+    (list buffer-group-name)
     )
   )
-
 
 ;; default buffer filter function
 (defun default-centaur-tabs-hide-tab (x)
@@ -436,10 +432,10 @@ tab's grouping collage."
 		      return nil))))
 
 
-
-;;; Manage projects with treemacs
+;; ;;; Manage projects with treemacs
 
 (use-package treemacs
+
   :config
   (progn
     (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)

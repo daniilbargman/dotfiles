@@ -31,6 +31,7 @@ hc keybind $Mod-b chain , spawn firefox , use_index "1"
 hc keybind $Mod-e chain , spawn emacs -bg 'gray10' -fg 'white' , use_index "0"
 hc keybind $Mod-t spawn thunar
 hc keybind $Mod-space spawn rofi -show combi
+hc keybind $Mod-Escape spawn /home/daniil/executables/scratchpad
 
 # basic movement
 # focusing clients
@@ -81,10 +82,9 @@ tag_names=( \
   'Workspace6' \
   'Workspace7' \
   'Workspace8' \
-  'Workspace9' \
-  'Workspace10' \
+  'scratch' \
 )
-tag_keys=( {1..10} 0 )
+tag_keys=( {1..9} 0 )
 
 hc rename default "${tag_names[0]}" || true
 for i in ${!tag_names[@]} ; do
@@ -136,63 +136,62 @@ hc keybind $Mod-i jumpto urgent
 
 # overall theme settings
 hc set_layout tabbed_max
-hc set frame_border_active_color '#2290B5'  # also active text color in top panel
+hc set frame_border_active_color '#D0C654'  # also active text color in top panel
 hc set frame_border_normal_color '#909090'  # also plain text color in top panel
 hc set frame_border_width 1
 hc set frame_bg_transparent 1
 hc set show_frame_decorations 'focused_if_multiple'
-hc set frame_gap 2
+hc set frame_gap 1
+hc set window_gap 4
 hc set frame_normal_opacity 0
 hc set frame_active_opacity .5
 hc set focus_crosses_monitor_boundaries true
 hc set focus_stealing_prevention false
-hc attr theme.inner_width 1
+hc set frame_padding 0
+hc set smart_window_surroundings off
+hc set smart_frame_surroundings on
+hc set mouse_recenter_gap 0
+hc attr theme.inner_width 2
+hc attr theme.outer_width 2
+hc attr theme.border_width 2
 hc attr theme.inner_color black
-hc attr theme.border_width 1
 
 # special windows: urgent and floating
 hc attr theme.urgent.color orange
-hc attr theme.floating.border_width 1
-hc attr theme.floating.outer_width 1
-hc attr theme.floating.outer_color '#D0C654'  # outer outline of floating tile
+hc attr theme.floating.border_width 2
+hc attr theme.floating.outer_width 2
+hc attr theme.floating.outer_color '#8AfEB7'  # outer outline of floating tile
 
 # common and inactive tab settings
 hc attr theme.title_align center
-hc attr theme.title_height 16
-hc attr theme.minimal.title_height 16
+hc attr theme.title_height 20
+hc attr theme.minimal.title_height 20
 hc attr theme.title_when 'multiple_tabs'
 hc attr theme.minimal.title_when 'multiple_tabs'
 hc attr theme.title_font 'FiraCode-Regular:pixelsize=13'  # example using Xft
-hc attr theme.active.title_font 'FiraCode-Regular:pixelsize=13'  # example using Xft
 hc attr theme.title_depth 8  # space below the title's baseline
 hc attr theme.title_color '#898989'  # inactive window's title text color
 
 # active focused tab
 hc attr theme.active.color '#333333'
-hc attr theme.active.title_color '#D0C654'
-hc attr theme.active.outer_color '#D0C654'
-hc attr theme.active.outer_width 0
-hc attr theme.active.border_width 0
+hc attr theme.active.title_color '#CCCCCC'
+hc attr theme.active.outer_color '#2290B5'
 
-# active UNfocused tab
+# active unfocused tab
 hc attr theme.active.tab_color '#222222'  # inner outline of active tile
-hc attr theme.active.tab_title_color '#898989'  # inner outline of active tile
-hc attr theme.active.tab_outer_color '#898989'
-hc attr theme.active.tab_outer_width 0
-hc attr theme.active.tab_border_width 0
-hc set window_gap 0
-hc set frame_padding 1
-hc set smart_window_surroundings off
-hc set smart_frame_surroundings off
-hc set mouse_recenter_gap 0
+hc attr theme.active.tab_title_color '#222222'  # inner outline of active tile
+hc attr theme.active.tab_outer_color '#222222'
+hc attr theme.active.tab_outer_width 2
+hc attr theme.active.tab_border_width 2
 
 # rules
 hc unrule -F
-hc rule focus=on
-hc rule class=Emacs --tag='Emacs' --focus=on # move emacs windows to tag 1
-hc rule class=Firefox --tag~'Firefox' --focus=on # move browser windows to tag 2
-hc rule class=Alacritty --tag="Terminals" --focus=on # move terminals to tag 3
+# hc rule --tag="scratch" # move everything else to Workspace1
+hc rule class=Emacs --tag='Emacs' # move emacs windows to tag 1
+hc rule class=Firefox --tag~'Firefox' # move browser windows to tag 2
+hc rule class=Alacritty --tag="Terminals" # move terminals to tag 3
 hc rule floatplacement=center
+hc rule focus=on
 #hc rule focus=off # normally do not focus new clients
 # give focus to most common terminals
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on

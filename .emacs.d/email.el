@@ -65,6 +65,15 @@ It is consumed by 'dbargman/email-auto-capture'"
   :type 'alist
   :safe (lambda (_) t))
 
+;; additional session environment variables
+(defcustom dbargman/email-oauth2ms-config-file nil
+  "Name under which the oauth2ms config file is stored in pass.
+
+It is consumed by 'dbargman/email-auto-capture'"
+  :group 'dbargman/email
+  :type 'string
+  :safe (lambda (_) t))
+
 ;;; GOLBAL SETTINGS
 
 ;; use mu4e for e-mail in emacs
@@ -121,6 +130,36 @@ It is consumed by 'dbargman/email-auto-capture'"
       mu4e-compose-context-policy 'ask-if-none
 
       )
+
+;;; OAuth2 support (for Outlook)
+
+;; see https://github.com/harishkrupo/oauth2ms/blob/main/steps.org
+
+;;; Call the oauth2ms program to fetch the authentication token
+(defun dbargman/fetch-access-token ()
+  "Fetch token using oauth2ms_wrapper.
+
+Retrieves the oauth2ms config file from pass using
+'dbargman/email-oauth2ms-config-file'."
+    (with-temp-buffer
+      (call-process "oauth2ms_wrapper" nil t nil
+		    dbargman/email-oauth2ms-config-file
+		    "--encode-xoauth2")
+    (buffer-string)))
+
+;;; Add new authentication method for xoauth2
+(cl-defmethod smtpmail-try-auth-method
+  (process (_mech (eql xoauth2)) user password)
+  :after
+  (let* ((access-token (dbargman/fetch-access-token)))
+    (smtpmail-command-or-throw
+     process
+     (concat "AUTH XOAUTH2 " access-token)
+     235)))
+
+;;; Register the method
+(with-eval-after-load 'smtpmail
+    (add-to-list 'smtpmail-auth-supported 'xoauth2))
 
 
 ;;; ORG-MSG and HTML support

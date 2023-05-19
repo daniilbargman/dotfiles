@@ -147,7 +147,7 @@
     org-roam-node-insert
     consult-org-roam-file-find
     consult-org-roam-forward-links
-    :preview-key (kbd "M-."))
+    :preview-key "M-.")
    ;; :bind
    ;; ;; Define some convenient keybindings as an addition
    ;; ("C-c n e" . consult-org-roam-file-find)
@@ -204,7 +204,7 @@
 
 ;; prettify org-mode bullets
 (use-package org-superstar
-  :hook org-mode
+  :hook (org-mode . org-superstar-mode)
   :custom
   (org-superstar-headline-bullets-list
    '(("●" 9673) ("◉" 9673) ("○" 9673) ("•" 9673)))

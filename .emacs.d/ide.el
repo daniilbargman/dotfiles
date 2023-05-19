@@ -184,12 +184,16 @@ buffer name during each attempt to open a shell or send code to it."
   (prescient-persist-mode t)
   (prescient-sort-length-enable nil)
   (prescient-sort-full-matches-first t)
-  (prescient-filter-method '(literal-prefix regexp))
+  (prescient-filter-method '(literal-prefix))
   )
 (use-package vertico-prescient
   :custom
   (vertico-prescient-override-sorting t)
   :config (vertico-prescient-mode)
+
+  ;; use regexp filtering in the minibuffer only
+  :hook ((minibuffer-mode . (lambda () (prescient-toggle-regexp nil))))
+
   )
 
 
@@ -290,6 +294,49 @@ buffer name during each attempt to open a shell or send code to it."
   ;; use embark window for key help
   (setq prefix-help-command #'embark-prefix-help-command)
 
+
+  :config
+
+  ;;; embark-which-key integration
+  ;;; borrowed from: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+The which-key help message will show the type and value of the
+current target followed by an ellipsis if there are further
+targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+	(which-key--show-keymap
+	 (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+	 (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+	 nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+
+  (setq embark-indicators
+	'(embark-which-key-indicator
+	  embark-highlight-indicator
+	  embark-isearch-highlight-indicator))
+
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator)
+
   )
 ;; (straight-use-package 'embark-consult)
 
@@ -352,8 +399,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; (global-company-mode)
   ;; (add-hook 'after-init-hook 'global-company-mode)
 
-  ;; set minimum prefix length to 1
-  (setq company-minimum-prefix-length 1)
+  ;; set minimum prefix length to 2 for performance reasons
+  (setq company-minimum-prefix-length 2)
 
   ;; set idle delay
   (setq company-idle-delay ide-completion-popup-active-delay)
@@ -465,13 +512,8 @@ buffer name during each attempt to open a shell or send code to it."
   ;; enable
   (company-prescient-mode)
 
-  ;; ;; don't suggest completions that match in the middle
-  ;; :hook (
-  ;; 	 (company-completion-finished
-  ;; 	  . (lambda (&optional _)
-  ;; 	      (setq prescient-filter-method '(literal-prefix regexp)))
-  ;; 	  )
-  ;; 	 )
+  ;; ;; ;; don't suggest completions that match in the middle
+  ;; :hook ((company-completion-started . prescient-toggle-regexp))
 
   )
 
@@ -624,14 +666,12 @@ buffer name during each attempt to open a shell or send code to it."
      messages-buffer-mode))
   )
 
-;;; NOTE: going with embark and manual "?" as key suggestion trigger
-
-;; ;; use which-key for emacs function completion
-;; (use-package which-key
-;;   :init
-;;   (setq which-key-popup-type 'minibuffer)
-;;   (which-key-mode)
-;;   )
+;; use which-key for emacs function completion
+(use-package which-key
+  :init
+  (setq which-key-popup-type 'minibuffer)
+  (which-key-mode)
+  )
 
 ;;; END NOTE
 
@@ -641,12 +681,14 @@ buffer name during each attempt to open a shell or send code to it."
 (use-package lsp-mode
 
   :hook (
-  	 ;; if you want which-key integration
-  	 (lsp-mode . lsp-enable-which-key-integration))
+	 ;; if you want which-key integration
+	 (lsp-mode . lsp-enable-which-key-integration)
+	 )
 
   :custom
 
-  (lsp-headerline-breadcrumb-enable nil) ; disable breadcrumb
+  ;; (lsp-headerline-breadcrumb-enable nil) ; disable breadcrumb
+  (lsp-headerline-breadcrumb-enable-diagnostics nil)
   ;; (lsp-log-io t)
   ;; (lsp-print-performance t)
   ;; (lsp-server-trace t)
@@ -658,6 +700,10 @@ buffer name during each attempt to open a shell or send code to it."
   ;; try disabling this so LSP doesn't automatically try to connect to
   ;; servers with wrong roots on startup
   (lsp-auto-select-workspace nil)
+
+  ;; set 'lsp-completion-provider' to :none as described here:
+  ;; https://github.com/emacs-lsp/lsp-mode/issues/3173
+  (lsp-completion-provider :none)
 
   :init
 
@@ -683,10 +729,6 @@ buffer name during each attempt to open a shell or send code to it."
 
     ;; lsp-ui-peek
     ;; (lsp-ui-peek-enable t)
-
-    ;; set 'lsp-completion-provider' to :none as described here:
-    ;; https://github.com/emacs-lsp/lsp-mode/issues/3173
-    (lsp-completion-provider :none)
 
     :config
 
@@ -724,6 +766,16 @@ buffer name during each attempt to open a shell or send code to it."
     ;; (lsp-treemacs-sync-mode 1)
     )
 
+  ;; add consult-lsp
+  (use-package consult-lsp
+    :straight
+    (consult-lsp :type git
+	 :host github
+	 :repo "gagbo/consult-lsp"
+	 )
+    )
+  
+
   ;; NOTE: this throws an error
   ;; trying out code folding support with lsp mode
   ;; (use-package lsp-origami
@@ -731,11 +783,6 @@ buffer name during each attempt to open a shell or send code to it."
   ;;   (lsp-origami :fetcher github :repo "emacs-lsp/lsp-origami.el" )
   ;;   :commands lsp-origami-try-enable
   ;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
-
-  ;; which-key integration
-  (with-eval-after-load 'lsp-mode
-    (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration))
-
 
   ;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
   ;;; 'lsp-completion-provider' to :none as described in
@@ -758,6 +805,7 @@ buffer name during each attempt to open a shell or send code to it."
 
   ;; instead of the above, simply make sure company-capf with yasnippet
   ;; is on top in lsp-enabled buffers
+
   :hook (
 	 (lsp-mode
 	  . (lambda ()

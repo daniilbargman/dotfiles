@@ -59,6 +59,7 @@
 !.config/herbstluftwm/
 !.config/lightdm/
 !.config/i3/
+!.config/oauth2ms/
 .config/i3/i3-gaps
 !.config/polybar/
 !.config/rofi/

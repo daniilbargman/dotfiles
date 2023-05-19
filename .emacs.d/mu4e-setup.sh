@@ -35,6 +35,10 @@ function error_exit {
     append_error
 }
 
+###############################################################################
+
+### MU4E ITSELF ###
+
 ## VERSION TO USE
 VERSION=1.8
 
@@ -67,4 +71,24 @@ cd mu
 # sudo make install
 meson build && ninja -C build
 
-#
+###############################################################################
+
+### OAUTH SUPPORT (FOR OUTLOOK) ###
+
+# see https://sites.uw.edu/bxf4/2022/09/01/getting-uw-outlook-365-oauth2-to-work-with-emacs-mu4e-mbsync-and-msmtp/
+ 
+# dependencies
+sudo apt-get install -y \
+     python3-pyxdg python3-msal python3-gnupg libsasl2-modules-kdexoauth2
+
+# install oauth2ms and put on %PATH
+cd ~/.git-clones
+git clone https://github.com/harishkrupo/oauth2ms
+cd oauth2ms
+pip install -r requirements.txt
+sudo ln -s $HOME/.git-clones/oauth2ms/oauth2ms /usr/local/bin/
+
+# link wrapper script to path as well
+sudo ln -s $HOME/.emacs.d/oauth2ms_wrapper /usr/local/bin/
+
+# done.
