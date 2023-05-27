@@ -182,7 +182,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
        . (lambda ()
 	   (dbargman/org-roam-capture-in-background
 	    `("e" "email note" entry
-	      (file ,(dbargman/org-capture-get-template-path "email"))
+	      (file ,(dbargman/org-capture-get-template "email"))
 	      :target (file+head "inbox.org" "#+title: inbox\n")
 	      :prepend
 	      :immediate-finish
@@ -275,14 +275,14 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 
 	  ;; project-linked node
 	  ("t" "task" plain
-	   (file ,(dbargman/org-capture-get-template-path "task"))
+	   (file ,(dbargman/org-capture-get-template "task"))
 	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
 	   :jump-to-captured
 	   )
 
 	  ;; project-linked node from email
 	  ("e" "task from email" plain
-	   (file ,(dbargman/org-capture-get-template-path
+	   (file ,(dbargman/org-capture-get-template
 		   "task-from-email"))
 	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
 	   :jump-to-captured
@@ -342,11 +342,32 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
    (research
     . (
 
+       ;;; bibliography management
+
+       ;; directory for bibliographic notes
+       (setq
+	dbargman/research-markups-dir "markups"
+	)
+
+       ;; propagate the same directory to noter and citar
+       (setq
+	citar-org-roam-subdir dbargman/research-markups-dir
+	org-noter-check-paths (expand-file-name
+			       dbargman/research-markups-dir
+			       org-roam-directory)
+	)
+
+       ;; make sure citar org roam uses the "m" template
+       (setq citar-org-roam-capture-template-key "m")
+
+
+       ;;; org-agenda settings
+
        ;; list of org-roam project filetags to add to org-agenda
        (setq
 	dbargman/org-roam-node-agenda-tags
 	'(
-	  "SOLID1" "SOLID2" "SOLID3" "UCL" "PhD" "research" "philosophy"
+	  "inbox" "PhD" "research" "philosophy" "misc"
 	  )
 	)
 
@@ -397,14 +418,14 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 
 	  ;; project-linked node
 	  ("t" "task" plain
-	   (file ,(dbargman/org-capture-get-template-path "task"))
+	   (file ,(dbargman/org-capture-get-template "task"))
 	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
 	   :jump-to-captured
 	   )
 
 	  ;; project-linked node from email
 	  ("n" "note from email" plain
-	   (file ,(dbargman/org-capture-get-template-path
+	   (file ,(dbargman/org-capture-get-template
 		   "note-from-email"))
 	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
 	   :jump-to-captured
@@ -412,7 +433,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 
 	  ;; project-linked node from email
 	  ("e" "task from email" plain
-	   (file ,(dbargman/org-capture-get-template-path
+	   (file ,(dbargman/org-capture-get-template
 		   "task-from-email"))
 	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
 	   :jump-to-captured
@@ -435,7 +456,29 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	   :jump-to-captured
 	   )
 
+
+	  ;; template for bibliographic notes
+          ("m" "document markup" plain
+	   (file ,(dbargman/org-capture-get-template "document-note"))
+	   :target
+	   (file+head
+	    ,(concat dbargman/research-markups-dir
+		     "/${slug}.org")
+	    ,(concat
+	      "#+title: ${note-title}, ${title}\n"
+	      "#+filetags: ${project-tag} ${citar-keywords}\n"
+	      "#+PROPERTY: type ${citar-type}\n"
+	      "#+PROPERTY: authors ${citar-author}\n"
+	      )
+	    )
+
+           :unnarrowed t
+	   :empty-lines-before 1
+	   :jump-to-captured
+
+	   )
 	  )
+
 	)
 
        ;; capture into dailies
@@ -470,6 +513,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^phd: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
+	    "^sttospr: ?" "research:PhD:UCL" t t)
+	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^UCL: ?" "research:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^phil: ?" "philosophy" t t)
@@ -482,219 +527,219 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
        )
     )
 
-   ;; session context for working on statosphere
-   (statosphere
-    . (
+ ;; session context for working on statosphere
+ (statosphere
+  . (
 
-       ;; custom directory for capture templates
-       (setq
-	dbargman/org-capture-template-dir
-	"/mnt/projects/statosphere/admin/.misc/org-capture-templates")
+     ;; custom directory for capture templates
+     (setq
+      dbargman/org-capture-template-dir
+      "/mnt/projects/statosphere/admin/.misc/org-capture-templates")
 
-       ;; list of org-roam project filetags to add to org-agenda
-       (setq
-	dbargman/org-roam-node-agenda-tags
-	'("inbox" "code" "infrastructure" "datasource" "business")
+     ;; list of org-roam project filetags to add to org-agenda
+     (setq
+      dbargman/org-roam-node-agenda-tags
+      '("inbox" "code" "infrastructure" "datasource" "business")
+      )
+
+     ;; org TODO keywords
+     (setq
+      org-todo-keywords
+      '(
+
+	;; refile labels for captured emails
+	(sequence "EMAIL" "|" "CAPTURED" "DISCARDED(x@)" "DONE")
+
+	;; TODO flow for project tasks
+	(sequence "IDEA(i)" "TODO(t/!)" "|"
+		  "DISCARDED(c@/!)" "DONE(d/!)")
+
 	)
+      )
 
-       ;; org TODO keywords
-       (setq
-	org-todo-keywords
-	'(
+     ;; org agenda files
+     (setq org-agenda-files (dbargman/org-roam-agenda-files))
+     (add-hook
+      'after-save-hook
+      '(lambda ()
+	 (when (string-equal major-mode "org-mode")
+	   (setq org-agenda-files (dbargman/org-roam-agenda-files)))
+	 )
+      )
 
-	  ;; refile labels for captured emails
-	  (sequence "EMAIL" "|" "CAPTURED" "DISCARDED(x@)" "DONE")
-
-	  ;; TODO flow for project tasks
-	  (sequence "IDEA(i)" "TODO(t/!)" "|"
-		    "DISCARDED(c@/!)" "DONE(d/!)")
-
+     ;; org agenda views
+     (setq
+      org-columns-default-format-for-agenda " %3PRIORITY %TODO %50ITEM %25CATEGORY"
+      org-agenda-custom-commands
+      '(
+	("t" . "Various filters for TODO categories")
+	("tg" "Immediate TODOs for code base and infrastructure"
+	 (
+	  (todo "EMAIL")
+	  (tags-todo "+code-TODOtree")
+	  (tags-todo "+code+TODOtree")
+	  (tags-todo "+infrastructure-TODOtree")
+	  (tags-todo "+infrastructure+TODOtree")
 	  )
-	)
-
-       ;; org agenda files
-       (setq org-agenda-files (dbargman/org-roam-agenda-files))
-       (add-hook
-	'after-save-hook
-	'(lambda ()
-	   (when (string-equal major-mode "org-mode")
-	     (setq org-agenda-files (dbargman/org-roam-agenda-files)))
-	   )
-	)
-
-       ;; org agenda views
-       (setq
-        org-columns-default-format-for-agenda " %3PRIORITY %TODO %50ITEM %25CATEGORY"
-        org-agenda-custom-commands
-	'(
-	  ("t" . "Various filters for TODO categories")
-	  ("tg" "Immediate TODOs for code base and infrastructure"
-	   (
-	    (todo "EMAIL")
-	    (tags-todo "+code-TODOtree")
-	    (tags-todo "+code+TODOtree")
-	    (tags-todo "+infrastructure-TODOtree")
-	    (tags-todo "+infrastructure+TODOtree")
-	    )
-	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down timestamp-down)
-	     )
-	    )
-	   )
-	  ("te" todo "EMAIL")
-	  ("tc" "Code base TODOs"
-	   (
-	    (tags-todo "+code-TODOtree")
-	    (tags-todo "+code+TODOtree")
-	    )
-	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down)
-	     )
-	    )
-	   )
-	  ("ti" "Infrastructure TODOs"
-	   (
-	    (tags-todo "+infrastructure-TODOtree")
-	    (tags-todo "+infrastructure+TODOtree")
-	    )
-	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down)
-	     )
-	    )
-	   )
-	  ("tb" "Business TODOs"
-	   (
-	    (tags-todo "+business-TODOtree")
-	    (tags-todo "+business+TODOtree")
-	    )
-	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down)
-	     )
-	    )
-	   )
-	  ("td" tags-todo "datasources")
-	  ("ta" "All TODOs"
-	   (
-	    (tags-todo "-TODOtree")
-	    (tags-todo "+TODOtree")
-	    )
-	   ((org-agenda-sorting-strategy
-	     '(todo-state-down priority-down)
-	     )
-	    )
+	 ((org-agenda-sorting-strategy
+	   '(todo-state-down priority-down timestamp-down)
 	   )
 	  )
-	)
-
-       ;; capture templates for org-roam
-       (setq
-
-	;; capture into org-roam
-	org-roam-capture-templates
-	`(
-
-	  ;; default template
-	  ("g" "generic" plain "%?"
-	   :target
-	   (file+head
-	    "%<%Y%m%d%H%M%S>-${slug}.org"
-	    ,(concat
-	      "#+title: ${title}\n"
-	      "#+category: ${title}\n"
-	      "#+filetags: ${project-tag}"
-	      )
-	    )
-	   :unnarrowed t
-	   :jump-to-captured
-	   )
-
-	  ;; project-linked node
-	  ("t" "task" plain
-	   (file ,(dbargman/org-capture-get-template-path "task"))
-	   :target
-	   (file "%<%Y%m%d%H%M%S>-${slug}.org")
-	   :jump-to-captured
-	   )
-
-	  ;; project-linked node from email
-	  ("e" "task from email" plain
-	   (file ,(dbargman/org-capture-get-template-path
-		   "task-from-email"))
-	   :target
-	   (file "%<%Y%m%d%H%M%S>-${slug}.org")
-	   :jump-to-captured
-	   )
-
-	  ;; project-linked node from email
-	  ("b" "literate bash script using org-babel" plain
-	   (file ,(dbargman/org-capture-get-template-path
-		   "literate-bash-script"))
-	   :target
-	   (file+head
-	    "%<%Y%m%d%H%M%S>-${slug}.org"
-	    ,(concat
-	      ":PROPERTIES:\n"
-	      ":ROAM_REFS: "
-	      "file:/mnt/projects/statosphere/org-scripts/${slug}.sh\n"
-	      ":END:"
-	      )
-	    )
-	   :jump-to-captured
-	   )
-
+	 )
+	("te" todo "EMAIL")
+	("tc" "Code base TODOs"
+	 (
+	  (tags-todo "+code-TODOtree")
+	  (tags-todo "+code+TODOtree")
 	  )
-
-	;; capture into dailies
-	org-roam-dailies-capture-templates
-	`(
-	  ("s" "email with project notes" entry "\n\n* Email\n\n%?"
-	   :target
-	   (file+head+olp
-	    "%<%Y-%m-%d>.org"
-	    "#+title: %<%Y-%m-%d>\n"
-	    ("Email" "Notes")
-	    )
-	   )
-
-	  ("d" "email with a data source" entry "\n\n* Email\n\n%?"
-	   :target
-	   (file+head+olp
-	    "%<%Y-%m-%d>.org"
-	    "#+title: %<%Y-%m-%d>\n"
-	    ("Email" "Data sources")
-	    )
-	   )
-
-	  ;; progress notes
-	  ("p" "Progress note" entry "\n\n* Progress notes\n\n%?"
-	   :target
-	   (file+head+olp
-	    "%<%Y-%m-%d>.org"
-	    "#+title: %<%Y-%m-%d>\n"
-	    ("Progress notes")
-	    )
+	 ((org-agenda-sorting-strategy
+	   '(todo-state-down priority-down)
 	   )
 	  )
-
-	)
-
-       ;; rules for capturing emails from mu4e into org-roam
-       (setq
-	dbargman/email-capture-rules
-	`(
-	  ,(dbargman/capture-rules-by-subject-prefix
-	    "^sttospr: ?" "PRE_MVP" t t)
-	  ,(dbargman/capture-rules-by-subject-prefix
-	    "^datasource: ?" "POST_MVP" t t)
+	 )
+	("ti" "Infrastructure TODOs"
+	 (
+	  (tags-todo "+infrastructure-TODOtree")
+	  (tags-todo "+infrastructure+TODOtree")
 	  )
+	 ((org-agenda-sorting-strategy
+	   '(todo-state-down priority-down)
+	   )
+	  )
+	 )
+	("tb" "Business TODOs"
+	 (
+	  (tags-todo "+business-TODOtree")
+	  (tags-todo "+business+TODOtree")
+	  )
+	 ((org-agenda-sorting-strategy
+	   '(todo-state-down priority-down)
+	   )
+	  )
+	 )
+	("td" tags-todo "datasources")
+	("ta" "All TODOs"
+	 (
+	  (tags-todo "-TODOtree")
+	  (tags-todo "+TODOtree")
+	  )
+	 ((org-agenda-sorting-strategy
+	   '(todo-state-down priority-down)
+	   )
+	  )
+	 )
+	)
+      )
+
+     ;; capture templates for org-roam
+     (setq
+
+      ;; capture into org-roam
+      org-roam-capture-templates
+      `(
+
+	;; default template
+	("g" "generic" plain "%?"
+	 :target
+	 (file+head
+	  "%<%Y%m%d%H%M%S>-${slug}.org"
+	  ,(concat
+	    "#+title: ${title}\n"
+	    "#+category: ${title}\n"
+	    "#+filetags: ${project-tag}"
+	    )
+	  )
+	 :unnarrowed t
+	 :jump-to-captured
+	 )
+
+	;; project-linked node
+	("t" "task" plain
+	 (file ,(dbargman/org-capture-get-template "task"))
+	 :target
+	 (file "%<%Y%m%d%H%M%S>-${slug}.org")
+	 :jump-to-captured
+	 )
+
+	;; project-linked node from email
+	("e" "task from email" plain
+	 (file ,(dbargman/org-capture-get-template
+		 "task-from-email"))
+	 :target
+	 (file "%<%Y%m%d%H%M%S>-${slug}.org")
+	 :jump-to-captured
+	 )
+
+	;; project-linked node from email
+	("b" "literate bash script using org-babel" plain
+	 (file ,(dbargman/org-capture-get-template
+		 "literate-bash-script"))
+	 :target
+	 (file+head
+	  "%<%Y%m%d%H%M%S>-${slug}.org"
+	  ,(concat
+	    ":PROPERTIES:\n"
+	    ":ROAM_REFS: "
+	    "file:/mnt/projects/statosphere/org-scripts/${slug}.sh\n"
+	    ":END:"
+	    )
+	  )
+	 :jump-to-captured
+	 )
+
 	)
 
-       ;; refresh org-mode buffers
-       (dbargman/global-org-mode-restart)
+      ;; capture into dailies
+      org-roam-dailies-capture-templates
+      `(
+	("s" "email with project notes" entry "\n\n* Email\n\n%?"
+	 :target
+	 (file+head+olp
+	  "%<%Y-%m-%d>.org"
+	  "#+title: %<%Y-%m-%d>\n"
+	  ("Email" "Notes")
+	  )
+	 )
 
-       )
-    )
-   )
+	("d" "email with a data source" entry "\n\n* Email\n\n%?"
+	 :target
+	 (file+head+olp
+	  "%<%Y-%m-%d>.org"
+	  "#+title: %<%Y-%m-%d>\n"
+	  ("Email" "Data sources")
+	  )
+	 )
+
+	;; progress notes
+	("p" "Progress note" entry "\n\n* Progress notes\n\n%?"
+	 :target
+	 (file+head+olp
+	  "%<%Y-%m-%d>.org"
+	  "#+title: %<%Y-%m-%d>\n"
+	  ("Progress notes")
+	  )
+	 )
+	)
+
+      )
+
+     ;; rules for capturing emails from mu4e into org-roam
+     (setq
+      dbargman/email-capture-rules
+      `(
+	,(dbargman/capture-rules-by-subject-prefix
+	  "^sttospr: ?" "PRE_MVP" t t)
+	,(dbargman/capture-rules-by-subject-prefix
+	  "^datasource: ?" "POST_MVP" t t)
+	)
+      )
+
+     ;; refresh org-mode buffers
+     (dbargman/global-org-mode-restart)
+
+     )
+  )
+ )
  )
 
 

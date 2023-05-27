@@ -202,6 +202,10 @@ buffer name during each attempt to open a shell or send code to it."
 
   :config
 
+  ;; use consult for region completion (should enable completions for
+  ;; evil's ":" prompt)
+  (setq completion-in-region-function 'consult-completion-in-region)
+
   ;; when running yank-pop in visual mode, remove selected text prior.
   (defun dbargman/consult-replace-selection-from-kill-ring ()
     "Replace visual selection with an item selected from the kill-ring."

@@ -734,15 +734,29 @@
 
   )
 
-;;; LaTeX keybindings
+;;; research keybindings
 
-(with-eval-after-load "latex"
+(with-eval-after-load "research"
+
 
   ;; launch ebib
   (global-set-key (kbd "C-c b") 'ebib)
 
-  ;; from org-mode, export to PDF with a keybinding
+
+  ;; org-mode keybindings
   (with-eval-after-load "org"
+
+    ;; citation functions with citar etc
+    (define-key org-mode-map (kbd "C-c c i")
+		'citar-insert-citation)
+    (define-key org-mode-map (kbd "C-c c d")
+		'citar-org-delete-citation)
+    (define-key org-mode-map (kbd "C-c c n")
+		'citar-open-notes)
+    (define-key org-mode-map (kbd "C-c n c")
+		'citar-open-notes)
+
+    ;; export to PDF with a keybinding
     (define-key org-mode-map (kbd "C-c C-x C-p")
 		'dbargman/org-latex-export-to-pdf)
     )

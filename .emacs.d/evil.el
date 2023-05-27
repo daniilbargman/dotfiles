@@ -55,6 +55,9 @@
 
   ))
 
+;; use emacs state in minibuffer
+(add-hook 'minibuffer-setup-hook #'evil-emacs-state)
+
 ;; compatibility package for use in other modes
 (use-package evil-collection
   :after evil

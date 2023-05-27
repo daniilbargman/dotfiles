@@ -87,17 +87,16 @@
   :ensure t
   :custom
   (company-org-block-edit-style 'auto) ;; 'auto, 'prompt, or 'inline
-  :hook (
-	 (org-mode
-	  . (lambda ()
-	      (make-local-variable 'company-backends)
-	      (add-to-list
-	       'company-backends
-	       (company-mode/backend-with-yas 'company-org-block)
-	       )
+  :hook (org-mode
+	 . (lambda ()
+	     (make-local-variable 'company-backends)
+	     (add-to-list
+	      'company-backends
+	      (company-mode/backend-with-yas 'company-org-block)
 	      )
-	  )
+	     )
 	 )
+
   )
 
 ;; ;;; reference management
@@ -118,9 +117,9 @@
   (require 'org-roam-dailies)
   (org-roam-db-autosync-enable)
 
-  ;; restart org mode when visiting an org-roam buffer to refresh
-  ;; settings
-  (add-hook 'org-roam-mode-hook 'org-mode-restart)
+  ;; ;; restart org mode when visiting an org-roam buffer to refresh
+  ;; ;; settings
+  ;; (add-hook 'org-roam-mode-hook 'org-mode-restart)
 
   )
 
@@ -140,6 +139,7 @@
    ;; ;; Display org-roam buffers right after non-org-roam buffers
    ;; ;; in consult-buffer (and not down at the bottom)
    ;; (consult-org-roam-buffer-after-buffers t)
+
    :config
    ;; suppress previewing for certain functions
    (consult-customize
@@ -199,9 +199,6 @@
  )
 
 
-(plist-put org-format-latex-options :scale 1.5)
-
-
 ;; prettify org-mode bullets
 (use-package org-superstar
   :hook (org-mode . org-superstar-mode)
@@ -231,43 +228,6 @@
     )
   )
 
-;; export org-LaTeX to PDF without the extra visual clutter
-(defun dbargman/org-latex-export-to-pdf ()
-  "Export Org buffer to a latex PDF, bypassing interactive menus.
-
-This function is a shorthand for 'org-latex-export-to-pdf' which
-bypasses two distractions:
-
-1. No interactive export menu is presented.
-2. No additional confirmation prompts pop up when a PDF is re-generated.
-
-For the second point this function relies on 'auto-revert-mode'."
-  (interactive)
-  (let* (
-	 ;; this command exports to PDF asynchronously and returns the
-	 ;; file name
-	 (pdf-preview-file (org-latex-export-to-pdf))
-	 (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
-	 (pdf-preview-window
-	  (when pdf-preview-buffer
-	    (get-buffer-window pdf-preview-buffer)
-	    )
-	  )
-	 )
-
-    ;; ;; if the buffer is visible, do nothing
-    (unless pdf-preview-window
-
-      ;; if a buffer exists, show it in a vertical split
-      (if pdf-preview-buffer
-	  (switch-to-buffer-other-window pdf-preview-buffer)
-	(evil-window-vsplit nil pdf-preview-file)
-	)
-      )
-
-    )
-  )
-
 ;; helper: get string from file
 (defun dbargman/contents-of-file (filePath)
   "Return contents of file under FILEPATH."
@@ -283,7 +243,7 @@ NODE-TITLE can be a title or an alias."
   (org-roam-node-file (org-roam-node-from-title-or-alias node-title)))
 
 ;; get a path to a capture template file
-(defun dbargman/org-capture-get-template-path (name)
+(defun dbargman/org-capture-get-template (name)
   "Get full path to a capture template file.
 
 The template must be an Org file in 'dbargman/org-capture-template-dir'.

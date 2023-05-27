@@ -346,9 +346,6 @@
 ;; customizations for markdown mode
 (load-config-file "markdown.el")
 
-;; customizations for LaTeX
-(load-config-file "latex.el")
-
 ;; YAML integration
 (load-config-file "yaml.el")
 
@@ -369,6 +366,9 @@
 
 ;; email client
 (load-config-file "email.el")
+
+;; customizations for research functionality
+(load-config-file "research.el")
 
 ;; user-specific / pc-specific / session-specific configurations
 (load-config-file "personalizations.el")
