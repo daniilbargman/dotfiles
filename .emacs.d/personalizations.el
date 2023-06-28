@@ -104,6 +104,7 @@
        ;; 	,(dbargman/contents-of-file
        ;; 	  "/mnt/projects/statosphere/admin/email/default-signature.html"))
        (mu4e-compose-reply-to-address . "daniil.bargman.22@ucl.ac.uk")
+       (mu4e-attachment-dir . "~/Research/bibliography/PDFs/")
        ;; (send-mail-function . smtpmail-send-it)
        ;; (message-send-mail-function . smtpmail-send-it)
        (smtpmail-default-smtp-server . "smtp.office365.com")
@@ -342,11 +343,11 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
    (research
     . (
 
-       ;;; bibliography management
+;;; bibliography management
 
        ;; directory for bibliographic notes
-       (setq
-	dbargman/research-markups-dir "markups"
+       (custom-set-variables
+	'(dbargman/research-markups-dir "markups")
 	)
 
        ;; propagate the same directory to noter and citar
@@ -358,17 +359,15 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	)
 
        ;; make sure citar org roam uses the "m" template
-       (setq citar-org-roam-capture-template-key "m")
+       (setq citar-org-roam-capture-template-key "b")
 
 
-       ;;; org-agenda settings
+;;; org-agenda settings
 
        ;; list of org-roam project filetags to add to org-agenda
        (setq
 	dbargman/org-roam-node-agenda-tags
-	'(
-	  "inbox" "PhD" "research" "philosophy" "misc"
-	  )
+	'("inbox" "PhD" "PhD1" "PhD2" "PhD3" "research" "philosophy" "misc")
 	)
 
        ;; org agenda files
@@ -396,38 +395,160 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  )
 	)
 
+       (setq
+	org-columns-default-format-for-agenda " %9CATEGORY %85Agenda_Text "
+	org-agenda-custom-commands
+	'(
+	  ("r" . "Research notes")
+	  ("rp" "PhD notes"
+	   (
+	    (tags "+PhD1+LEVEL=1")
+	    (tags "PhD2+LEVEL=1")
+	    (tags "PhD3+LEVEL=1")
+	    (tags "PhD+LEVEL=1")
+	    )
+	   (
+	    (org-agenda-sorting-strategy '(category-up ts-down))
+	    )
+	   )
+	  ("ro" "Other notes"
+	   (
+	    (tags "research")
+	    (tags "philosophy")
+	    (tags "misc")
+	    )
+	   (
+	    (org-agenda-sorting-strategy '(category-down timestamp-down))
+	    )
+	   )
+	  )
+	)
 
        ;; capture templates for org-roam
        (setq
 	org-roam-capture-templates
 	`(
 
-	  ;; default template
-	  ("g" "generic" plain "%?"
+	  ;; index file for a new project
+	  ("i" "unique index file for a new research project" plain
+	   (file ,(dbargman/org-capture-get-template "project-master"))
 	   :target
 	   (file+head
-	    "%<%Y%m%d%H%M%S>-${slug}.org"
+	    "${title}.org"
 	    ,(concat
-	      "#+title: ${title}\n"
-	      "#+category: ${title}\n"
+	      "#+EXPORT_FILE_NAME: "
+	      (
+	       expand-file-name ".tmp/${slug}.tex"
+	       dbargman/research-export-dir
+	       )
 	      )
 	    )
 	   :unnarrowed t
 	   :jump-to-captured
 	   )
 
-	  ;; project-linked node
-	  ("t" "task" plain
-	   (file ,(dbargman/org-capture-get-template "task"))
-	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
+	  ;; default template
+	  ("r" "research note" plain
+	   (file ,(dbargman/org-capture-get-template "research-note"))
+	   :target
+	   (file+head
+	    "%<%Y%m%d%H%M%S>-${slug}.org"
+	    ,(concat
+	      "#+SETUPFILE: "
+	      (
+	       expand-file-name "${project-tag-lower}.org"
+	       org-roam-directory
+	       )
+	      "\n"
+	      "#+EXPORT_FILE_NAME: "
+	      (
+	       expand-file-name
+	       ".tmp/${project-tag-lower}-${slug}.tex"
+	       dbargman/research-export-dir
+	       )
+	      )
+	    )
+	   :unnarrowed t
 	   :jump-to-captured
 	   )
 
 	  ;; project-linked node from email
 	  ("n" "note from email" plain
 	   (file ,(dbargman/org-capture-get-template
-		   "note-from-email"))
-	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
+		   "research-note-from-email"))
+	   :target
+	   (file+head
+	    "%<%Y%m%d%H%M%S>-${slug}.org"
+	    ,(concat
+	      "#+SETUPFILE: "
+	      (
+	       expand-file-name "${project-tag-lower}.org"
+	       org-roam-directory
+	       )
+	      "\n"
+	      "#+EXPORT_FILE_NAME: "
+	      (
+	       expand-file-name
+	       ".tmp/${project-tag-lower}-${slug}.tex"
+	       dbargman/research-export-dir
+	       )
+	      )
+	    )
+	   :unnarrowed t
+	   :jump-to-captured
+	   )
+
+	  ;; bibliographic note
+          ("b" "bibliographic note" plain
+	   (file ,(dbargman/org-capture-get-template "bibliographic-note"))
+	   :target
+	   (file+head
+	    ,(expand-file-name
+	      "${slug}.org"
+	      dbargman/research-markups-dir)
+	    ,(concat
+	      "#+SETUPFILE: "
+	      (
+	       expand-file-name "${project-tag-lower}.org"
+	       org-roam-directory
+	       )
+	      "\n"
+	      "#+EXPORT_FILE_NAME: "
+	      (
+	       expand-file-name
+	       ".tmp/${project-tag-lower}-${slug}.tex"
+	       dbargman/research-export-dir
+	       )
+	      "\n"
+	      "#+PROPERTY: NOTER_DOCUMENT "
+	      (
+	       expand-file-name
+	       "${citar-file}"
+	       dbargman/research-bibliography-pdf-dir
+	       )
+	      )
+	    )
+
+           :unnarrowed t
+	   :jump-to-captured
+
+	   )
+
+	  ;; project-linked node
+	  ("t" "task" plain
+	   (file ,(dbargman/org-capture-get-template "task"))
+	   :target
+	   (file+head
+	    "%<%Y%m%d%H%M%S>-${slug}.org"
+	    ,(concat
+	      "#+SETUPFILE: "
+	      (
+	       expand-file-name "${project-tag-lower}.org"
+	       org-roam-directory
+	       )
+	      )
+	    )
+	   :unnarrowed t
 	   :jump-to-captured
 	   )
 
@@ -435,48 +556,21 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  ("e" "task from email" plain
 	   (file ,(dbargman/org-capture-get-template
 		   "task-from-email"))
-	   :target (file "%<%Y%m%d%H%M%S>-${slug}.org")
-	   :jump-to-captured
-	   )
-
-
-	  ;; default template
-	  ("i" "unique index file for a new research project" plain "%?"
 	   :target
 	   (file+head
-	    "${slug}.org"
+	    "%<%Y%m%d%H%M%S>-${slug}.org"
 	    ,(concat
-	      "#+title: ${title}\n"
-	      "#+category: ${title}\n"
-	      "#+filetags: ${project-tag}\n"
-	      "#+TODO: TODO(t) IDEA(i) | DISCARDED(c) DONE(d)\n"
+	      "#+SETUPFILE: "
+	      (
+	       expand-file-name "${project-tag-lower}.org"
+	       org-roam-directory
+	       )
 	      )
 	    )
-	   :empty-lines-before 1
+	   :unnarrowed t
 	   :jump-to-captured
 	   )
 
-
-	  ;; template for bibliographic notes
-          ("m" "document markup" plain
-	   (file ,(dbargman/org-capture-get-template "document-note"))
-	   :target
-	   (file+head
-	    ,(concat dbargman/research-markups-dir
-		     "/${slug}.org")
-	    ,(concat
-	      "#+title: ${note-title}, ${title}\n"
-	      "#+filetags: ${project-tag} ${citar-keywords}\n"
-	      "#+PROPERTY: type ${citar-type}\n"
-	      "#+PROPERTY: authors ${citar-author}\n"
-	      )
-	    )
-
-           :unnarrowed t
-	   :empty-lines-before 1
-	   :jump-to-captured
-
-	   )
 	  )
 
 	)
@@ -551,7 +645,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	(sequence "EMAIL" "|" "CAPTURED" "DISCARDED(x@)" "DONE")
 
 	;; TODO flow for project tasks
-	(sequence "IDEA(i)" "TODO(t/!)" "|"
+	(sequence "reading(r/!)" "IDEA(i)" "TODO(t/!)" "|"
 		  "DISCARDED(c@/!)" "DONE(d/!)")
 
 	)
@@ -618,6 +712,15 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  )
 	 )
 	("td" tags-todo "datasources")
+	("tr" "Background reading"
+	 (
+	  (tags "reading")
+	  )
+	 (
+	  (org-agenda-sorting-strategy '(priority-down))
+	  (org-overriding-columns-format " %3PRIORITY %50ITEM %25CATEGORY")
+	  )
+	 )
 	("ta" "All TODOs"
 	 (
 	  (tags-todo "-TODOtree")
@@ -731,6 +834,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  "^sttospr: ?" "PRE_MVP" t t)
 	,(dbargman/capture-rules-by-subject-prefix
 	  "^datasource: ?" "POST_MVP" t t)
+	,(dbargman/capture-rules-by-subject-prefix
+	  "^data source: ?" "POST_MVP" t t)
 	)
       )
 

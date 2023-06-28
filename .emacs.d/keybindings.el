@@ -400,9 +400,14 @@
 
 (with-eval-after-load "ide"
 
-  ;; escape minibuffer with escape key
-  (define-key vertico-map (kbd "<escape>")
-    'minibuffer-keyboard-quit)
+
+  ;; when in minibuffer and in emacs state, use esc to switch to normal
+  (evil-define-key 'emacs 'minibuffer-mode-map
+    (kbd "<escape>") 'evil-normal-state)
+
+  ;; ;; escape minibuffer with escape key
+  ;; (define-key vertico-map (kbd "<escape>")
+  ;;   'minibuffer-keyboard-quit)
 
   ;; auto-complete from candidate with C-l
   (define-key vertico-map (kbd "C-l")
@@ -559,7 +564,7 @@
 
     ;; (define-key org-mode-map (kbd "C-c n") 'org-roam-map)
     (global-set-key (kbd "C-c n l") 'org-roam-buffer-toggle)
-    (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+    (global-set-key (kbd "C-c n f") 'consult-org-roam-file-find)
     (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
     (global-set-key (kbd "C-c n e") 'dbargman/capture-email-to-org-roam-node)
     (global-set-key (kbd "C-c d") 'org-roam-dailies-map)

@@ -590,6 +590,11 @@ ARGS are ignored but are a requirement for this advice."
 	)
       )
 
+     ;; if the name is "bibliography", launch ebib
+     ((string-equal tab-name "bibliography")
+      (ebib)
+      )
+
      ;; default: try to switch to treemacs workspace by the same name
      (t
       (treemacs-do-switch-workspace

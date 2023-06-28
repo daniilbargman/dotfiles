@@ -117,10 +117,6 @@
   (require 'org-roam-dailies)
   (org-roam-db-autosync-enable)
 
-  ;; ;; restart org mode when visiting an org-roam buffer to refresh
-  ;; ;; settings
-  ;; (add-hook 'org-roam-mode-hook 'org-mode-restart)
-
   )
 
 ;; consult integration
@@ -191,6 +187,9 @@
  ;; always show file tags in the agenda buffer
  org-agenda-show-inherited-tags 'always
 
+ ;; always inherit file-level properties
+ org-use-property-inheritance t
+
 )
 (custom-set-variables
  '(org-priority-highest 1)
@@ -227,6 +226,10 @@
       )
     )
   )
+
+;; restart org mode after capturing from template
+(add-hook 'org-capture-after-finalize-hook
+	  'dbargman/global-org-mode-restart)
 
 ;; helper: get string from file
 (defun dbargman/contents-of-file (filePath)
@@ -288,16 +291,32 @@ whose #+filetags match one of 'dbargman/org-roam-node-agenda-tags'"
 (defun org-roam-node-project-tag (_)
   "Interactively select a project tag in an org-roam node template.
 
-Adding '${project-tag}' into an org-roam capture template should trigger
-a 'completing-read' interface with candidates pre-populated from the
-value of 'dbargman/org-roam-node-agenda-tags'. When the capture template
-is called from within an active project node, the input will be
+Adding '${project-tag}' or '${project-tag-lower}' (for lower-case) into
+an org-roam capture template should trigger a 'completing-read'
+interface with candidates pre-populated from the value of
+'dbargman/org-roam-node-agenda-tags'. When the capture template is
+called from within an active project node, the input will be
 prepopulated with the (first) agenda filetag of the source node."
-  (completing-read
-   "Enter a project tag for the node: "
-   dbargman/org-roam-node-agenda-tags
-   )
+  (defvar-local node-project-tag nil)
+  (defvar-local node-project-tag-lower nil)
+  (or node-project-tag
+      (progn
+	(setq-local
+	 node-project-tag
+	 (completing-read
+	  "Enter a project tag for the node: "
+	  dbargman/org-roam-node-agenda-tags
+	  )
+	 )
+	(setq-local node-project-tag-lower (downcase node-project-tag))
+	node-project-tag)
+      )
   )
+
+;; lower-case version of the project tag
+(defun org-roam-node-project-tag-lower (node)
+  (progn (funcall 'org-roam-node-project-tag node) node-project-tag-lower))
+
 
 ;; run a non-interactive capture to an org-roam node
 (defun dbargman/org-roam-capture-in-background (template info)

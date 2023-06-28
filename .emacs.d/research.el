@@ -49,6 +49,13 @@
   :type 'string
   :safe (lambda (_) t))
 
+(defcustom dbargman/research-bibliography-pdf-dir
+  (expand-file-name "PDFs" dbargman/research-bibliography-dir)
+  "Direcory for storing bibliography files."
+  :group 'dbargman/research
+  :type 'string
+  :safe (lambda (_) t))
+
 (defcustom dbargman/research-bibliography-files
   (directory-files dbargman/research-bibliography-dir t ".*\.bib$")
   "list of .bib files in the research directory."
@@ -65,9 +72,19 @@
 
 (defcustom dbargman/research-markups-dir
   (expand-file-name "markups" org-roam-directory)
-  "Direcory for storing bibliography files."
+  "Direcory for storing bibliography files.
+
+Created as a subfolder inside 'org-roam-directory', unless an absolute
+  path is specified."
   :group 'dbargman/research
   :type 'string
+  :set (lambda
+	 (symbol value)
+	 (set-default-toplevel-value
+	  symbol
+	  (expand-file-name value org-roam-directory)
+	  )
+	 )
   :safe (lambda (_) t))
 
 
@@ -98,7 +115,17 @@
   (ebib-bibtex-dialect 'biblatex)
   (ebib-default-directory dbargman/research-bibliography-dir)
   (ebib-preload-bib-files dbargman/research-bibliography-files)
-  (ebib-bib-search-dirs dbargman/research-bibliography-dir)
+  (ebib-bib-search-dirs
+   (list
+    "~/Downloads"
+    (expand-file-name "downloads" dbargman/research-bibliography-dir)
+    )
+   )
+  (ebib-file-search-dirs
+   (list
+    (expand-file-name "PDFs" dbargman/research-bibliography-dir)
+    )
+   )
   (ebib-truncate-file-names nil)
   )
 
@@ -130,6 +157,7 @@
   ;; identical to that of `org-cite-global-bibliography'. For me, I have
   ;; all my bib file(s) as a list of strings in `kb/bib-files'.
   (citar-bibliography dbargman/research-bibliography-files)
+  (citar-library-paths (list dbargman/research-bibliography-pdf-dir))
 
   ;; setup completions for citar using capf
   :hook
@@ -221,10 +249,6 @@
     (citar-open-note-function 'orb-citar-edit-note)
 
 
-    ;; note title template (can be overridden in personalizations too)
-    (setq citar-org-roam-note-title-template
-	  "${author editor} (${date})")
-
     :config
 
     (citar-org-roam-setup)
@@ -236,6 +260,7 @@
   (setq citar-org-roam-template-fields
 	(append citar-org-roam-template-fields
 		'(
+		  (:citar-document-title "title")
 		  (:citar-citekey "citekey")
 		  (:citar-keywords "keywords")
 		  (:citar-file "file")
@@ -244,6 +269,9 @@
 		)
 	)
 
+  ;; note title template (can be overridden in personalizations too)
+  (setq citar-org-roam-note-title-template
+	"${author editor} (${year})")
 
 
   ;; change roam directory for notes per individual session config
