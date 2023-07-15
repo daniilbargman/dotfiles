@@ -1,0 +1,14 @@
+#+TITLE: ${title}
+#+CATEGORY: TODO
+#+FILETAGS: ${project-tag}
+#+PROPERTY: Agenda_Text ${title}
+
+* TODO ${title}
+:PROPERTIES:
+:refile/template: t
+:refile/remove-tags: t
+:refile/keep-original: t
+:END:
+task created: %T
+
+%?

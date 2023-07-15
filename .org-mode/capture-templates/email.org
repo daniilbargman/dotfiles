@@ -1,0 +1,6 @@
+* EMAIL [[%:link][%(string-trim-left "%:subject" "${prefix}")]] %(unless (string-empty-p "${tag}") ":${tag}:")
+:PROPERTIES:
+:refile/template: e
+:refile/target-date: %(format-time-string "%Y-%m-%d" (date-to-time "%:date"))
+:END:
+received: %:date-timestamp

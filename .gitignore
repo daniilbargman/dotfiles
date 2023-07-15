@@ -12,6 +12,7 @@
 !build-gccemacs.sh
 !.emacs.d/
 !.password-store/
+!.org-mode/
 
 # in the emacs configuration folder, ignore auto-generated files and all subfolders
 .emacs.d/custom-file.el
@@ -42,6 +43,9 @@
 .vim/view/
 .vim/plugged/
 .vim/autoload/
+
+# ignore org roam database files
+.org-mode/roam-db-files/
 
 # # back up tmux statusline config file
 # !.tmux/

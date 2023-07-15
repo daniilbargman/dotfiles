@@ -402,10 +402,14 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  ("r" . "Research notes")
 	  ("rp" "PhD notes"
 	   (
-	    (tags "+PhD1+LEVEL=1")
-	    (tags "PhD2+LEVEL=1")
-	    (tags "PhD3+LEVEL=1")
-	    (tags "PhD+LEVEL=1")
+	    (tags "+PhD1+LEVEL=1-scrapped")
+	    (tags "+PhD1+LEVEL=1+scrapped")
+	    (tags "PhD2+LEVEL=1-scrapped")
+	    (tags "PhD2+LEVEL=1+scrapped")
+	    (tags "PhD3+LEVEL=1-scrapped")
+	    (tags "PhD3+LEVEL=1+scrapped")
+	    (tags "PhD+LEVEL=1-scrapped")
+	    (tags "PhD+LEVEL=1+scrapped")
 	    )
 	   (
 	    (org-agenda-sorting-strategy '(category-up ts-down))
@@ -454,6 +458,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	   (file+head
 	    "%<%Y%m%d%H%M%S>-${slug}.org"
 	    ,(concat
+	      "#+TITLE: ${title} | ${project-tag}: \n"
 	      "#+SETUPFILE: "
 	      (
 	       expand-file-name "${project-tag-lower}.org"
@@ -480,6 +485,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	   (file+head
 	    "%<%Y%m%d%H%M%S>-${slug}.org"
 	    ,(concat
+	      "#+TITLE: ${title} | ${project-tag}: \n"
 	      "#+SETUPFILE: "
 	      (
 	       expand-file-name "${project-tag-lower}.org"

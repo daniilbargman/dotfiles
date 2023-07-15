@@ -1,0 +1,11 @@
+#+FILETAGS: ${project-tag}
+#+CATEGORY: note
+#+OPTIONS: title:nil toc:nil
+#+PROPERTY: Agenda_Text ${title}
+
+* ${title}
+:PROPERTIES:
+:CUSTOM_ID: %(downcase "${title}")
+:END:
+
+%?

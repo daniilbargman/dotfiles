@@ -569,11 +569,7 @@ ARGS are ignored but are a requirement for this advice."
 
      ;; create a terminal in a terminal tab
      ((string-equal tab-name "terminal")
-      (let ((terminal-buffer-name "terminal")
-	    (terminal-program "/bin/bash")
-	    (terminal-init-commands
-	     '("source /mnt/projects/statosphere/config"))
-	    )
+      (let ((terminal-buffer-name "terminal"))
 	(get-or-create-terminal
 	 nil nil nil t '(lambda (term) (delete-other-windows)))
 	)

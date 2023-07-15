@@ -74,9 +74,6 @@
 (setq use-dialog-box nil)
 (setq confirm-kill-processes nil)
 
-;; shorten delay before killing emacs to 1 second
-(setq timp-kill-emacs-close-thread-delay 1)
-
 ;; add line numbers and highlight current line in minibuffer
 (global-display-line-numbers-mode t)
 (column-number-mode t)
@@ -84,6 +81,9 @@
 
 ;; don't blink the cursor
 (blink-cursor-mode 0)
+
+;; don't show cursor in inactive windows
+(custom-set-variables '(cursor-in-non-selected-windows nil))
 
 ;; make yes/no questions y/n questions
 (fset 'yes-or-no-p 'y-or-n-p)

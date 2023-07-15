@@ -113,20 +113,21 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
   ;; set default directory and use biblatex dialect by default
   :custom
   (ebib-bibtex-dialect 'biblatex)
-  (ebib-default-directory dbargman/research-bibliography-dir)
+
   (ebib-preload-bib-files dbargman/research-bibliography-files)
-  (ebib-bib-search-dirs
-   (list
-    "~/Downloads"
-    (expand-file-name "downloads" dbargman/research-bibliography-dir)
-    )
-   )
+  (ebib-bib-search-dirs (list (file-truename "~/Downloads/")))
   (ebib-file-search-dirs
    (list
     (expand-file-name "PDFs" dbargman/research-bibliography-dir)
     )
    )
   (ebib-truncate-file-names nil)
+
+  ;; this setting is only relevant when importing files into the
+  ;; database. Bib files tend to be downloaded into "~/Downloads", which
+  ;; is also the first directory in 'ebib-bib-search-dirs'.
+  (ebib-default-directory 'first-bib-dir)
+
   )
 
 ;; add biblio for reference lookup and import
@@ -179,6 +180,12 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 (with-eval-after-load "org"
 
 ;;; ORG INTEGRATION
+
+  ;; prefer user-defined labels
+  (setq org-latex-prefer-user-labels t)
+
+  ;; use biblatex as the export processor for latex
+  (setq org-cite-export-processors '((latex biblatex) (t basic)))
 
   ;; org-cite config
   (setq org-cite-global-bibliography

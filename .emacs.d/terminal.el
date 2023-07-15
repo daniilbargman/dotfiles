@@ -73,7 +73,7 @@ this prefix is set to \"vterm\",the default terminal buffer name will be
   :safe (lambda (_) t))
 
 ;; initialization commands to run when a terminal first starts
-(defcustom terminal-init-commands nil
+(defcustom terminal-init-commands '("set -o emacs")
   "Commands to initialize the terminal."
 
   :group 'terminal

@@ -1,0 +1,15 @@
+#+TITLE: %?
+#+FILETAGS: ${title}
+#+CATEGORY: index
+#+EXPORT_FILE_NAME: %(expand-file-name ".tmp/${slug}.tex" dbargman/research-export-dir)
+#+TODO: TODO(t) IDEA(i) | DISCARDED(c) DONE(d)
+#+PROPERTY: Agenda_Text Master
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage{amsthm}
+#+LATEX_HEADER: \usepackage{parskip}
+#+LATEX_HEADER: \usepackage{cleveref}
+#+LATEX_HEADER: \usepackage{stackengine}
+#+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \usepackage{geometry}
+#+LATEX_HEADER: \geometry{a4paper,left=2cm,right=2.5cm,top=2cm,bottom=2.5cm}
+

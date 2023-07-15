@@ -40,7 +40,7 @@ cfg=$BASE_DIR/daniilbargman-backups.s3cfg
 pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
 # run sync command
-s3cmd -c $cfg --recursive --follow-symlinks --skip-existing --delete-removed \
+s3cmd -c $cfg --recursive --follow-symlinks --delete-removed \
       --exclude="**/.tmp" sync ~/sync/documents "s3://daniilbargman-backups/"
 
 # delete config file

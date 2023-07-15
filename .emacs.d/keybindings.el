@@ -318,16 +318,6 @@
 
 (with-eval-after-load "terminal"
 
-  ;; explicitly map escape key to raw meta key because another mapping
-  ;; in ivy messes with this default behaviour
-  (evil-define-key 'emacs 'term-raw-map
-    (kbd "<escape>") 'term-send-raw-meta)
-  ;; (bind-key "<escape>" 'term-send-raw-meta 'term-raw-map)
-
-  ;; bind escape key in vterm-mode as well
-  (evil-define-key 'emacs 'vterm-mode-map
-    (kbd "<escape>") 'vterm-send-escape)
-
   ;; unbind numbered prefixes
   (define-key vterm-mode-map (kbd "M-1") nil)
   (define-key vterm-mode-map (kbd "M-2") nil)
@@ -339,26 +329,19 @@
   (define-key vterm-mode-map (kbd "M-8") nil)
   (define-key vterm-mode-map (kbd "M-9") nil)
 
+  ;; do not switch to background with "C-z"
+  (evil-define-key 'insert vterm-mode-map (kbd "C-z") nil)
+
+  ;; go to normal state with escape key (switching to emacs keybindings
+  ;; in vterm, so no more need to send escape for terminal vi mode)
+  (define-key vterm-mode-map (kbd "<escape>") nil)
+  (evil-define-key 'emacs vterm-mode-map
+    (kbd "<escape>") 'evil-normal-state)
+
   ;; prefix and command sequence bindings for opening terminal shells
   (global-unset-key (kbd "M-s"))
 
-  ;;; DEPRECATED IN FAVOUR OF VTERM:
-  ;; ;; use "M-s t" to open EAF terminal
-  ;; (with-eval-after-load "widgets"
-  ;;   (with-eval-after-load "evil"
-  ;;     (global-set-key (kbd "M-s t")
-  ;; 		      '(lambda() (interactive)
-  ;; 			(evil-window-split) (eaf-open-terminal)))
-  ;;   ;; map escape key to itself in EAF terminal
-  ;;   (defun eaf-send-raw-escape ()
-  ;;     "Directly send <escape> key to EAF Python side."
-  ;;     (interactive)
-  ;;     (eaf-call-async "send_key_sequence" eaf--buffer-id "M-d"))
-  ;;   (eaf-bind-key eaf-send-raw-escape "<escape>"
-  ;; 		  eaf-terminal-keybinding) ;; unbind, see more in the Wiki
-  ;;     ))
-
-  ; keybinding to open term buffer in emacs state in new window
+  ;; keybinding to open term buffer in emacs state in new window
   (global-set-key
    (kbd "M-s s")
    '(lambda (p) (interactive "P")
@@ -367,7 +350,7 @@
   ;; keybinding to send text region as commands to a terminal buffer
   (global-set-key
    (kbd "M-s M-s")
-   '(lambda (p) (interactive "P")
+   #'(lambda (p) (interactive "P")
       (get-or-create-terminal
        p nil nil nil 'evil-send-region-to-terminal)
       )
@@ -375,14 +358,14 @@
 
   ;; keybinding for pasting text from default register
   (evil-define-key 'normal vterm-mode-map
-    (kbd "p") '(lambda () (interactive)
-		   (forward-char) (vterm-yank)))
+    (kbd "p") #'(lambda () (interactive)
+		 (forward-char) (vterm-yank)))
 
   ;; keybinding for pasting text from clipboard
   (evil-define-key '(insert emacs) vterm-mode-map
     (kbd "M-v") 'vterm-yank-primary)
   (evil-define-key 'normal vterm-mode-map
-    (kbd "M-v") '(lambda () (interactive)
+    (kbd "M-v") #'(lambda () (interactive)
 		   (forward-char) (vterm-yank-primary)))
 
   ;; keybinding for pasting text from kill ring
@@ -392,72 +375,85 @@
     (kbd "M-y") '(lambda () (interactive)
 		   (forward-char) (vterm-yank-pop)))
 
+  ;; fix bug with evil collection append
+  (evil-define-key 'normal vterm-mode-map (kbd "a")
+    #'(lambda ()
+	(interactive)
+	(vterm-goto-char (+ (point) 1))
+	(call-interactively #'evil-insert))
+    )
+
+  ;; accept auto-completion (e.g. in IPython) using C-e
+  (evil-define-key '(emacs insert) vterm-mode-map
+    (kbd "C-l") #'(lambda () (interactive) (vterm-send-C-e)))
+
   )
-
-
 
 ;;; "ide-base" keybindings
 
 (with-eval-after-load "ide"
 
+  ;; in minibuffer, only use escape for switching to normal state
+  (evil-define-key 'normal minibuffer-local-map (kbd "<escape>") nil)
+  (define-key vertico-map (kbd "<escape>") 'evil-normal-state)
+  (define-key minibuffer-local-map (kbd "<escape>") 'evil-normal-state)
 
-  ;; when in minibuffer and in emacs state, use esc to switch to normal
-  (evil-define-key 'emacs 'minibuffer-mode-map
-    (kbd "<escape>") 'evil-normal-state)
-
-  ;; ;; escape minibuffer with escape key
-  ;; (define-key vertico-map (kbd "<escape>")
-  ;;   'minibuffer-keyboard-quit)
+  ;; troggle between history elements in all evil states
+  (evil-define-key '(emacs normal) minibuffer-mode-map (kbd "M-p")
+    'previous-history-element)
+  (evil-define-key '(emacs normal) minibuffer-mode-map (kbd "M-n")
+    'next-history-element)
 
   ;; auto-complete from candidate with C-l
-  (define-key vertico-map (kbd "C-l")
-    'vertico-insert)
+  (define-key vertico-map (kbd "C-l") 'vertico-insert)
 
   ;; faster scrolling with C-M-n/p
-  (define-key vertico-map (kbd "C-M-n")
-    'vertico-next-group)
-  (define-key vertico-map (kbd "C-M-p")
-    'vertico-previous-group)
+  (define-key vertico-map (kbd "C-M-n") 'vertico-next-group)
+  (define-key vertico-map (kbd "C-M-p") 'vertico-previous-group)
 
   ;; special treatment of directories when deleting subfolder
   (define-key vertico-map (kbd "<backspace>")
-    'vertico-directory-delete-char)
+	      'vertico-directory-delete-char)
   (define-key vertico-map (kbd "M-<backspace>")
-    'vertico-directory-delete-word)
+	      'vertico-directory-delete-word)
 
   ;; set embark to a universal keybinding for non-evil setups
   (define-key global-map (kbd "M-e") 'embark-act)
   (define-key global-map (kbd "M-a") 'embark-act-all)
 
   ;; use C-x C-b for embark-become in minibuffer
-  (evil-define-key '(normal insert) 'minibuffer-mode-map (kbd "C-x C-b")
-    'embark-become)
+  (evil-define-key '(normal insert) 'minibuffer-mode-map
+    (kbd "C-x C-b") 'embark-become)
 
   ;; use "n" and "N" to continue previous consult-line search
- (define-key evil-normal-state-map (kbd "n")
-	     (lambda () (interactive)
-	       (evil-search (car consult--line-history) t t)))
- (define-key evil-normal-state-map (kbd "N")
-	     (lambda () (interactive)
-	       (evil-search (car consult--line-history) nil t)))
+  (define-key evil-normal-state-map (kbd "n")
+  	      (lambda () (interactive)
+  		(evil-search (car consult--line-history) t t)))
+  (define-key evil-normal-state-map (kbd "N")
+  	      (lambda () (interactive)
+  		(evil-search (car consult--line-history) nil t)))
 
   ;; use "C-a" to show company popup in normal and insert states
-  ;; (evil-define-key '(normal insert) 'global (kbd "C-a") 'toggle-company-idle-delay)
-  (evil-define-key '(normal insert) 'global (kbd "C-a") 'company-complete)
+  (evil-define-key '(normal insert) 'global
+    (kbd "C-a") 'company-complete)
 
   ;; use "C-y" to envoke company-yasnippet specifically
-  (evil-define-key '(normal insert) 'global (kbd "C-y") 'company-yasnippet)
+  (evil-define-key '(normal insert) 'global
+    (kbd "C-y") 'company-yasnippet)
 
   ;; map tab key to yasnippet completion
-  (evil-define-key 'insert 'yas-minor-mode-map (kbd "<tab>") yas-maybe-expand)
-  (evil-define-key 'insert 'yas-minor-mode-map (kbd "TAB") yas-maybe-expand)
+  (evil-define-key 'insert 'yas-minor-mode-map
+    (kbd "<tab>") yas-maybe-expand)
+  (evil-define-key 'insert 'yas-minor-mode-map
+    (kbd "TAB") yas-maybe-expand)
 
   ;; browse kill-ring with counsel
-  (evil-define-key 'normal 'global (kbd "M-y") 'consult-yank-replace)
+  (evil-define-key 'normal 'global
+    (kbd "M-y") 'consult-yank-replace)
 
   ;; also, when in visual mode, delete highlighted text first
-  (evil-define-key 'visual 'global (kbd "M-y")
-    'dbargman/consult-replace-selection-from-kill-ring)
+  (evil-define-key 'visual 'global
+    (kbd "M-y") 'dbargman/consult-replace-selection-from-kill-ring)
 
   ;; format braces
   (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)
@@ -744,22 +740,26 @@
 (with-eval-after-load "research"
 
 
-  ;; launch ebib
-  (global-set-key (kbd "C-c b") 'ebib)
-
 
   ;; org-mode keybindings
   (with-eval-after-load "org"
 
     ;; citation functions with citar etc
-    (define-key org-mode-map (kbd "C-c c i")
-		'citar-insert-citation)
-    (define-key org-mode-map (kbd "C-c c d")
-		'citar-org-delete-citation)
-    (define-key org-mode-map (kbd "C-c c n")
-		'citar-open-notes)
-    (define-key org-mode-map (kbd "C-c n c")
-		'citar-open-notes)
+    (define-key org-mode-map (kbd "C-c c i") 'citar-insert-citation)
+    (define-key org-mode-map (kbd "C-c c d") 'citar-org-delete-citation)
+    (define-key org-mode-map (kbd "C-c c n") 'citar-open-notes)
+    (define-key org-mode-map (kbd "C-c n c") 'citar-open-notes)
+
+    ;; open node at point in org-noter 
+    (define-key org-mode-map (kbd "C-c c o") 'org-noter)
+
+    ;; ebib
+    (global-set-key (kbd "C-c c b") 'ebib) ; launch
+    (define-key ebib-index-mode-map (kbd "C-c c m")
+		'ebib-merge-bibtex-file) ; import bibtex file into DB
+
+    ;; do not quit ebib with "q"; simply minimize it as with "z"
+    (define-key ebib-index-mode-map (kbd "q") 'ebib-leave-ebib-windows)
 
     ;; export to PDF with a keybinding
     (define-key org-mode-map (kbd "C-c C-x C-p")

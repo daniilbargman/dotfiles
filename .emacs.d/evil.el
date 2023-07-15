@@ -36,6 +36,11 @@
   (setq evil-split-window-below t)
   (setq evil-search-wrap nil)  ; don't stop search at buffer end
 
+  :custom
+
+  ;; make emacs state cursor hollow
+  (evil-emacs-state-cursor 'hollow)
+
   :config (with-no-warnings
 
 

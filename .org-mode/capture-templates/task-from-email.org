@@ -1,0 +1,14 @@
+#+TITLE: ${title}
+#+CATEGORY: TODO
+#+FILETAGS: ${project-tag}
+#+PROPERTY: Agenda_Text ${title}
+
+* TODO ${title}
+:PROPERTIES:
+:refile/template: t
+:refile/remove-tags: t
+:refile/keep-original: t
+:END:
+[[%:link][email]] received: %:date-timestamp
+task created: %T
+${email-body}%?

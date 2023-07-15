@@ -1,0 +1,17 @@
+#+TITLE: ${citar-document-title}
+#+FILETAGS: ${project-tag}
+#+CATEGORY: reference
+#+PROPERTY: Custom_ID ${citar-citekey}
+#+PROPERTY: type ${citar-type}
+#+PROPERTY: author ${citar-author}
+#+PROPERTY: URL ${citar-url}
+#+PROPERTY: Agenda_Text ${citar-citekey}: ${citar-document-title}
+
+* Summary
+:PROPERTIES:
+:NOTER_PAGE: 1
+:END:
+created: %T
+
+%?
+
