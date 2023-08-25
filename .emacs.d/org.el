@@ -211,8 +211,6 @@
 
 ;;; FUNCTIONALITY
 
-;; helper; shorthand for exporting to PDF without extra clutter
-
 ;; restart org-mode in all org buffers
 (defun dbargman/global-org-mode-restart ()
   "Run 'org-mode-restart' in all open Org mode buffers."

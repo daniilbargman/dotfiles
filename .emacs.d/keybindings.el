@@ -63,9 +63,10 @@
 
   ;; go to previous active buffer with C-x C-p
   (bind-key* "C-x C-p" 'previous-buffer)
+  (bind-key* "C-x C-n" 'next-buffer)
 
   ;; list buffers using ibuffer (prettier output)
-  (bind-key* "C-x C-b" 'ibuffer-list-buffers)
+  (bind-key* "C-x C-i" 'ibuffer-list-buffers)
 
   ;;; buffer tab manipulation via centaur-tabs
   
@@ -78,8 +79,8 @@
   (bind-key* "C-x C-j" 'centaur-tabs-forward-group)
   (bind-key* "C-x C-k" 'centaur-tabs-backward-group)
 
-  ;; open minibuffer prompt for group name
-  (bind-key* "C-x C-n" 'centaur-tabs-counsel-switch-group)
+  ;; ace-jump to a centaur tab
+  (bind-key* "C-x j" 'centaur-tabs-ace-jump)
 
   ;;; visual window and buffer manipulation
 
@@ -329,8 +330,27 @@
   (define-key vterm-mode-map (kbd "M-8") nil)
   (define-key vterm-mode-map (kbd "M-9") nil)
 
+  ;; unbind keybindings that allow to jump between windows
+  (define-key vterm-mode-map (kbd "C-k") nil)
+  (define-key vterm-mode-map (kbd "C-j") nil)
+
+  ;; do not intercept C-q in terminal; simply close buffer
+  (evil-define-key 'insert vterm-mode-map (kbd "C-q") 'kill-this-buffer)
+
   ;; do not switch to background with "C-z"
   (evil-define-key 'insert vterm-mode-map (kbd "C-z") nil)
+
+  ;; jump to other windows with C-k and C-j, don't self-insert
+  (evil-define-key '(insert emacs) vterm-mode-map
+    (kbd "C-k") 'evil-window-up)
+  (evil-define-key '(insert emacs) vterm-mode-map
+    (kbd "C-j") 'evil-window-down)
+
+  ;; cycle through terminal history from normal mode
+  (evil-define-key 'normal vterm-mode-map
+    (kbd "C-p") 'vterm--self-insert)
+  (evil-define-key 'normal vterm-mode-map
+    (kbd "C-n") 'vterm--self-insert)
 
   ;; go to normal state with escape key (switching to emacs keybindings
   ;; in vterm, so no more need to send escape for terminal vi mode)
