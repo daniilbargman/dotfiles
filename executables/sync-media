@@ -41,7 +41,7 @@ pass show private/S3/bargman-private-media-archive.s3cfg > $cfg
 
 # run sync command
 s3cmd -c $cfg --recursive --skip-existing --no-delete-removed \
-      sync ~/sync/media "s3://bargman-private-media-archive/Daniil/"
+      sync ~/sync/media/* "s3://bargman-private-media-archive/Daniil/"
 
 # delete config file
 rm $cfg

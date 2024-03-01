@@ -196,16 +196,48 @@ Uses winner-mode-undo."
 ;; helper functions for moving buffers around
 (defun dbargman/move-buffer-to-split-above ()
   "Move buffer to window above current."
-  (evil-window-split) (previous-buffer) (evil-window-up 1))
+  (let (
+	(evil-split-window-below nil)
+	)
+    (evil-window-split)
+    (evil-window-down 1)
+    (previous-buffer)
+    (evil-window-up 1)
+    )
+  )
 (defun dbargman/move-buffer-to-split-below ()
   "Move buffer to window below current."
-  (previous-buffer) (evil-window-split) (next-buffer))
+  (let (
+	(evil-split-window-below t)
+	)
+    (evil-window-split)
+    (evil-window-up 1)
+    (previous-buffer)
+    (evil-window-down 1)
+    )
+  )
 (defun dbargman/move-buffer-to-split-right ()
   "Move buffer to window right of current."
-  (previous-buffer) (evil-window-vsplit) (next-buffer))
+  (let (
+	(evil-vsplit-window-right t)
+	)
+    (evil-window-vsplit)
+    (evil-window-left 1)
+    (previous-buffer)
+    (evil-window-right 1)
+    )
+  )
 (defun dbargman/move-buffer-to-split-left ()
   "Move buffer to window left of current."
-  (evil-window-vsplit) (previous-buffer) (evil-window-left 1))
+  (let (
+	(evil-vsplit-window-right nil)
+	)
+    (evil-window-vsplit)
+    (evil-window-right 1)
+    (previous-buffer)
+    (evil-window-left 1)
+    )
+  )
 
 ;; macro: create function that opens an object in a buffer then moves it
 (defmacro dbargman/splitfunc (funcname direction object-open-func)
@@ -233,6 +265,12 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
 (dbargman/splitfunc open-buffer below 'consult-buffer)
 (dbargman/splitfunc open-buffer right 'consult-buffer)
 (dbargman/splitfunc open-buffer left 'consult-buffer)
+
+;; open symbol definitions in various window splits
+(dbargman/splitfunc lsp-find-definition above 'lsp-find-definition)
+(dbargman/splitfunc lsp-find-definition below 'lsp-find-definition)
+(dbargman/splitfunc lsp-find-definition right 'lsp-find-definition)
+(dbargman/splitfunc lsp-find-definition left  'lsp-find-definition)
 
 ;; do not live-preview buffers
 (consult-customize
@@ -412,6 +450,12 @@ directory is used as the group name."
     (and (string-prefix-p "magit" name)
 	      (not (file-name-extension name)))
     )))
+
+
+;; NOTE: trying out an efficiency improvement: rather than filtering out
+;; buffers by regex, use `centaur-tabs-excluded-prefixes'
+(custom-set-variables '(centaur-tabs-excluded-prefixes '("*" " *")))
+;; (setq centaur-tabs-hide-tab-function #'(lambda (_) nil))
 
 ;; custom buffer filter function with fallback to default
 (defun centaur-tabs-hide-tab (x)

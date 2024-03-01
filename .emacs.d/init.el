@@ -75,6 +75,16 @@
 (setq confirm-kill-processes nil)
 
 ;; add line numbers and highlight current line in minibuffer
+
+;; (add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
+;; (global-display-line-numbers-mode t)
+;; (require 'display-line-numbers)
+;;   (defun display-line-numbers--turn-on ()
+;;     "Turn on `display-line-numbers-mode'."
+;;     (unless (or (minibufferp) (eq major-mode 'pdf-view-mode))
+;;       (display-line-numbers-mode)))
+;; (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
+;; (add-hook 'text-mode-hook (lambda () (display-line-numbers-mode 1)))
 (global-display-line-numbers-mode t)
 (column-number-mode t)
 (global-hl-line-mode t)

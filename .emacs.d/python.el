@@ -227,11 +227,11 @@ Prefix P works like in get-or-create-terminal from terminal.el."
    t
    '(lambda (term-buffer)
       (comint-send-string term-buffer "%cpaste -q\n")
-      (sleep-for 0 200)
+      (sleep-for 0 100)
       (when (evil-normal-state-p)
 	(python-mark-fold-or-section))
       (evil-send-region-to-terminal term-buffer)
-      (sleep-for 0 200)
+      (sleep-for 0 100)
       (comint-send-string term-buffer "\n--\n")
       )
    )

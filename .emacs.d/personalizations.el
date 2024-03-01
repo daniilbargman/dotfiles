@@ -651,7 +651,7 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	(sequence "EMAIL" "|" "CAPTURED" "DISCARDED(x@)" "DONE")
 
 	;; TODO flow for project tasks
-	(sequence "reading(r/!)" "IDEA(i)" "TODO(t/!)" "|"
+	(sequence "idea(i)" "note(n)" "TODO(t/!)" "|"
 		  "DISCARDED(c@/!)" "DONE(d/!)")
 
 	)

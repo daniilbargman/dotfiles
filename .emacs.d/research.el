@@ -101,8 +101,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
 ;; pdf-tools for latex export
 (use-package pdf-tools
-  :config
-  (pdf-tools-install))
+  :init (pdf-tools-install))
 
 ;; bibliography management with ebib
 (use-package ebib
@@ -175,10 +174,10 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
   )
 
 
-;; add hook to make sure line number mode is not active in pdf view mode
-;; (otherwise a warning is thrown)
-(add-hook 'pdf-view-mode-hook
-	  #'(lambda () (display-line-numbers-mode -1)))
+;; ;; add hook to make sure line number mode is not active in pdf view mode
+;; ;; (otherwise a warning is thrown)
+;; (add-hook 'pdf-view-mode-hook
+;; 	  #'(lambda () (display-line-numbers-mode -1)))
 
 ;;; ADDITIONAL CONFIGURATIONS FOR ORG COMPATIBILITY
 
@@ -314,7 +313,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
    org-latex-pdf-process
    (list
     (concat
-     "rm " dbargman/research-export-dir "/.tmp/%b.bbl && "
+     "rm -f " dbargman/research-export-dir "/.tmp/%b.bbl && "
     "latexmk "
      "-f "
      "-pdf "

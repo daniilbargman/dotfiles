@@ -121,36 +121,58 @@
 
 ;; consult integration
 (use-package consult-org-roam
-   :ensure t
-   :after org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; ;; Display org-roam buffers right after non-org-roam buffers
-   ;; ;; in consult-buffer (and not down at the bottom)
-   ;; (consult-org-roam-buffer-after-buffers t)
+  :ensure t
+  :after org-roam
+  :init
+  (require 'consult-org-roam)
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :custom
+  ;; Use `ripgrep' for searching with `consult-org-roam-search'
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  ;; Configure a custom narrow key for `consult-buffer'
+  (consult-org-roam-buffer-narrow-key ?r)
+  ;; ;; Display org-roam buffers right after non-org-roam buffers
+  ;; ;; in consult-buffer (and not down at the bottom)
+  ;; (consult-org-roam-buffer-after-buffers t)
 
-   :config
-   ;; suppress previewing for certain functions
-   (consult-customize
-    org-roam-node-find
-    org-roam-node-insert
-    consult-org-roam-file-find
-    consult-org-roam-forward-links
-    :preview-key "M-.")
-   ;; :bind
-   ;; ;; Define some convenient keybindings as an addition
-   ;; ("C-c n e" . consult-org-roam-file-find)
-   ;; ("C-c n b" . consult-org-roam-backlinks)
-   ;; ("C-c n l" . consult-org-roam-forward-links)
-   ;; ("C-c n r" . consult-org-roam-search)
-   )
+  :config
+  ;; :bind
+  ;; ;; Define some convenient keybindings as an addition
+  ;; ("C-c n e" . consult-org-roam-file-find)
+  ;; ("C-c n b" . consult-org-roam-backlinks)
+  ;; ("C-c n l" . consult-org-roam-forward-links)
+  ;; ("C-c n r" . consult-org-roam-search)
+
+  ;; define macro for opening a node in a window split
+  (dbargman/splitfunc open-roam-node above 'consult-org-roam-file-find)
+  (dbargman/splitfunc open-roam-node below 'consult-org-roam-file-find)
+  (dbargman/splitfunc open-roam-node right 'consult-org-roam-file-find)
+  (dbargman/splitfunc open-roam-node left 'consult-org-roam-file-find)
+
+  ;; avoid the prefix key for opening a node in another window
+  (defun dbargman/consult-org-roam-file-find-other-window ()
+    "Run 'consult-org-roam-file-find' with prefix.
+
+Opens the new node in 'other window' mode by default."
+    (interactive)
+    (consult-org-roam-file-find 1)
+    )
+
+  ;; suppress previewing for certain functions
+  (consult-customize
+   org-roam-node-find
+   org-roam-node-insert
+   consult-org-roam-file-find
+   consult-org-roam-forward-links
+   dbargman/open-roam-node-above
+   dbargman/open-roam-node-below
+   dbargman/open-roam-node-right
+   dbargman/open-roam-node-left
+   dbargman/consult-org-roam-file-find-other-window
+   :preview-key "M-.")
+
+  )
 
 ;;; org-babel
 

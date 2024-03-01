@@ -44,6 +44,10 @@ export PS1="\n${FG[-1]}(${FG[2]}\$(get_virtualenv)${FG[-1]}) ${FG[1]}\$(get_k8s_
 # Make bash behave more like vim
 set -o vi
 
+# still, preserve C-p and C-n for scrolling through history
+bind "\C-p":previous-history
+bind "\C-n":next-history
+
 #################### vterm / Emacs compatibility settings #####################
 # see https://github.com/akermu/emacs-libvterm
 
@@ -106,26 +110,27 @@ alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; 
 alias wifi="nmcli -f in-use,chan,ssid,bssid,signal,bars,security d wifi"
 
 # alias "myip" to get public IP address via curl
-alias myip="curl ifconfig.co"
-alias myip6="curl -6 ifconfig.co"
+alias myip="curl -s ifconfig.co"
+alias myip6="curl -s -6 ifconfig.co"
 
 # alias pg to ping google 5 times
 alias pg="ping -c 3 google.com"
 
-# s3 command aliases for synchronizing files with private bucket
-alias s3sync="s3cmd -c ~/sync/.s3cfg"
+# reboot key daemon to unblock emacs
+alias emacs-keys='ibus-daemon --xim -d -r'
 
 # alias to enable/disable/reset kubernetes
 function disable-k8s {
     sudo echo "draining node and stopping services..."
     kubectl drain $(hostname) --disable-eviction=true --force=true \
 	    --ignore-daemonsets # --skip-wait-for-delete-timeout=300
-    sudo service nfs-server stop
+    # sudo service nfs-server stop
     sudo service kubelet stop
     sudo service docker stop
     sudo service containerd stop
 }
 function enable-k8s {
+    [ "$(myip)" = "139.162.214.6" ] || lock
     sudo service nfs-server start
     sudo service containerd start
     sudo service docker start
@@ -149,6 +154,10 @@ alias kun='kubectl uncordon $(hostname)'
 alias kr='sudo ctr -n k8s.io c rm $(sudo ctr -n k8s.io c ls -q) && sudo ctr -n k8s.io i rm $(sudo ctr -n k8s.io i ls -q)'
 alias ki='import-images'
 alias km='sudo ctr -n k8s.io c ls'
+function kns {
+    kubectl config set-context --current --namespace=$1
+}
+export -f kns
 
 # alias poweroff / reboot to automatically envoke sudo
 alias off="sudo poweroff"

@@ -830,33 +830,9 @@ targets."
 
   ;;; END NOTE
 
+
   :commands lsp)
-
-;;; other tweaks
-
-;; ;; smartly versioned file editing
-;; (use-package undo-tree
-;;   :custom
-
-;;     ;; save history across sessions
-;;     (undo-tree-auto-save-history t)
-
-;;     ;; avoid file clutter: save all undo files in emacs directory
-;;     (undo-tree-history-directory-alist
-;;     '(("." . "~/.emacs.d/undo-tree")))
-
-;;     ;; disable undo-redo in regions; use file-level only
-;;     (undo-tree-enable-undo-in-region nil)
-
-;;     ;; ;; visualize changes in undo-tree
-;;     ;; (undo-tree-visualizer-diff t)
-
-;;   :config
-
-;;     ;; enable globally by defualt
-;;     (global-undo-tree-mode 1)
-    
-;;   )
+ 
 
 ;; retire undo-tree in favour of undo-fu, undo-fu-session, and vundo
 (use-package undo-fu
@@ -1221,7 +1197,7 @@ targets."
 ;; highlight indent lines
 ;; (use-package highlight-indentation)
 (use-package highlight-indent-guides
-  :hook (prog-mode . highlight-indent-guides-mode)
+  :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
   :custom
   (highlight-indent-guides-method 'character)
   (highlight-indent-guides-responsive nil)
@@ -1230,12 +1206,22 @@ targets."
   :config
   )
 
-
 ;; better modeline
 (use-package telephone-line
   :config
   (telephone-line-mode 1))
 
+;; highlight TODO-style keywords
+(use-package hl-todo
+  :custom
+  (hl-todo-keyword-faces
+      '(("TODO"   . "#FF7500")
+        ("FIXME"  . "#FF0000")
+        ("DEBUG"  . "#A020F0")
+        ("GOTCHA" . "#FF4500")
+        ("STUB"   . "#1E90FF")))
+  :config
+  (global-hl-todo-mode))
 
 ;; done
 (provide 'ide.el)

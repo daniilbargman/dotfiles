@@ -478,6 +478,20 @@
   ;; format braces
   (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)
 
+  ;; find symbol definitions in arbitrady window splits
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d w") 'lsp-find-definition)
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d j") 'dbargman/lsp-find-definition-below)
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d k") 'dbargman/lsp-find-definition-above)
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d l") 'dbargman/lsp-find-definition-right)
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d h") 'dbargman/lsp-find-definition-left)
+  (evil-define-key 'normal 'global
+    (kbd "C-c C-l d o") 'xref-find-definitions-other-window)
+
   ;; leader key mappings
   (evil-leader/set-key
 
@@ -584,6 +598,16 @@
     (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
     (global-set-key (kbd "C-c n e") 'dbargman/capture-email-to-org-roam-node)
     (global-set-key (kbd "C-c d") 'org-roam-dailies-map)
+
+    ;; open nodes in split windows
+    (global-set-key (kbd "C-c n w l") 'dbargman/open-roam-node-right)
+    (global-set-key (kbd "C-c n w h") 'dbargman/open-roam-node-left)
+    (global-set-key (kbd "C-c n w k") 'dbargman/open-roam-node-above)
+    (global-set-key (kbd "C-c n w j") 'dbargman/open-roam-node-below)
+
+    ;; open roam node in the other window
+    (global-set-key (kbd "C-c n w o")
+		    'dbargman/consult-org-roam-file-find-other-window)
 
     ;; refile using custom command
     (define-key org-mode-map (kbd "C-c C-w")
@@ -718,24 +742,13 @@
 		     (evil-next-visual-line)))
 
   ;;; NOTE: <leader>[j,k] for python deprecated in favour of avy-jump
-  ;; ;; leader key mappings
-  ;; (evil-leader/set-key
+  ;; leader key mappings
+  (evil-leader/set-key
 
-  ;;   ;; block-wise code navigation: forward
-  ;;   "j" (lambda () (interactive)
-  ;; 	  (python-forward-fold-or-section)
-  ;; 	  (evil-next-visual-line))
+    ;; run selection or code block with <leader>r
+    "r" 'my-python-execute-code-block
 
-  ;;   ;; block-wise code navigation: backwards
-  ;;   "k" (lambda () (interactive)
-  ;; 	  (python-backward-fold-or-section)
-  ;; 	  (python-backward-fold-or-section)
-  ;; 	  (evil-next-visual-line))
-
-  ;;   ;; ;; block-wise code execution
-  ;;   ;; "r" (lambda () (interactive)
-  ;;   ;; 	  )
-  ;;   )
+    )
 
     )
 
