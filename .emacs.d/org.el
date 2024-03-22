@@ -182,8 +182,12 @@ Opens the new node in 'other window' mode by default."
  '(
    (shell . t)
    (python . t)
+   (latex . t)
    )
  )
+
+;; do not confirm before each evaluation
+(setq org-confirm-babel-evaluate nil)
 
 
 ;;; AESTHETICS

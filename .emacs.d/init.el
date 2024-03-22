@@ -161,6 +161,9 @@
 (use-package rainbow-mode
   :hook prog-mode org-mode)
 
+;; unicode support
+(straight-use-package
+ '(unicode-fonts :type git :host github :repo "rolandwalker/unicode-fonts"))
 
 ;;; NOTE: MOVED TO org.el
 

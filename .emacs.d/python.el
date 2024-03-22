@@ -182,15 +182,13 @@ This variable is only used if `my-python-shell-program' is `k8s'."
 
 Prefix P works like in get-or-create-terminal from terminal.el."
   (interactive "P")
-  (let (
-	;; save original terminal buffer name in case we need to change
-	;; it back
-	(orig-terminal-buffer-name terminal-buffer-name)
+  (let* (
 	;; default prefix for the terminal buffer name, if unset
 	(terminal-buffer-name-default-prefix
 	 my-python-shell-buffer-name-default-prefix)
-       ;; terminal name set to python shell name
-       (terminal-buffer-name my-python-shell-buffer-name)
+	;; terminal name set to python shell name
+	(terminal-buffer-name my-python-shell-buffer-name)
+	(terminal-buffer-name (parse-vterm-buffer-name p))
 	;; init commands are python-specific init commands
 	(terminal-init-commands my-python-shell-init-commands)
 	;; shell program needs to be parsed if running in k8s
@@ -200,19 +198,16 @@ Prefix P works like in get-or-create-terminal from terminal.el."
 					    my-python-k8s-pod-namespace
 					    my-python-k8s-exec-command)
 		  my-python-shell-program)))
-)
+	)
+
+    ;; update python shell name in case it was set manually
+    (customize-set-value
+     'my-python-shell-buffer-name terminal-buffer-name)
 
     ;; get or create the shell
     (get-or-create-terminal
-     p my-python-shell-program nil (not no-move) and-run)
+     nil my-python-shell-program nil (not no-move) and-run)
 
-    ;; restore original terminal-buffer-name and set python shell buffer
-    ;; name to terminal buffer name, in case the buffer name is being
-    ;; permanently changed via the prefix argument
-    (customize-set-value
-     'my-python-shell-buffer-name terminal-buffer-name)
-    (customize-set-value
-     'terminal-buffer-name orig-terminal-buffer-name)
     )
   )
 
@@ -235,6 +230,16 @@ Prefix P works like in get-or-create-terminal from terminal.el."
       (comint-send-string term-buffer "\n--\n")
       )
    )
+  )
+
+;; add conda.el to make Org mode work nicely with virtual environments
+(use-package conda
+  ;; :custom
+  ;; (conda-anaconda-home "/opt/conda/bin/conda")
+  :config
+  (setq conda-env-executables-dir "/opt/conda/bin")
+  (conda-env-autoactivate-mode t)
+  ;; (setq conda-env-home-directory (expand-file-name "~/.conda"))
   )
 
 (provide 'python)

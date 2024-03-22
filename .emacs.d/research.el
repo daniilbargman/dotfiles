@@ -101,7 +101,11 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
 ;; pdf-tools for latex export
 (use-package pdf-tools
-  :init (pdf-tools-install))
+  :init (pdf-tools-install)
+  :config
+  (add-hook 'pdf-view-mode-hook
+	    #'(lambda () (display-line-numbers-mode -1)))
+  )
 
 ;; bibliography management with ebib
 (use-package ebib

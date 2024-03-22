@@ -797,6 +797,11 @@
     ;; export to PDF with a keybinding
     (define-key org-mode-map (kbd "C-c C-x C-p")
 		'dbargman/org-latex-export-to-pdf)
+
+    ;; org-babel keybinding for executing a single code block
+    (define-key org-mode-map (kbd "C-c C-v b")
+		'org-babel-execute-src-block-maybe)
+    
     )
 
 
