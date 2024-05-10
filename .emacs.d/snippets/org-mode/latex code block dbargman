@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: latex code block dbargman
+# key: lx
+# --
+#+NAME: ${1:name_and_label}
+#+LABEL: $1
+#+BEGIN_${2:$$(yas-choose-value '("EXPORT" "SRC"))} latex
+
+$0
+
+#+END_$2

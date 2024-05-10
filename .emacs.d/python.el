@@ -238,7 +238,7 @@ Prefix P works like in get-or-create-terminal from terminal.el."
   ;; (conda-anaconda-home "/opt/conda/bin/conda")
   :config
   (setq conda-env-executables-dir "/opt/conda/bin")
-  (conda-env-autoactivate-mode t)
+  (conda-env-autoactivate-mode -1)
   ;; (setq conda-env-home-directory (expand-file-name "~/.conda"))
   )
 

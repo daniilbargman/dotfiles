@@ -126,9 +126,6 @@ buffer name during each attempt to open a shell or send code to it."
   :safe (lambda (_) t))
 
 
-;; ;;; interactive actions on various objects; plus dipping a toe into a
-;; ;;; setup that replaces ivy/company with vertico/consult/marginalia
-
 ;; minibuffer
 (use-package vertico
   :straight (vertico :files (:defaults "extensions/*")
@@ -151,34 +148,7 @@ buffer name during each attempt to open a shell or send code to it."
   (vertico-cycle t)
   )
 
-;; (use-package vertico-quick
-;;   :after vertico
-;;   :ensure nil)
-
-;;; NOTE: Decommissionnig orderless in favour of prescient.el
-;; ;; `orderless' completion style.
-;; (use-package orderless
-;;   :init
-;;   ;; Configure a custom style dispatcher (see the Consult wiki)
-;;   ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-;;   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-;;   (setq completion-styles
-;; 	;; '(substring orderless basic)
-;; 	'(orderless basic flex)
-;;         completion-category-defaults nil
-;;         completion-category-overrides
-;; 	  '((file (styles partial-completion)))
-;; 	  )
-
-;;   ;; :custom
-
-;;   ;; ;; matching styles should match at the beginning of each word
-;;   ;; (orderless-matching-styles '(orderless-prefixes orderless-flex))
-
-;;   ;; ;; do not use smart case matching
-;;   ;; (orderless-match-faces nil)
-
-;;   )
+;; custom/smarter completion ordering
 (use-package prescient
   :custom
   (prescient-persist-mode t)
@@ -403,7 +373,7 @@ targets."
   ;; (global-company-mode)
   ;; (add-hook 'after-init-hook 'global-company-mode)
 
-  ;; set minimum prefix length to 2 for performance reasons
+  ;; set minimum prefix length to 3 for performance reasons
   (setq company-minimum-prefix-length 2)
 
   ;; set idle delay
@@ -687,6 +657,35 @@ targets."
   :hook (
 	 ;; if you want which-key integration
 	 (lsp-mode . lsp-enable-which-key-integration)
+
+	 ;; (lsp-mode
+	 ;;  . (lambda ()
+	 ;;      (setq-local
+	 ;;       company-backends
+	 ;;       '((:separate company-yasnippet company-capf)))
+         ;;      (setq
+	 ;;       completion-styles '(prescient)
+	 ;;       gnus-completion-styles '(prescient)
+	 ;;       )
+	 ;;      )
+	 ;;  )
+
+	 ;; (lsp-mode
+	 ;;  . (lambda ()
+	 ;;      (setq-local
+	 ;;       company-backends
+	 ;;       (cl-remove-duplicates
+	 ;; 	(append
+	 ;; 	 `(,(company-mode/backend-with-yas 'company-capf))
+	 ;; 	 company-backends
+	 ;; 	 )
+	 ;; 	:test 'equal-including-properties
+	 ;; 	:from-end t
+	 ;; 	)
+	 ;;       )
+	 ;;      )
+	 ;;  )
+
 	 )
 
   :custom
@@ -699,7 +698,11 @@ targets."
   (lsp-response-timeout 10)
   ;; (lsp-print-performance t)
   ;; (lsp-enable-file-watchers nil)
-  (lsp-restart 'auto-restart) ; 'interactive)
+  (lsp-restart 'auto-restart)		; 'interactive)
+
+  ;; do not show full documentation in the minibuffer popup - just the
+  ;; function signature
+  (lsp-signature-render-documentation nil)
 
   ;; try disabling this so LSP doesn't automatically try to connect to
   ;; servers with wrong roots on startup
@@ -708,6 +711,11 @@ targets."
   ;; set 'lsp-completion-provider' to :none as described here:
   ;; https://github.com/emacs-lsp/lsp-mode/issues/3173
   (lsp-completion-provider :none)
+  ;; (lsp-completion-provider :capf)
+
+  ;; disable completion caching. we have prescient for that so shouldn't
+  ;; be an issue
+  (lsp-completion-no-cache t)
 
   :init
 
@@ -722,7 +730,7 @@ targets."
     :custom
 
     ;; lsp-ui-doc
-    (lsp-ui-doc-position 'top) ; 'at-point
+    (lsp-ui-doc-position 'top)		; 'at-point
     (lsp-ui-doc-show-with-cursor nil)
     ;; (lsp-ui-doc-header t)
     (lsp-ui-doc-max-height 50)
@@ -735,6 +743,10 @@ targets."
     ;; (lsp-ui-peek-enable t)
 
     :config
+
+
+    ;; disable fuzzy matching
+    (advice-add #'lsp-completion--regex-fuz :override #'identity)
 
     ;; ;; NOTE: manual hack no longer required as of the latest update
     ;; ;;
@@ -774,9 +786,9 @@ targets."
   (use-package consult-lsp
     :straight
     (consult-lsp :type git
-	 :host github
-	 :repo "gagbo/consult-lsp"
-	 )
+		 :host github
+		 :repo "gagbo/consult-lsp"
+		 )
     )
   
 
@@ -788,9 +800,9 @@ targets."
   ;;   :commands lsp-origami-try-enable
   ;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
 
-  ;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
-  ;;; 'lsp-completion-provider' to :none as described in
-  ;;; https://github.com/emacs-lsp/lsp-mode/issues/3173
+;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
+;;; 'lsp-completion-provider' to :none as described in
+;;; https://github.com/emacs-lsp/lsp-mode/issues/3173
 
   ;; ;; make sure to enable yasnippet support in lsp completion
   ;; (with-eval-after-load 'lsp-mode
@@ -809,24 +821,6 @@ targets."
 
   ;; instead of the above, simply make sure company-capf with yasnippet
   ;; is on top in lsp-enabled buffers
-
-  :hook (
-	 (lsp-mode
-	  . (lambda ()
-	      (setq-local
-	       company-backends
-	       (cl-remove-duplicates
-		(append
-		 `(,(company-mode/backend-with-yas 'company-capf))
-		 company-backends
-		 )
-		:test 'equal-including-properties
-		:from-end t
-		)
-	       )
-	      )
-	  )
-	 )
 
   ;;; END NOTE
 

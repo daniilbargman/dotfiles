@@ -178,11 +178,6 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
   )
 
 
-;; ;; add hook to make sure line number mode is not active in pdf view mode
-;; ;; (otherwise a warning is thrown)
-;; (add-hook 'pdf-view-mode-hook
-;; 	  #'(lambda () (display-line-numbers-mode -1)))
-
 ;;; ADDITIONAL CONFIGURATIONS FOR ORG COMPATIBILITY
 
 (with-eval-after-load "org"
@@ -271,7 +266,6 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
     )
 
   ;; add keywords to citar template keys
-  (require 'citar-org-roam)
   (setq citar-org-roam-template-fields
 	(append citar-org-roam-template-fields
 		'(
@@ -303,71 +297,120 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
   ;; LATEX CONFIGURATION FOR RESEARCH EXPORT
 
-  ;; nicer latex formula sizes
-  (plist-put org-format-latex-options :scale 1.5)
-
-  ;; store latex images in a dedicated directory
-  (setq
-   org-preview-latex-image-directory
-   (concat dbargman/research-export-dir "/.tmp")
-   )
-
-  ;; adjust pdf processing command to auto-update
-  (setq
-   org-latex-pdf-process
-   (list
-    (concat
-     "rm -f " dbargman/research-export-dir "/.tmp/%b.bbl && "
-    "latexmk "
-     "-f "
-     "-pdf "
-     "-%latex "
-     "-new-viewer- "
-     "-interaction=nonstopmode "
-     "-output-directory=" dbargman/research-export-dir "/.tmp "
-     "%f")
+  ;; redefine what a report should look like when transpiled to LaTeX
+  (custom-set-variables
+   '(org-latex-classes
+    '(
+      ("article" "\\documentclass[11pt]{article}"
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+       )
+      ("report" "\\documentclass[11pt,bibliography=numbered]{report}"
+       ("\\chapter{%s}" . "\\chapter*{%s}")
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       )
+      ("book" "\\documentclass[11pt]{book}"
+       ("\\part{%s}" . "\\part*{%s}")
+       ("\\chapter{%s}" . "\\chapter*{%s}")
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       )
+      )
     )
    )
 
-  ;; export org-LaTeX to PDF without the extra visual clutter
-  (defun dbargman/org-latex-export-to-pdf ()
-    "Export Org buffer to a latex PDF, bypassing interactive menus.
+
+
+   ;; nicer latex formula sizes
+   (plist-put org-format-latex-options :scale 1.5)
+
+   ;; store latex images in a dedicated directory
+   (setq
+    org-preview-latex-image-directory
+    (concat dbargman/research-export-dir "/.tmp")
+    )
+
+   ;; adjust pdf processing command to auto-update
+   (setq
+    org-latex-pdf-process
+    (list
+     (concat
+      "rm -f " dbargman/research-export-dir "/.tmp/%b.bbl && "
+      "latexmk "
+      "-f "
+      "-pdf "
+      "-%latex "
+      "-new-viewer- "
+      "-interaction=nonstopmode "
+      "-output-directory=" dbargman/research-export-dir "/.tmp "
+      "%f")
+     )
+    )
+
+   ;; export org-LaTeX to PDF without the extra visual clutter
+   (defun dbargman/org-latex-export-to-pdf (p)
+     "Export Org buffer to a latex PDF, bypassing interactive menus.
 
 This function is a shorthand for 'org-latex-export-to-pdf' which
 bypasses two distractions:
 
-1. No interactive export menu is presented. 2. No additional
-confirmation prompts pop up when a PDF is re-generated.
+1. No interactive export menu is presented.
+2. No additional confirmation prompts pop up when a PDF is re-generated.
 
-For the second point this function relies on 'auto-revert-mode'."
-    (interactive)
-    (let* (
-	   ;; this command exports to PDF asynchronously and returns the
-	   ;; file name
-	   (pdf-preview-file (org-latex-export-to-pdf))
-	   (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
-	   (pdf-preview-window
-	    (when pdf-preview-buffer
-	      (get-buffer-window pdf-preview-buffer)
-	      )
+For the second point, this function relies on 'auto-revert-mode'.
+
+If the PDF buffer is already visible, it is simply updated on-screen.
+Otherwise,envoking with a prefix places the PDF buffer in a dedicated
+vertical split on the right, whereas running without a prefix places it
+in the 'other window'."
+     (interactive "P")
+     (let* (
+	    ;; this command exports to PDF asynchronously and returns the
+	    ;; file name
+	    (pdf-preview-file
+	     (if org-beamer-mode (org-beamer-export-to-pdf)
+	       (org-latex-export-to-pdf)
+	       )
+	     )
+	    (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
+	    (pdf-preview-window
+	     (when pdf-preview-buffer
+	       (get-buffer-window pdf-preview-buffer)
+	       )
+	     )
 	    )
+
+       ;; ;; if the buffer is visible, do nothing
+       (unless pdf-preview-window
+
+	 ;; ;; DEPRECATED: if a buffer exists, show it in a vertical split
+	 ;; (if pdf-preview-buffer
+	 ;;     (switch-to-buffer-other-window pdf-preview-buffer)
+	 ;;   (evil-window-vsplit nil pdf-preview-file)
+	 ;; )
+
+	 ;; show buffer in "other" window if no prefix, vsplit otherwise
+	 (when (or p (= (length (window-list)) 1))
+	   (evil-window-vsplit) (evil-window-move-far-right))
+	 (evil-window-prev 0)
+	 (if pdf-preview-buffer
+	     (switch-to-buffer pdf-preview-buffer nil t)
+	   (find-file pdf-preview-file)
 	   )
 
-      ;; ;; if the buffer is visible, do nothing
-      (unless pdf-preview-window
+	 )
 
-	;; if a buffer exists, show it in a vertical split
-	(if pdf-preview-buffer
-	    (switch-to-buffer-other-window pdf-preview-buffer)
-	  (evil-window-vsplit nil pdf-preview-file)
-	  )
-	)
-
-      )
-    )
+       )
+     )
 
 
-  )
+   )
 
 
 (provide 'research)

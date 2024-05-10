@@ -235,6 +235,13 @@ Opens the new node in 'other window' mode by default."
   )
 
 
+;; make check-boxes multiline for formatting purposes (empty line used
+;; as separator)
+(font-lock-add-keywords
+ 'org-mode
+  `(("^[ \t]*\\(- \\[X\\] .+\\(?:\n.+\\)*?\\)\n\\(?:$\\|[ \t]*- \\[[ -X]\\]\\)" 1 'org-headline-done prepend)) 'append)
+(advice-add 'org-toggle-checkbox :after #'font-lock-fontify-block)
+
 ;;; FUNCTIONALITY
 
 ;; restart org-mode in all org buffers

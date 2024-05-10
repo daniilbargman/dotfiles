@@ -772,6 +772,9 @@
 
 (with-eval-after-load "research"
 
+  ;; when closing a PDF file, simply close its window
+  (evil-define-key 'normal pdf-view-mode-map (kbd "Q") 'evil-quit)
+  (evil-define-key 'normal pdf-view-mode-map (kbd "q") 'evil-quit)
 
 
   ;; org-mode keybindings
