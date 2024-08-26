@@ -36,14 +36,14 @@ function error_exit {
 }
 
 # temporarily save s3cfg file to script's directory
-cfg=$BASE_DIR/daniilbargman-backups.s3cfg
+cfg=/tmp/daniilbargman-backups.s3cfg
 pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
 # run sync command
 s3cmd -c $cfg --recursive --follow-symlinks --delete-removed \
-      --exclude="**/.tmp/" --exclude="**/__pycache__/" \
-      sync ~/sync/documents/* \
-      "s3://daniilbargman-backups/"
+      --exclude="**/.tmp/" --exclude="**/results/" \
+      --exclude="**/__pycache__/" \
+      sync ~/sync/documents/* "s3://daniilbargman-backups/"
 
 # delete config file
 rm $cfg

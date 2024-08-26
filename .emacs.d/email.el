@@ -121,6 +121,7 @@ It is consumed by 'dbargman/email-auto-capture'"
       ;; smtp settings
       smtpmail-smtp-service 465
       smtpmail-stream-type 'ssl
+      smtpmail-servers-requiring-authorization ".*"
 
       ;; ;; mail update command
       ;; mu4e-get-mail-command "mbsync -a"
@@ -130,6 +131,7 @@ It is consumed by 'dbargman/email-auto-capture'"
       mu4e-compose-context-policy 'ask-if-none
 
       )
+
 
 ;;; OAuth2 support (for Outlook)
 

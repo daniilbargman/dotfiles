@@ -137,8 +137,10 @@
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
 
-;; don't auto-save files or make backups; undo-tree will do this for us
-(setq auto-save-default nil)
+;; auto-save files at a minimal interval, but don't create backup files
+;; (undo-fu is good enough to go back to previous versions)
+(setq auto-save-default t)
+(setq auto-save-interval 20)
 (setq make-backup-files nil)
 
 ;; enable minibuffer history with a reasonable history length

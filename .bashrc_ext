@@ -123,7 +123,8 @@ alias emacs-keys='ibus-daemon --xim -d -r'
 function disable-k8s {
     sudo echo "draining node and stopping services..."
     kubectl drain $(hostname) --disable-eviction=true --force=true \
-	    --ignore-daemonsets # --skip-wait-for-delete-timeout=300
+	    --ignore-daemonsets \
+        --delete-emptydir-data # --skip-wait-for-delete-timeout=300
     # sudo service nfs-server stop
     sudo service kubelet stop
     sudo service docker stop
@@ -131,7 +132,7 @@ function disable-k8s {
 }
 function enable-k8s {
     [ "$(myip)" = "139.162.214.6" ] || lock
-    sudo service nfs-server start
+    # sudo service nfs-server start
     sudo service containerd start
     sudo service docker start
     sudo service kubelet start

@@ -329,6 +329,13 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
   ;; reorder buffers
   (centaur-tabs-enable-buffer-reordering)
 
+  :hook
+
+  ;; disable headerline for buffers which require a lot of navigation
+  ;; and editing because Emacs becomes very slow
+  (lsp-mode . centaur-tabs-local-mode)
+  (org-mode . centaur-tabs-local-mode)
+
   )
 
 ;; default function for defining buffer groups

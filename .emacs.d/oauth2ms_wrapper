@@ -40,10 +40,18 @@ function error_exit {
     "please provide the name of the config to extract from the 'pass' command"
 
 # decrypt into temp directory so it's cleared on restart
-mkdir -p /tmp/oauth2ms/
-pass show $1 > /tmp/oauth2ms/config.json
+rm -f ~/.config/oauth2ms/config.json
+pass show $1 > ~/.config/oauth2ms/config.json
 
 # run with encoding flag (emacs smtpmail), nor without (mbsync)
 [ -z "${2:-}" ] && oauth2ms || oauth2ms "${2:-}"
+
+# clean up
+rm -f ~/.config/oauth2ms/config.json
+
+# # deleting this file causes the browser to open a login session every time
+# # the server is contacted. however, keeping it may cause the command to fail
+# # eventually, which may be fixed by removing the file manually.
+# rm -f ~/.local/share/oauth2ms/credentials.bin
 
 #

@@ -321,6 +321,13 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
        ("\\subsection{%s}" . "\\subsection*{%s}")
        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
        )
+      ("elsarticle" "\\documentclass[preprint,12pt]{elsarticle}"
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+       )
       )
     )
    )
@@ -341,14 +348,14 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
     org-latex-pdf-process
     (list
      (concat
-      "rm -f " dbargman/research-export-dir "/.tmp/%b.bbl && "
+      "rm -f %o/%b.bbl && "
       "latexmk "
       "-f "
       "-pdf "
       "-%latex "
       "-new-viewer- "
       "-interaction=nonstopmode "
-      "-output-directory=" dbargman/research-export-dir "/.tmp "
+      "-output-directory=%o "
       "%f")
      )
     )

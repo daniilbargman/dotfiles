@@ -68,6 +68,9 @@
        (smtpmail-default-smtp-server . "mail.statosphere.com")
        (smtpmail-smtp-server . "mail.statosphere.com")
        (smtpmail-local-domain . "statosphere.com")
+       (smtpmail-smtp-user . "daniil.bargman@statosphere.com")
+       (smtpmail-stream-type . starttls)
+       (smtpmail-smtp-service . 587)
        (mu4e-sent-folder . "/statosphere/daniil.bargman/Sent")
        (mu4e-drafts-folder . "/statosphere/daniil.bargman/Drafts")
        (mu4e-trash-folder . "/statosphere/daniil.bargman/Trash")
@@ -110,6 +113,7 @@
        (smtpmail-default-smtp-server . "smtp.office365.com")
        (smtpmail-smtp-server . "smtp.office365.com")
        (smtpmail-local-domain . "ucl.ac.uk")
+       (smtpmail-smtp-user . "ucesdb2@ucl.ac.uk")
        (smtpmail-stream-type . starttls)
        (smtpmail-smtp-service . 587)
        (smtpmail-debug-info t)
@@ -465,6 +469,25 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	       org-roam-directory
 	       )
 	      "\n"
+	      "#+EXPORT_FILE_NAME: "
+	      (
+	       expand-file-name
+	       ".tmp/${project-tag-lower}-${slug}.tex"
+	       dbargman/research-export-dir
+	       )
+	      )
+	    )
+	   :unnarrowed t
+	   :jump-to-captured
+	   )
+
+	  ;; presentation
+	  ("p" "presentation" plain
+	   (file ,(dbargman/org-capture-get-template "research-slides"))
+	   :target
+	   (file+head
+	    "%<%Y%m%d%H%M%S>-${slug}.org"
+	    ,(concat
 	      "#+EXPORT_FILE_NAME: "
 	      (
 	       expand-file-name

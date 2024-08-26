@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# vim: set filetype=sh :
+#
+# s3 synchronization command for all contents of this directory.
+#
+# Author: Daniil Bargman (daniil.bargman@gmail.com)
+#
+# base directory of this file accounting for symlinks
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until file is no longer a symlink
+    BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+done
+BASE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+[ -z "${SCRIPT_NAME:-}" ] && export SCRIPT_NAME="${0##*/}"
+###############################################################################
+
+# error-safe script settings
+set -Eeuo pipefail
+
+# default message appendix on errors
+function append_error {
+    bl=${BASH_LINENO[$((${#BASH_LINENO[@]} - 2))]}
+    echo line $bl in $BASE_DIR/$SCRIPT_NAME
+    exit 1
+}
+
+# trap errors from third-party functions
+trap append_error ERR
+
+# manual error handler: refer to help flag, and exit (use in place of echo)
+function error_exit {
+    echo
+    echo $1
+    append_error
+}
+
+# temporarily save s3cfg file to script's directory
+cfg=/tmp/daniilbargman-backups.s3cfg
+pass show private/S3/daniilbargman-backups.s3cfg > $cfg
+
+## check inputs
+
+# the first argument must be a relative path
+[ -z "${1:-}" ] && error_exit "this script requires two arguments"
+
+# if assume it's a relative path if it doesn't start with a slash
+[ "${1:0:1}" = "/" ] && DIR=${1%/} || DIR=$(pwd)/${1%/}
+NAME=${DIR##*/}/
+
+# the second arguments must be "up" for upload or "down" for download
+[ -z "${2:-}" ] && error_exit "this script requires two arguments"
+
+# upload [/path/to/]<folder> to s3://daniilbargman-backups/data/<folder>
+if [ "$2" = "up" ]; then
+
+    # source folder must exist
+    [ -d "$DIR" ] || error_exit "'$DIR': folder not found" 
+    src=$DIR/*
+
+    # target folder must be empty, unless running with "--force"
+    trg=s3://daniilbargman-backups/data/$NAME
+    [ -z "$(s3cmd -c $cfg ls $trg)" ] && empty=true || empty=false
+    if [ -z "${empty:-}" ]; then
+	[ "${3:-}" = "--force" ] || \
+	    error_exit "'$trg' not empty. use --force to ignore."
+    fi
+
+# download s3://daniilbargman-backups/data/<folder> to [/path/to/]<folder>
+elif [ "$2" = "down" ]; then
+
+    # source in S3 must not be empty
+    src=s3://daniilbargman-backups/data/$NAME
+    [ -z "$(s3cmd -c $cfg ls $src)" ] && error_exit "'$src' not found"
+
+    # target directory must be empty
+    trg=$DIR/
+    [ -d "$trg" ] || mkdir $trg
+    [ -z "$(ls -A $trg)" ] && empty=true || empty=false
+
+else
+    error_exit  "second argument must be 'up' or 'down'"
+fi
+
+# check that the target directory is not empty, or that we're running with a
+# '--force' flag.
+if [ "$empty" = "false" ]; then
+    [ "${3:-}" = "--force" ] || \
+	error_exit "'$trg' not empty. use --force to ignore."
+fi
+
+# run sync command
+s3cmd -c $cfg --recursive --delete-removed sync $src $trg
+
+# delete config file
+rm $cfg
+
+# Done.

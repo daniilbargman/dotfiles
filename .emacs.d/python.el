@@ -134,6 +134,10 @@ This variable is only used if `my-python-shell-program' is `k8s'."
    )
  )
 
+;; set indent offset to 4 globally
+(customize-set-value 'python-indent-offset 4)
+(customize-set-value 'python-indent-guess-indent-offset nil)
+
 ;; use the pyright language server
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
