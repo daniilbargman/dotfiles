@@ -78,3 +78,6 @@
 
 # back up executable files
 !executables/
+
+# back up latex settings
+!texmf/

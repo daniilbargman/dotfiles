@@ -74,6 +74,10 @@
 (setq use-dialog-box nil)
 (setq confirm-kill-processes nil)
 
+;; start scratch buffer in fundamental mode
+(setq initial-major-mode 'fundamental-mode
+      initial-scratch-message nil)
+
 ;; add line numbers and highlight current line in minibuffer
 
 ;; (add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
