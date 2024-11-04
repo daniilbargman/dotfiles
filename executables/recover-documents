@@ -40,10 +40,9 @@ cfg=/tmp/daniilbargman-backups.s3cfg
 pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
 # run sync command
-s3cmd -c $cfg --recursive --follow-symlinks --delete-removed \
-      --exclude="**/.tmp/" --exclude="**/results/" \
-      --exclude="**/__pycache__/" --exclude="email/daniil.bargman.22/" \
-      sync ~/sync/documents/* "s3://daniilbargman-backups/"
+[ -z "$(ls -A ~/sync/documents)" ] || error_exit "Local dir must be empty."
+s3cmd -c $cfg sync --recursive --no-delete-removed --exclude="data/*" \
+    "s3://daniilbargman-backups/"  ~/sync/documents/
 
 # delete config file
 rm $cfg

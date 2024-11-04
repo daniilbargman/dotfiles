@@ -102,6 +102,11 @@
 ;; make yes/no questions y/n questions
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; make sure password and passphrase prompts are re-routed to the
+;; minibuffer
+(setq epg-pinentry-mode 'loopback)
+;; (use-package pinentry)
+
 ;; make translucent (<active opacity> . <inactive opacity>)
 (set-frame-parameter (selected-frame) 'alpha '(99 . 99))
 (add-to-list 'default-frame-alist '(alpha . (99 . 99)))

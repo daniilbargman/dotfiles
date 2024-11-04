@@ -131,7 +131,7 @@
  '(tab-bar-tab
    ((t (:background "#171717"
 	:foreground "#D0C654"
-	:height 1.1
+	:height 1.03
 	;; :underline (:color "#D0C654" :position t)
 	;; :box (:line-width (10 . 8) :color "#282A2E")
 	:box (:line-width (10 . 6) :color "#171717")
@@ -140,7 +140,7 @@
    ((t (:background "#171717"
 	:foreground "#aaaaaa"
 	:box (:line-width (10 . 6) :color "#171717")
-	:height 1.1
+	:height 1.03
 	))))
  )
 
@@ -285,7 +285,10 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
 ;;; support for tabs and tab groups via awesome-tab
 
 ;; add support for icons
-(use-package all-the-icons)
+(use-package all-the-icons
+  :config
+  (unless all-the-icons-font-names (all-the-icons-install-fonts))
+  )
 
 ;; load package (from github as melpa doesn't have it yet)
 (use-package centaur-tabs

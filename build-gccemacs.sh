@@ -18,39 +18,47 @@ sudo apt-get update && sudo apt-get -y upgrade
 # (see https://www.emacswiki.org/emacs/BuildingEmacs)
 
 # additional dependencies are for GCCEmacs and vterm-mode
-sudo apt-get install -y libc6-dev libjpeg62-turbo libncurses5-dev libpng-dev \
+sudo apt-get install -y libc6-dev libjpeg62-turbo libpng-dev \
      libtiff5-dev libgif-dev xaw3dg-dev zlib1g-dev libx11-dev \
-     libgccjit-12-dev cmake libtool libtool-bin texinfo librsvg2-dev
+     libgccjit-14-dev cmake libtool libtool-bin librsvg2-dev \
+     build-essential libgtk-3-dev libgnutls28-dev libjpeg-dev libxpm-dev \
+     libncurses-dev autoconf make texinfo texlive texlive-latex-extra \
+     latexmk gnutls-bin gcc libxpm-dev libmagickcore-dev libmagick++-dev \
+     libgif-dev fonts-powerline fonts-firacode mailutils
 
-# install fonts
-sudo apt-get install -y fonts-powerline fonts-firacode
+# install pinentry-gnome3 to get a decent-looking passphrase popup in emacs
+# when updating something that requires access to the pass store
+sudo apt-get install -y pinentry-gnome3
 
-# install recommended dependencies based on StackOverflow answer
-# (see https://superuser.com/questions/1128721/compiling-emacs-25-1-on-ubuntu-16-04/1129052#1129052)
-sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev gnutls-dev
+# # install libjansson for faster LSP mode
+# mkdir -p ~/.git-clones
+# cd ~/.git-clones
+# rm -rf jansson
+# git clone https://github.com/akheron/jansson
+# cd jansson
+# autoreconf -i
+# ./configure
+# make
+# sudo make install
+# 
+# # tree-sitter
+# git clone https://github.com/tree-sitter/tree-sitter.git
+# cd tree-sitter/
+# make
+# sudo make install
 
-# install libjansson for faster LSP mode
-mkdir -p ~/.git-clones
-cd ~/.git-clones
-rm -rf jansson
-git clone https://github.com/akheron/jansson
-cd jansson
-autoreconf -i
-./configure
-make
-sudo make install
-
-# # # clone the repo and go there
+# emacs itself
 cd ~/.git-clones
 sudo rm -rf emacs
-git clone --depth 1 https://git.savannah.gnu.org/git/emacs
-cd emacs
+git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
+cd ~/.git-clones/emacs
 
 # configure with considerations from StackOverflow
 ./autogen.sh
-./configure --with-json --with-cairo --with-xwidgets \
-	    --with-x-toolkit=gtk3 \
+./configure --with-json --with-cairo --with-mailutils \
+        --with-tree-sitter --with-imagemagick --with-x-toolkit=gtk3 \
 	    --with-native-compilation  # this is for the GCC branch of Emacs
+        # --with-xwidgets
 
 # make and make install
 sudo make -j$(nproc)

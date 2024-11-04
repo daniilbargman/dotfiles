@@ -56,7 +56,11 @@
 ;;; DEPENDENCIES
 
 ;; org mode itself
-(straight-use-package '(org :type built-in)
+
+(custom-set-variables
+ `(straight-built-in-pseudo-packages ,(add-to-list 'straight-built-in-pseudo-packages 'org))
+ )
+(straight-use-package 'org
 
   :config
 

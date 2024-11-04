@@ -201,7 +201,8 @@ already defined. Previous settings will be overwritten."
 	    (read-file-name
 	     "Specify the project's org-roam-db-location: "
 	     (concat
-	      (file-name-as-directory (f-parent org-roam-dir))
+	      (file-name-as-directory
+	       (file-name-parent-directory org-roam-dir))
 	      "org-roam.db")
 	     nil 'confirm nil 'file-writable-p)
 	    )
@@ -273,7 +274,7 @@ already defined. Previous settings will be overwritten."
       (when org-roam-dir
 	(progn
 	  (make-directory (concat org-roam-dir org-roam-dailies-dir) t)
-	  (make-directory (f-parent org-roam-db-file) t)
+	  (make-directory (file-name-parent-directory org-roam-db-file) t)
 	  (setq org-roam-directory org-roam-dir)
 	  (setq org-roam-dailies-directory org-roam-dailies-dir)
 	  (setq org-roam-db-location (file-truename org-roam-db-file))

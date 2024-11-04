@@ -64,7 +64,7 @@
 	.
 	,(dbargman/contents-of-file
 	  "/mnt/projects/statosphere/admin/email/default-signature.html"))
-       (mu4e-compose-reply-to-address . "daniil.bargman@statosphere.com")
+       ;; (mu4e-compose-reply-to-address . "daniil.bargman@statosphere.com")
        (smtpmail-default-smtp-server . "mail.statosphere.com")
        (smtpmail-smtp-server . "mail.statosphere.com")
        (smtpmail-local-domain . "statosphere.com")
@@ -98,15 +98,15 @@
      `(
        (dbargman/email-oauth2ms-config-file
 	. "UCL/ucesdb2@ucl.ac.uk-oauth2ms-config")
-       (mu4e-get-mail-command . "mbsync -a -c ~/Email/UCL/.mbsyncrc")
-       (user-mail-address . "ucesdb2@ucl.ac.uk")
+       (mu4e-get-mail-command . "mbsync -a -c ~/Research/email/.mbsyncrc")
+       (user-mail-address . "daniil.bargman.22@ucl.ac.uk")
        (user-full-name . "Daniil Bargman")
        (message-user-organization . "UCL")
        ;; (org-msg-signature
        ;; 	.
        ;; 	,(dbargman/contents-of-file
        ;; 	  "/mnt/projects/statosphere/admin/email/default-signature.html"))
-       (mu4e-compose-reply-to-address . "daniil.bargman.22@ucl.ac.uk")
+       ;; (mu4e-compose-reply-to-address . "daniil.bargman.22@ucl.ac.uk")
        (mu4e-attachment-dir . "~/Research/bibliography/PDFs/")
        ;; (send-mail-function . smtpmail-send-it)
        ;; (message-send-mail-function . smtpmail-send-it)
@@ -146,7 +146,7 @@
        (mu4e-get-mail-command . "mbsync -a -c ~/Email/personal/.mbsyncrc")
        (user-mail-address . "daniil.bargman@gmail.com")
        (user-full-name . "Daniil Bargman")
-       (mu4e-compose-reply-to-address . "daniil.bargman@gmail.com")
+       ;; (mu4e-compose-reply-to-address . "daniil.bargman@gmail.com")
        (smtpmail-default-smtp-server . "imap.gmail.com")
        (smtpmail-smtp-server . "mail.gmail.com")
        ;; (smtpmail-local-domain . "statosphere.com")

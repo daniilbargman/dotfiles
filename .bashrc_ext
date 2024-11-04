@@ -127,14 +127,14 @@ function disable-k8s {
         --delete-emptydir-data # --skip-wait-for-delete-timeout=300
     # sudo service nfs-server stop
     sudo service kubelet stop
-    sudo service docker stop
+    # sudo service docker stop
     sudo service containerd stop
 }
 function enable-k8s {
     [ "$(myip)" = "139.162.214.6" ] || lock
     # sudo service nfs-server start
     sudo service containerd start
-    sudo service docker start
+    # sudo service docker start
     sudo service kubelet start
     sleep 5
     kubectl uncordon $(hostname)
@@ -164,6 +164,10 @@ export -f kns
 alias off="sudo poweroff"
 alias poweroff="sudo poweroff"
 alias reboot="sudo reboot"
+
+# kubectl completion and alias
+source <(kubectl completion bash)
+alias k=kubectl
 
 # Automatically add completion for all aliases to commands having completion functions
 function alias_completion {
@@ -234,11 +238,6 @@ function alias_completion {
     source "$tmp_file" && rm -f "$tmp_file"
 }; alias_completion
 
-# for k8s, enable autocompletion
-# see https://kubernetes.io/docs/reference/kubectl/cheatsheet/#bash
-source <(kubectl completion bash)
-alias k=kubectl
-complete -F __start_kubectl k
 
 ############################### VARIOUS #######################################
 

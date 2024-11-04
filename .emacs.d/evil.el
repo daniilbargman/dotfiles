@@ -26,6 +26,7 @@
 
 ;; add vim keybindings
 (use-package evil
+  :ensure t
   :after (undo-fu smartparens)
   :init
 
@@ -90,11 +91,13 @@
 
 ;; surround.vim
 (use-package evil-surround
+  :ensure t
   :config
   (global-evil-surround-mode 1))
 
 ;; vim-commentary
 (use-package evil-commentary
+  :ensure t
   :config
   (evil-commentary-mode))
 

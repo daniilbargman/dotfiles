@@ -137,8 +137,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 (use-package biblio
   :config
   (with-eval-after-load "personalizations"
-    (setq biblio-crossref-user-email-address
-	  mu4e-compose-reply-to-address)
+    (setq biblio-crossref-user-email-address user-mail-address)
     )
   )
 
@@ -267,15 +266,16 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
   ;; add keywords to citar template keys
   (setq citar-org-roam-template-fields
-	(append citar-org-roam-template-fields
-		'(
-		  (:citar-document-title "title")
-		  (:citar-citekey "citekey")
-		  (:citar-keywords "keywords")
-		  (:citar-file "file")
-		  (:citar-url "url")
-		  )
-		)
+	'(
+	  (:citar-title "title") (:citar-author "author" "editor")
+	  (:citar-date "date" "year" "issued") (:citar-pages "pages")
+	  (:citar-type "type")
+	  (:citar-document-title "title")
+	  (:citar-citekey "citekey")
+	  (:citar-keywords "keywords")
+	  (:citar-file "file")
+	  (:citar-url "url")
+	  )
 	)
 
   ;; note title template (can be overridden in personalizations too)
@@ -300,69 +300,69 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
   ;; redefine what a report should look like when transpiled to LaTeX
   (custom-set-variables
    '(org-latex-classes
-    '(
-      ("article" "\\documentclass[11pt]{article}"
-       ("\\section{%s}" . "\\section*{%s}")
-       ("\\subsection{%s}" . "\\subsection*{%s}")
-       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+     '(
+       ("article" "\\documentclass[11pt]{article}"
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	("\\paragraph{%s}" . "\\paragraph*{%s}")
+	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+	)
+       ("report" "\\documentclass[11pt,bibliography=numbered]{report}"
+	("\\chapter{%s}" . "\\chapter*{%s}")
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	)
+       ("book" "\\documentclass[11pt]{book}"
+	("\\part{%s}" . "\\part*{%s}")
+	("\\chapter{%s}" . "\\chapter*{%s}")
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	)
+       ("elsarticle" "\\documentclass[preprint,12pt]{elsarticle}"
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	("\\paragraph{%s}" . "\\paragraph*{%s}")
+	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+	)
        )
-      ("report" "\\documentclass[11pt,bibliography=numbered]{report}"
-       ("\\chapter{%s}" . "\\chapter*{%s}")
-       ("\\section{%s}" . "\\section*{%s}")
-       ("\\subsection{%s}" . "\\subsection*{%s}")
-       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-       )
-      ("book" "\\documentclass[11pt]{book}"
-       ("\\part{%s}" . "\\part*{%s}")
-       ("\\chapter{%s}" . "\\chapter*{%s}")
-       ("\\section{%s}" . "\\section*{%s}")
-       ("\\subsection{%s}" . "\\subsection*{%s}")
-       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-       )
-      ("elsarticle" "\\documentclass[preprint,12pt]{elsarticle}"
-       ("\\section{%s}" . "\\section*{%s}")
-       ("\\subsection{%s}" . "\\subsection*{%s}")
-       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
-       )
-      )
-    )
+     )
    )
 
 
 
-   ;; nicer latex formula sizes
-   (plist-put org-format-latex-options :scale 1.5)
+  ;; nicer latex formula sizes
+  (plist-put org-format-latex-options :scale 1.5)
 
-   ;; store latex images in a dedicated directory
-   (setq
-    org-preview-latex-image-directory
-    (concat dbargman/research-export-dir "/.tmp")
+  ;; store latex images in a dedicated directory
+  (setq
+   org-preview-latex-image-directory
+   (concat dbargman/research-export-dir "/.tmp")
+   )
+
+  ;; adjust pdf processing command to auto-update
+  (setq
+   org-latex-pdf-process
+   (list
+    (concat
+     "rm -f %o/%b.bbl && "
+     "latexmk "
+     "-f "
+     "-pdf "
+     "-%latex "
+     "-new-viewer- "
+     "-interaction=nonstopmode "
+     "-output-directory=%o "
+     "%f")
     )
+   )
 
-   ;; adjust pdf processing command to auto-update
-   (setq
-    org-latex-pdf-process
-    (list
-     (concat
-      "rm -f %o/%b.bbl && "
-      "latexmk "
-      "-f "
-      "-pdf "
-      "-%latex "
-      "-new-viewer- "
-      "-interaction=nonstopmode "
-      "-output-directory=%o "
-      "%f")
-     )
-    )
-
-   ;; export org-LaTeX to PDF without the extra visual clutter
-   (defun dbargman/org-latex-export-to-pdf (p)
-     "Export Org buffer to a latex PDF, bypassing interactive menus.
+  ;; export org-LaTeX to PDF without the extra visual clutter
+  (defun dbargman/org-latex-export-to-pdf (p)
+    "Export Org buffer to a latex PDF, bypassing interactive menus.
 
 This function is a shorthand for 'org-latex-export-to-pdf' which
 bypasses two distractions:
@@ -376,48 +376,49 @@ If the PDF buffer is already visible, it is simply updated on-screen.
 Otherwise,envoking with a prefix places the PDF buffer in a dedicated
 vertical split on the right, whereas running without a prefix places it
 in the 'other window'."
-     (interactive "P")
-     (let* (
-	    ;; this command exports to PDF asynchronously and returns the
-	    ;; file name
-	    (pdf-preview-file
-	     (if org-beamer-mode (org-beamer-export-to-pdf)
-	       (org-latex-export-to-pdf)
-	       )
-	     )
-	    (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
-	    (pdf-preview-window
-	     (when pdf-preview-buffer
-	       (get-buffer-window pdf-preview-buffer)
-	       )
-	     )
+    (interactive "P")
+    (let* (
+	   ;; this command exports to PDF asynchronously and returns the
+	   ;; file name
+	   (pdf-preview-file
+	    (if (and (boundp 'org-beamer-mode) org-beamer-mode)
+		(org-beamer-export-to-pdf)
+	      (org-latex-export-to-pdf)
+	      )
 	    )
-
-       ;; ;; if the buffer is visible, do nothing
-       (unless pdf-preview-window
-
-	 ;; ;; DEPRECATED: if a buffer exists, show it in a vertical split
-	 ;; (if pdf-preview-buffer
-	 ;;     (switch-to-buffer-other-window pdf-preview-buffer)
-	 ;;   (evil-window-vsplit nil pdf-preview-file)
-	 ;; )
-
-	 ;; show buffer in "other" window if no prefix, vsplit otherwise
-	 (when (or p (= (length (window-list)) 1))
-	   (evil-window-vsplit) (evil-window-move-far-right))
-	 (evil-window-prev 0)
-	 (if pdf-preview-buffer
-	     (switch-to-buffer pdf-preview-buffer nil t)
-	   (find-file pdf-preview-file)
+	   (pdf-preview-buffer (find-buffer-visiting pdf-preview-file))
+	   (pdf-preview-window
+	    (when pdf-preview-buffer
+	      (get-buffer-window pdf-preview-buffer)
+	      )
+	    )
 	   )
 
-	 )
+      ;; ;; if the buffer is visible, do nothing
+      (unless pdf-preview-window
 
-       )
-     )
+	;; ;; DEPRECATED: if a buffer exists, show it in a vertical split
+	;; (if pdf-preview-buffer
+	;;     (switch-to-buffer-other-window pdf-preview-buffer)
+	;;   (evil-window-vsplit nil pdf-preview-file)
+	;; )
+
+	;; show buffer in "other" window if no prefix, vsplit otherwise
+	(when (or p (= (length (window-list)) 1))
+	  (evil-window-vsplit) (evil-window-move-far-right))
+	(evil-window-prev 0)
+	(if pdf-preview-buffer
+	    (switch-to-buffer pdf-preview-buffer nil t)
+	  (find-file pdf-preview-file)
+	  )
+
+	)
+
+      )
+    )
 
 
-   )
+  )
 
 
 (provide 'research)

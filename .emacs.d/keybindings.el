@@ -124,7 +124,7 @@
   (bind-key* "M-<up>" 'enlarge-window)
 
   ;; kill current buffer with C-q
-  (bind-key* "C-q" 'kill-this-buffer)
+  (bind-key* "C-q" 'kill-current-buffer)
 
   ;;; operations in/on the treemacs buffer
   
@@ -647,6 +647,9 @@
 
   ;; toggle URL visibility with "C-c w w"
   (define-key org-mode-map (kbd "C-c w w") 'org-toggle-link-display)
+
+  ;; edit export block
+  (define-key org-mode-map (kbd "C-c e") 'org-edit-export-block)
 
   ;; open link at point with EAF using "C-c w o"
   ;; NOTE: this does not override the default Org keybinding "C-c C-o"
