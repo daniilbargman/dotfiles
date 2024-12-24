@@ -1,11 +1,11 @@
 # -*- mode: snippet -*-
 # name: latex code block dbargman
-# key: lx
+# key: lbl
 # --
-#+NAME: ${1:name_and_label}
-#+LABEL: $1
-#+BEGIN_${2:$$(yas-choose-value '("EXPORT" "SRC"))} latex
+${1:$(unless (string-empty-p yas-text) "#+NAME: ")}${1:name_and_label}${1:$(unless (string-empty-p yas-text) "\n")}#+BEGIN_${2:$$(yas-choose-value '("EXPORT" "SRC"))} latex
 
+\begin{$3} ${1:$(unless (string-empty-p yas-text) (concat"\\\\label{" (yas-field-value 1) "}"))}
 $0
+\end{$3}
 
 #+END_$2

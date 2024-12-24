@@ -60,6 +60,13 @@
 
 
 ;; helper function for cleaning up unfilled parts of python templates
+(defun delete-empty-lines ()
+  "Helper function for cleaning up empty lines in a snippet."
+  (delete-duplicate-lines yas-snippet-beg yas-snippet-end nil t)
+  (whitespace-cleanup-region yas-snippet-beg yas-snippet-end)
+  )
+
+;; helper function for cleaning up unfilled parts of python templates
 (defun cleanup-python-snippet ()
   "Helper function for cleaning up python function snippets."
   (whitespace-cleanup-region yas-snippet-beg yas-snippet-end)

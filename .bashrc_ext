@@ -107,7 +107,7 @@ alias la="ls -lahFtr --color=always"
 alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; sudo apt-get -y autoremove"
 
 # alias nmcli d wifi with "wifi"; add BSSID to output for choosing router alias
-alias wifi="nmcli -f in-use,chan,ssid,bssid,signal,bars,security d wifi"
+alias wifi="iwctl station wlan-1"
 
 # alias "myip" to get public IP address via curl
 alias myip="curl -s ifconfig.co"
@@ -122,6 +122,11 @@ alias emacs-keys='ibus-daemon --xim -d -r'
 # alias to enable/disable/reset kubernetes
 function disable-k8s {
     sudo echo "draining node and stopping services..."
+    # sudo ETCDCTL_API=2 etcdctl --endpoints=https://127.0.0.1:2379 \
+    #     --cacert=/etc/kubernetes/init/pki/etcd/ca.crt \
+    #     --cert=/etc/kubernetes/init/pki/etcd/server.crt \
+    #     --key=/etc/kubernetes/init/pki/etcd/server.key \
+    #     snapshot save /var/lib/etcd/etcd-backup.db
     kubectl drain $(hostname) --disable-eviction=true --force=true \
 	    --ignore-daemonsets \
         --delete-emptydir-data # --skip-wait-for-delete-timeout=300
@@ -132,11 +137,20 @@ function disable-k8s {
 }
 function enable-k8s {
     [ "$(myip)" = "139.162.214.6" ] || lock
+
+    # # restore etcd state from backup
+    # sudo ETCDCTL_API=3 etcdctl --data-dir="/var/lib/etcd-backup" \
+    # 	--endpoints=https://127.0.0.1:2379 \
+    # 	--cacert=/etc/kubernetes/init/pki/etcd/ca.crt \
+    # 	--cert=/etc/kubernetes/init/pki/etcd/server.crt \
+    # 	--key=/etc/kubernetes/init/pki/etcd/server.key \
+    # 	snapshot restore /var/lib/etcd/etcd-backup.db
+
     # sudo service nfs-server start
     sudo service containerd start
     # sudo service docker start
     sudo service kubelet start
-    sleep 5
+    sleep 60
     kubectl uncordon $(hostname)
 }
 function import-images {

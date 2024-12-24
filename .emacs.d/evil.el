@@ -31,6 +31,7 @@
   :init
 
   ;; other settings
+  (setq evil-want-keybinding nil)
   (setq evil-default-state 'normal)
   (setq evil-want-C-u-scroll t)  ; this breaks if evil-leader package is added
   (setq evil-vsplit-window-right t)
@@ -82,7 +83,6 @@
 
   ;; evil-leader loads evil, so certain things need to be set here
   :init
-  (setq evil-want-keybinding nil)
 
   ;; set leader key to ","
   :config (with-no-warnings

@@ -25,7 +25,7 @@ set -Eeuo pipefail
 sudo apt-get update && sudo apt-get -y upgrade
 
 # install common dependencies
-sudo apt-get install -y grub2 curl keyctl s3cmd
+sudo apt-get install -y grub2 iwd curl keyctl s3cmd
 
 # source .bashrc_ext from .bashrc
 cat >> ~/.bashrc <<EOF

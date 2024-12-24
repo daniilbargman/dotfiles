@@ -168,7 +168,8 @@ Also runs tab-bar-post-switch-hooks function defined below."
 	 (read-buffer "Name of the new tab: " (buffer-name) nil)))
     (tab-rename new-tab-name)
     (tab-bar-post-switch-hooks)))
-(add-to-list 'tab-bar-tab-post-open-functions 'auto-rename-new-tabs)
+(with-eval-after-load "init"
+  (add-to-list 'tab-bar-tab-post-open-functions 'auto-rename-new-tabs))
 
 ;;; Support creating / maximizing / destroying windows
 (window-list)

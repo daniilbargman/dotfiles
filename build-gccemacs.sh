@@ -48,17 +48,18 @@ sudo apt-get install -y pinentry-gnome3
 # sudo make install
 
 # emacs itself
-cd ~/.git-clones
-sudo rm -rf emacs
-git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
-cd ~/.git-clones/emacs
+# cd ~/.git-clones
+# sudo rm -rf emacs
+# git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
 
 # configure with considerations from StackOverflow
+# note: xwidgets is broken in latest emacs - see
+# https://www.reddit.com/r/emacs/comments/1fpd3dk/problem_compiling_latest_git_version/
+cd ~/.git-clones/emacs
 ./autogen.sh
 ./configure --with-json --with-cairo --with-mailutils \
         --with-tree-sitter --with-imagemagick --with-x-toolkit=gtk3 \
-	    --with-native-compilation  # this is for the GCC branch of Emacs
-        # --with-xwidgets
+	    --with-native-compilation # --with-xwidgets  
 
 # make and make install
 sudo make -j$(nproc)

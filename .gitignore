@@ -68,8 +68,8 @@
 !.config/polybar/
 !.config/rofi/
 !.config/alacritty/
-!.config/gtk-3.0/
-!.config/gtk-2.0/
+# !.config/gtk-3.0/
+# !.config/gtk-2.0/
 
 # # back up active XFCE theme
 # !.themes/

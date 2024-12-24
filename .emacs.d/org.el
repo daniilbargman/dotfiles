@@ -57,10 +57,10 @@
 
 ;; org mode itself
 
-(custom-set-variables
- `(straight-built-in-pseudo-packages ,(add-to-list 'straight-built-in-pseudo-packages 'org))
- )
-(straight-use-package 'org
+;; (custom-set-variables
+;;  `(straight-built-in-pseudo-packages ,(add-to-list 'straight-built-in-pseudo-packages 'org))
+;;  )
+(use-package 'org
 
   :config
 
