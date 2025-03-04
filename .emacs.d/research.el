@@ -336,6 +336,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
   ;; nicer latex formula sizes
   (plist-put org-format-latex-options :scale 1.5)
+  (plist-put org-format-latex-options :html-scale 0.9)
 
   ;; store latex images in a dedicated directory
   (setq

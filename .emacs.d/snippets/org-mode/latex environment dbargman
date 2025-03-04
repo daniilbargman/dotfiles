@@ -1,6 +1,13 @@
 # key: lenv
 # name: latex environment dbargmn
+# binding: C-c C-l C-e
 # --
-\begin{${1:equation}}
-$0
-\end{$1}
+`(evil-insert-state)`\begin{${1:equation}}${2:$(unless
+    (or (string-suffix-p "*" (yas-field-value 1))
+    (string-empty-p yas-text))
+    "\\\\label{")}${2: }${2:$(unless
+    (or (string-suffix-p "*" (yas-field-value 1))
+    (string-empty-p yas-text))
+    "}")}
+`(string-chop-newline yas-selected-text)`$0
+\end{$1}`(when (string-suffix-p "\n" yas-selected-text) "\n")`

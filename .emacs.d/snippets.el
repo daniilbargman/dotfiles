@@ -27,17 +27,12 @@
 
 ;; pull YASnippet
 (use-package yasnippet
-
-  :custom
-
-  ;; note: this config should address undo-tree's persistent undo issue
-  (yas-snippet-revival nil)
-
   
   :config
 
   ;; enable globally
   (yas-global-mode 1)
+
   )
 
 ;; pull predefined collection of snippets

@@ -60,22 +60,21 @@
 ;; (custom-set-variables
 ;;  `(straight-built-in-pseudo-packages ,(add-to-list 'straight-built-in-pseudo-packages 'org))
 ;;  )
-(use-package 'org
+(use-package org)
 
-  :config
+;; prettify check boxes
+(add-hook
+ 'org-mode-hook
+ #'(lambda ()
+     (push '("[ ]" .  "☐") prettify-symbols-alist)
+     (push '("[X]" . "☑" ) prettify-symbols-alist)
+     (push '("[-]" . "❍" ) prettify-symbols-alist)
+     (prettify-symbols-mode)
+     )
+ )
 
-
-  ;; prettify check boxes
-  (add-hook 'org-mode-hook (lambda ()
-  (push '("[ ]" .  "☐") prettify-symbols-alist)
-  (push '("[X]" . "☑" ) prettify-symbols-alist)
-  (push '("[-]" . "❍" ) prettify-symbols-alist)
-  (prettify-symbols-mode)))
-
-  ;; indent automaticall
-  (add-hook 'org-mode-hook 'org-indent-mode)
-
-  )
+;; indent automaticall
+(add-hook 'org-mode-hook #'org-indent-mode)
 
 ;; evil keybindings
 (use-package evil-org
@@ -243,7 +242,8 @@ Opens the new node in 'other window' mode by default."
 ;; as separator)
 (font-lock-add-keywords
  'org-mode
-  `(("^[ \t]*\\(- \\[X\\] .+\\(?:\n.+\\)*?\\)\n\\(?:$\\|[ \t]*- \\[[ -X]\\]\\)" 1 'org-headline-done prepend)) 'append)
+  `(("^[ \t]*\\(- \\[X\\] .+\\(?:\n.+\\)*?\\)\n\\(?:$\\|[ \t]*- \\[[ -X]\\]\\)"
+     1 'org-headline-done prepend)) 'append)
 (advice-add 'org-toggle-checkbox :after #'font-lock-fontify-block)
 
 ;;; FUNCTIONALITY
@@ -270,7 +270,8 @@ Opens the new node in 'other window' mode by default."
 (defun dbargman/contents-of-file (filePath)
   "Return contents of file under FILEPATH."
   (with-temp-buffer
-    (insert-file-contents filePath)
+    (when (file-exists-p filePath)
+      (insert-file-contents filePath))
     (buffer-string)))
 
 ;; get node file from node title (or alias)

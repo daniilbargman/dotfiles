@@ -37,7 +37,9 @@
 ;; use straight.el instead of package.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+       (expand-file-name "straight/repos/straight.el/bootstrap.el"
+			 user-emacs-directory)
+       )
       (bootstrap-version 6))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
@@ -62,6 +64,7 @@
 
 ;; set font to Fira Code
 (set-frame-font "Fira Code")
+(set-face-attribute 'default nil :height 95)
 
 ;; remove distractions
 (setq inhibit-startup-message t)  ; no startup screen

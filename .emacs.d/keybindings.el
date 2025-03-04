@@ -202,9 +202,9 @@
   (evil-define-key 'normal 'global (kbd "k") 'evil-previous-visual-line)
 
   ;; scroll up with C-u (automatic setting breaks if evil-leader is added)
-  (evil-define-key 'normal 'global (kbd "C-u")
+  (evil-define-key '(normal visual) 'global (kbd "C-u")
     (lambda () (interactive) (evil-scroll-up 0)))
-  (evil-define-key 'normal 'global (kbd "C-d")
+  (evil-define-key '(normal visual) 'global (kbd "C-d")
     (lambda () (interactive) (evil-scroll-down 0)))
 
   ;; for moving around use <C-h,j,k,l>
@@ -476,7 +476,7 @@
     (kbd "M-y") 'dbargman/consult-replace-selection-from-kill-ring)
 
   ;; format braces
-  (evil-define-key 'normal 'global (kbd "C-e") 'ide/format-parens)
+  (evil-define-key 'normal 'global (kbd "C-e") 'dbargman/format-parens)
 
   ;; find symbol definitions in arbitrady window splits
   (evil-define-key 'normal 'global
@@ -636,6 +636,10 @@
 
     )
 
+  ;; insert a new checkbox item with C-<return>
+  (evil-define-key 'insert org-mode-map (kbd "C-<return>")
+	      #'(lambda () (interactive) (org-insert-item t)))
+
   ;; toggle checkboxes more easily
   (define-key org-mode-map (kbd "C-c x") 'org-toggle-checkbox)
 
@@ -654,8 +658,8 @@
   ;; open link at point with EAF using "C-c w o"
   ;; NOTE: this does not override the default Org keybinding "C-c C-o"
   (define-key org-mode-map (kbd "C-c w o")
-    (lambda () (interactive)
-      (evil-window-vsplit) (eaf-open-url-at-point)))
+	      (lambda () (interactive)
+		(evil-window-vsplit) (eaf-open-url-at-point)))
 
   ;; run revert to previous layout with "q"; alternative would be to
   ;; run org-agenda-quit twice
@@ -685,7 +689,7 @@
     ;; When using a "previous buffer" keypress, go back two buffers.
     ;; It's still possible to go to the header view by pressing "Q".
     (evil-define-key 'normal mu4e-view-mode-map (kbd "C-x C-p")
-		'(lambda () (interactive) (previous-buffer 2)))
+      '(lambda () (interactive) (previous-buffer 2)))
 
     )
 

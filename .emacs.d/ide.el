@@ -59,11 +59,11 @@ buffer name during each attempt to open a shell or send code to it."
 
 ;; Delay for company popup (when mode is toggled to active)
 (defcustom ide-format-parens-opening-paren-alist '("(")
-  "List of opening parens for which `ide/format-parens' will work.
+  "List of opening parens for which `dbargman/format-parens' will work.
 
   Point will have to be on one of the allowed opening paren symbols for
-  the `ide/format-parens' to attempt its formatting logic. Otherwise
-  the function will not work."
+  the `dbargman/format-parens' to attempt its formatting logic.
+  Otherwise the function will not work."
   :group 'ide-config
   :type '(repeat string)
   :local t
@@ -74,10 +74,10 @@ buffer name during each attempt to open a shell or send code to it."
   '(((after "&?[a-zA-Z0-9]+\\(?:-[a-zA-Z0-9]+\\)*\\>\\_>")))
   "List of lists of strings to use as delimiters inside parens.
 
-  The function `ide/format-parens'iterates over several display options
-  for parentheses, which is useful for languages like python and JS. For
-  example, when the cursor is at the opening paren, this function will
-  sequentially toggle the following options:
+  The function `dbargman/format-parens'iterates over several display
+  options for parentheses, which is useful for languages like python and
+  JS. For example, when the cursor is at the opening paren, this
+  function will sequentially toggle the following options:
 
       using commas as the separator:
 
@@ -890,6 +890,19 @@ targets."
 	   :post-handlers '(:add indent-to-context)
 	   )
 
+  ;; pairs for LaTeX
+  (sp-local-pair 'org-mode "=" "=" :actions '(rem))
+  (sp-local-pair 'org-mode "\\[" "\\]")
+  (sp-local-pair 'org-mode "\\[ " " \\]")
+  (sp-local-pair 'org-mode "$" "$")
+  (sp-local-pair 'org-mode "`" "'")
+  (sp-local-pair 'org-mode "\\left\\{" "\\right\\}")
+  (sp-local-pair 'org-mode "\\left\\{ " " \\right\\}")
+  (sp-local-pair 'org-mode "\\left(" "\\right)")
+  (sp-local-pair 'org-mode "\\left( " " \\right)")
+  (sp-local-pair 'org-mode "\\left[" "\\right]")
+  (sp-local-pair 'org-mode "\\left[ " " \\right]")
+
   ;; enable globally
   (smartparens-global-mode t)
 
@@ -902,7 +915,7 @@ targets."
 
 
 ;; functions for formatting expressions inside braces
-(defun ide/format-parens ()
+(defun dbargman/format-parens ()
   "Format collections inside parens."
   (interactive)
   ;; (message (number-to-string (nth 0 (syntax-ppss))))
@@ -1195,7 +1208,7 @@ targets."
   :custom
   (highlight-indent-guides-method 'character)
   (highlight-indent-guides-responsive nil)
-  (highlight-indent-guides-auto-character-face-perc 75)
+  (highlight-indent-guides-auto-character-face-perc 20)
   ;; (highlight-indent-guides-delay 0.4)
   :config
   )

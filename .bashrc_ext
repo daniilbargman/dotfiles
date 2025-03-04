@@ -66,6 +66,14 @@ function vterm_printf {
 
 #################### convenience maps and shortcuts ###########################
 
+# alias poweroff / reboot to automatically envoke sudo
+alias off="sudo poweroff"
+alias poweroff="sudo poweroff"
+alias reboot="sudo reboot"
+
+# adjust screen brightness
+alias brightness="brightnessctl s"
+
 # project launcher directory
 executables=~/executables
 
@@ -101,13 +109,13 @@ alias lock='wg-quick up wg0'
 alias unlock='wg-quick down wg0'
 
 # use human-readable, reverse-chronological directory lists
-alias la="ls -lahFtr --color=always"
+alias la="ls -lAHFtr --color=always"
 
 # alias update commands
 alias update="sudo apt-get update; sudo apt-get -y upgrade; sudo apt-get clean; sudo apt-get -y autoremove"
 
 # alias nmcli d wifi with "wifi"; add BSSID to output for choosing router alias
-alias wifi="iwctl station wlan-1"
+alias wifi="iwctl station wlan0"
 
 # alias "myip" to get public IP address via curl
 alias myip="curl -s ifconfig.co"
@@ -119,139 +127,54 @@ alias pg="ping -c 3 google.com"
 # reboot key daemon to unblock emacs
 alias emacs-keys='ibus-daemon --xim -d -r'
 
-# alias to enable/disable/reset kubernetes
-function disable-k8s {
-    sudo echo "draining node and stopping services..."
-    # sudo ETCDCTL_API=2 etcdctl --endpoints=https://127.0.0.1:2379 \
-    #     --cacert=/etc/kubernetes/init/pki/etcd/ca.crt \
-    #     --cert=/etc/kubernetes/init/pki/etcd/server.crt \
-    #     --key=/etc/kubernetes/init/pki/etcd/server.key \
-    #     snapshot save /var/lib/etcd/etcd-backup.db
-    kubectl drain $(hostname) --disable-eviction=true --force=true \
-	    --ignore-daemonsets \
-        --delete-emptydir-data # --skip-wait-for-delete-timeout=300
-    # sudo service nfs-server stop
-    sudo service kubelet stop
-    # sudo service docker stop
-    sudo service containerd stop
-}
-function enable-k8s {
-    [ "$(myip)" = "139.162.214.6" ] || lock
+################## KUBERNETES SUPPORT #########################################
 
-    # # restore etcd state from backup
-    # sudo ETCDCTL_API=3 etcdctl --data-dir="/var/lib/etcd-backup" \
-    # 	--endpoints=https://127.0.0.1:2379 \
-    # 	--cacert=/etc/kubernetes/init/pki/etcd/ca.crt \
-    # 	--cert=/etc/kubernetes/init/pki/etcd/server.crt \
-    # 	--key=/etc/kubernetes/init/pki/etcd/server.key \
-    # 	snapshot restore /var/lib/etcd/etcd-backup.db
+if [ "$(which kubectl)" ]; then
 
-    # sudo service nfs-server start
-    sudo service containerd start
-    # sudo service docker start
-    sudo service kubelet start
-    sleep 60
-    kubectl uncordon $(hostname)
-}
-function import-images {
-    img_dir="/mnt/projects/statosphere/_aux/containerd-image-backup"
-    all_tars=$(ls ${img_dir})
-    for i in ${all_tars[@]}; do
-	sudo ctr -n k8s.io image import ${img_dir}/$i
-    done
-}
-export -f disable-k8s
-export -f enable-k8s
-export -f import-images
-alias kd='disable-k8s'
-alias ke='enable-k8s'
-alias kun='kubectl uncordon $(hostname)'
-alias kr='sudo ctr -n k8s.io c rm $(sudo ctr -n k8s.io c ls -q) && sudo ctr -n k8s.io i rm $(sudo ctr -n k8s.io i ls -q)'
-alias ki='import-images'
-alias km='sudo ctr -n k8s.io c ls'
-function kns {
-    kubectl config set-context --current --namespace=$1
-}
-export -f kns
+    # alias to enable/disable/reset kubernetes
+    function disable-k8s {
+        sudo echo "draining node and stopping services..."
+        kubectl drain $(hostname) --disable-eviction=true --force=true \
+            --ignore-daemonsets \
+            --delete-emptydir-data # --skip-wait-for-delete-timeout=300
+        sudo service kubelet stop
+        sudo service docker stop
+        sudo service containerd stop
+    }
+    function enable-k8s {
+        [ "$(myip)" = "139.162.214.6" ] || lock
+        sudo service containerd start
+        sudo service kubelet start
+        sleep 60
+        kubectl uncordon $(hostname)
+    }
+    function import-images {
+        img_dir="/mnt/projects/statosphere/_aux/containerd-image-backup"
+        all_tars=$(ls ${img_dir})
+        for i in ${all_tars[@]}; do
+        sudo ctr -n k8s.io image import ${img_dir}/$i
+        done
+    }
+    export -f disable-k8s
+    export -f enable-k8s
+    export -f import-images
+    alias kd='disable-k8s'
+    alias ke='enable-k8s'
+    alias kun='kubectl uncordon $(hostname)'
+    alias kr='sudo ctr -n k8s.io c rm $(sudo ctr -n k8s.io c ls -q) && sudo ctr -n k8s.io i rm $(sudo ctr -n k8s.io i ls -q)'
+    alias ki='import-images'
+    alias km='sudo ctr -n k8s.io c ls'
+    function kns {
+        kubectl config set-context --current --namespace=$1
+    }
+    export -f kns
 
-# alias poweroff / reboot to automatically envoke sudo
-alias off="sudo poweroff"
-alias poweroff="sudo poweroff"
-alias reboot="sudo reboot"
+    # kubectl completion and alias
+    source <(kubectl completion bash)
+    alias k=kubectl
+    complete -F __start_kubectl k
 
-# kubectl completion and alias
-source <(kubectl completion bash)
-alias k=kubectl
-
-# Automatically add completion for all aliases to commands having completion functions
-function alias_completion {
-    local namespace="alias_completion"
-
-    # parse function based completion definitions, where capture group 2 => function and 3 => trigger
-    local compl_regex='complete( +[^ ]+)* -F ([^ ]+) ("[^"]+"|[^ ]+)'
-    # parse alias definitions, where capture group 1 => trigger, 2 => command, 3 => command arguments
-    local alias_regex="alias ([^=]+)='(\"[^\"]+\"|[^ ]+)(( +[^ ]+)*)'"
-
-    # create array of function completion triggers, keeping multi-word triggers together
-    eval "local completions=($(complete -p | sed -Ene "/$compl_regex/s//'\3'/p"))"
-    (( ${#completions[@]} == 0 )) && return 0
-
-    # create temporary file for wrapper functions and completions
-    rm -f "/tmp/${namespace}-*.tmp" # preliminary cleanup
-    local tmp_file; tmp_file="$(mktemp "/tmp/${namespace}-${RANDOM}XXX.tmp")" || return 1
-
-    local completion_loader; completion_loader="$(complete -p -D 2>/dev/null | sed -Ene 's/.* -F ([^ ]*).*/\1/p')"
-
-    # read in "<alias> '<aliased command>' '<command args>'" lines from defined aliases
-    local line; while read line; do
-        eval "local alias_tokens; alias_tokens=($line)" 2>/dev/null || continue # some alias arg patterns cause an eval parse error
-        local alias_name="${alias_tokens[0]}" alias_cmd="${alias_tokens[1]}" alias_args="${alias_tokens[2]# }"
-
-        # skip aliases to pipes, boolean control structures and other command lists
-        # (leveraging that eval errs out if $alias_args contains unquoted shell metacharacters)
-        eval "local alias_arg_words; alias_arg_words=($alias_args)" 2>/dev/null || continue
-        # avoid expanding wildcards
-        read -a alias_arg_words <<< "$alias_args"
-
-        # skip alias if there is no completion function triggered by the aliased command
-        if [[ ! " ${completions[*]} " =~ " $alias_cmd " ]]; then
-            if [[ -n "$completion_loader" ]]; then
-                # force loading of completions for the aliased command
-                eval "$completion_loader $alias_cmd"
-                # 124 means completion loader was successful
-                [[ $? -eq 124 ]] || continue
-                completions+=($alias_cmd)
-            else
-                continue
-            fi
-        fi
-        local new_completion="$(complete -p "$alias_cmd")"
-
-        # create a wrapper inserting the alias arguments if any
-        if [[ -n $alias_args ]]; then
-            local compl_func="${new_completion/#* -F /}"; compl_func="${compl_func%% *}"
-            # avoid recursive call loops by ignoring our own functions
-            if [[ "${compl_func#_$namespace::}" == $compl_func ]]; then
-                local compl_wrapper="_${namespace}::${alias_name}"
-                    echo "function $compl_wrapper {
-                        (( COMP_CWORD += ${#alias_arg_words[@]} ))
-                        COMP_WORDS=($alias_cmd $alias_args \${COMP_WORDS[@]:1})
-                        (( COMP_POINT -= \${#COMP_LINE} ))
-                        COMP_LINE=\${COMP_LINE/$alias_name/$alias_cmd $alias_args}
-                        (( COMP_POINT += \${#COMP_LINE} ))
-                        $compl_func
-                    }" >> "$tmp_file"
-                    new_completion="${new_completion/ -F $compl_func / -F $compl_wrapper }"
-            fi
-        fi
-
-        # replace completion trigger by alias
-        new_completion="${new_completion% *} $alias_name"
-        echo "$new_completion" >> "$tmp_file"
-    done < <(alias -p | sed -Ene "s/$alias_regex/\1 '\2' '\3'/p")
-    source "$tmp_file" && rm -f "$tmp_file"
-}; alias_completion
-
+fi
 
 ############################### VARIOUS #######################################
 

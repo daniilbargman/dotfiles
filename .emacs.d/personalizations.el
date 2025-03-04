@@ -98,7 +98,7 @@
      `(
        (dbargman/email-oauth2ms-config-file
 	. "UCL/ucesdb2@ucl.ac.uk-oauth2ms-config")
-       (mu4e-get-mail-command . "mbsync -a -c ~/Research/email/.mbsyncrc")
+       (mu4e-get-mail-command . "mbsync -a -c ~/Research/.mbsyncrc")
        (user-mail-address . "daniil.bargman.22@ucl.ac.uk")
        (user-full-name . "Daniil Bargman")
        (message-user-organization . "UCL")
@@ -107,7 +107,7 @@
        ;; 	,(dbargman/contents-of-file
        ;; 	  "/mnt/projects/statosphere/admin/email/default-signature.html"))
        ;; (mu4e-compose-reply-to-address . "daniil.bargman.22@ucl.ac.uk")
-       (mu4e-attachment-dir . "~/Research/bibliography/PDFs/")
+       (mu4e-attachment-dir . "~/Research/")
        ;; (send-mail-function . smtpmail-send-it)
        ;; (message-send-mail-function . smtpmail-send-it)
        (smtpmail-default-smtp-server . "smtp.office365.com")
@@ -124,6 +124,9 @@
        (mu4e-trash-folder . "/UCL/daniil.bargman.22/Deleted Items")
        (mu4e-refile-folder . "/UCL/daniil.bargman.22/Archive")
        (dbargman/inbox-folder . "/UCL/daniil.bargman.22/Inbox")
+
+       ;; define a custom CSS file for email message HTML rendering
+       (org-msg-enforce-css . "~/Research/email-format.css")
        )
      )
 

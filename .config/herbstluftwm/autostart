@@ -11,6 +11,8 @@ hc() {
 
 hc emit_hook reload
 
+xsetroot -solid '#5A8E3A'
+
 # replacing background with own bg image in .xinitrc
 feh --bg-scale ~/.config/herbstluftwm/background.jpg
 
@@ -80,11 +82,8 @@ tag_names=( \
   'Workspace4' \
   'Workspace5' \
   'Workspace6' \
-  'Workspace7' \
-  'Workspace8' \
-  'scratch' \
 )
-tag_keys=( {1..9} 0 )
+tag_keys=( {1..6} 0 )
 
 hc rename default "${tag_names[0]}" || true
 for i in ${!tag_names[@]} ; do

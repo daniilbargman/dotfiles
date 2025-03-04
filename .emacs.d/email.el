@@ -170,17 +170,100 @@ Retrieves the oauth2ms config file from pass using
 (use-package org-msg
   :requires (emacs-htmlize))
 
-;; enable org-msg-mode and configure for mu4e
+;; enable org-msg-mode
 (org-msg-mode)
 (org-msg-mode-mu4e)
-(setq org-msg-options "html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
-    org-msg-startup "hidestars indent inlineimages"
-    org-msg-greeting-fmt "\nHi *%s*,\n\n"
-    org-msg-greeting-name-limit 3
-    org-msg-default-alternatives '((new html) (reply-to-html html))
-    org-msg-convert-citation t
-    )
 
+;; set default email rendering options
+(setq org-msg-options (s-join
+		       " "
+		       '(
+			 "html-postamble:nil"
+			 "H:5"
+			 "num:nil"
+			 "^:{}"
+			 "toc:nil"
+			 "author:nil"
+			 "email:nil"
+			 "\\n:nil"
+			 "tex:dvisvgm"
+			 "\':t"
+			 "\":t"
+			 )
+		       )
+      org-msg-startup "hidestars indent inlineimages"
+      org-msg-greeting-fmt "\nHi%s,\n\n"
+      org-msg-greeting-name-limit 3
+      org-msg-default-alternatives
+      '((new text html) (reply-to text html) (reply-to-html text html))
+      org-msg-convert-citation t
+      )
+
+;; save HTML render of org message if draft buffer is being closed;
+;; return it to previous location if draft is being edited again
+(advice-add
+ 'message-kill-buffer :before
+ #'(lambda ()
+     (when org-msg-mode
+       (let ((html-file
+	      (file-name-nondirectory
+	       (car (org-msg-get-prop "reply-to")))))
+	 (copy-file
+	  (expand-file-name html-file "/tmp/")
+	  (expand-file-name html-file "~/Email/.drafts/")
+	  t
+	  )
+	 )
+       )
+     )
+ )
+(advice-add
+ 'mu4e-compose-edit :around
+ #'(lambda (edit &rest args)
+     (org-msg-mode -1)
+     (apply edit args)
+     (org-msg-mode)
+     (let ((html-file
+	    (file-name-nondirectory
+	     (car (org-msg-get-prop "reply-to")))))
+       (ignore-error file-already-exists
+	 (copy-file
+	  (expand-file-name html-file "~/Email/.drafts/")
+	  (expand-file-name html-file "/tmp/")
+	  nil
+	  )
+	 )
+       )
+     (org-msg-edit-mode)
+     )
+ )
+
+;; ;; go around the problem of reopening reply drafts in org-msg by saving
+;; ;; parent message info as file local variable
+;; (advice-add
+;;  'org-msg-post-setup :before
+;;  #'(lambda ()
+;;      (org-msg-mode -1)
+;;      (add-file-local-variable 'mu4e-compose-parent-message
+;; 			      mu4e-compose-parent-message)
+;;      (org-msg-mode)
+;;      )
+;;  )
+
+
+;; ;; bug workaround: advise mu4e to temporarily disable org-msg-mode
+;; ;; when editing an old draft
+;; (advice-add 'mu4e-compose-edit :around
+;; 	    #'(lambda (edit &rest args)
+;; 		(org-msg-mode -1)
+;; 		(apply edit args)
+;; 		(add-file-local-variable
+;; 		 'mu4e-compose-parent-message
+;; 		 mu4e-compose-parent-message)
+;; 		(org-msg-mode)
+;; 		(org-msg-edit-mode)
+;; 		)
+;; 	    )
 
 ;;; CUSTOMIZATIONS IN THE MAIN VIEW`'
 
@@ -265,6 +348,10 @@ calling 'make-mu4e-context'."
   ;; Reload mu4e so the main view is refreshed with the new functions
   (mu4e)
   )
+
+;; add action for viewing a message in browser from header list
+(add-to-list 'mu4e-headers-actions
+'("view in browser" . mu4e-action-view-in-browser) t)
 
 ;; Use hook to conigure maildir shortcuts whenever a context changes.
 ;; It can't be put into :enter-func for mu4e-contexts because it relies

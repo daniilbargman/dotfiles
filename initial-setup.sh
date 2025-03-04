@@ -12,7 +12,8 @@ BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Initial steps:
 #   1. cd ~
 #   2. git init
-#   3. git pull https://github.com/daniilbargman/dotfiles.git
+#   3. git add remote dotfiles https://github.com/daniilbargman/dotfiles
+#   3. git pull dotfiles master
 #
 # NOTES:
 #
@@ -25,7 +26,7 @@ set -Eeuo pipefail
 sudo apt-get update && sudo apt-get -y upgrade
 
 # install common dependencies
-sudo apt-get install -y grub2 iwd curl keyctl s3cmd
+sudo apt-get install -y grub2 iwd curl keyutils s3cmd
 
 # source .bashrc_ext from .bashrc
 cat >> ~/.bashrc <<EOF
@@ -34,18 +35,18 @@ cat >> ~/.bashrc <<EOF
 source ~/.bashrc_ext
 EOF
 
-# optional: grub theme
-mkdir ~/.grub-themes
-cd ~/.grub-themes
-git clone --depth 1 https://gitlab.com/VandalByte/darkmatter-grub-theme.git
-cd darkmatter-grub-theme
-sudo python3 darkmatter-theme.py --install
-cd ~
+# # optional: grub theme
+# mkdir ~/.git-clones/
+# cd ~/.git-clones/
+# git clone --depth 1 https://gitlab.com/VandalByte/darkmatter-grub-theme.git
+# cd darkmatter-grub-theme
+# sudo python3 darkmatter-theme.py --install
+# cd ~/.git-clones/
 
 # build vim with the necessary dependencies
 
-sudo apt-get install -y libncurses5-dev libgtk2.0-dev libatk1.0-dev \
-    libcairo2-dev python-dev-is-python3
+# sudo apt-get install -y libncurses5-dev libgtk2.0-dev libatk1.0-dev \
+#     libcairo2-dev python-dev-is-python3
 rm -rf vim && git clone https://github.com/vim/vim.git && cd vim
 ./configure --with-features=huge \
             --enable-multibyte \
@@ -57,73 +58,73 @@ rm -rf vim && git clone https://github.com/vim/vim.git && cd vim
 make && sudo make install
 make clean && make distclean
 
-# set vim as default editor
-sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
-sudo update-alternatives --set editor /usr/local/bin/vim
-sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
-sudo update-alternatives --set vi /usr/local/bin/vim
+# # set vim as default editor
+# sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
+# sudo update-alternatives --set editor /usr/local/bin/vim
+# sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
+# sudo update-alternatives --set vi /usr/local/bin/vim
 
-# vim plugin manager: vim-plug
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+# # vim plugin manager: vim-plug
+# curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+#     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
-# install fonts
-git clone --depth=1 https://github.com/ryanoasis/nerd-fonts
-sudo apt-get -y install fonts-powerline fonts-firacode fonts-noto
+# # install fonts
+# git clone --depth=1 https://github.com/ryanoasis/nerd-fonts
+# sudo apt-get -y install fonts-firacode fonts-noto  # fonts-powerline 
 
-# bash completion
-sudo apt-get -y install bash-completion
+# # bash completion
+# sudo apt-get -y install bash-completion
 
-# optional: graphics manager: lightdm with autologin
-sudo apt-get -y install xorg
-cd /etc/X11 && sudo Xorg -configure
-cd ~
-sudo apt-get -y install lightdm
+# # optional: graphics manager: lightdm with autologin
+# sudo apt-get -y install xorg
+# cd /etc/X11 && sudo Xorg -configure
+# cd ~
+# sudo apt-get -y install lightdm
 
-# enable passwordless autologin
-cd ~/.config/lightdm
-sudo addgroup autologin && sudo gpasswd -a $(logname) autologin
-sed -i "s/autologin-user=.*/autologin-user=$(logname)/g" lightdm.conf 
-sudo cp {lightdm.conf,lightdm-gtk-greeter.conf} /etc/lightdm/
-sudo cp ~/.config/herbstluftwm/background.jpg /etc/lightdm/
-cd ~
+# # enable passwordless autologin
+# cd ~/.config/lightdm
+# # sudo addgroup autologin && sudo gpasswd -a $(logname) autologin
+# # sed -i "s/autologin-user=.*/autologin-user=$(logname)/g" lightdm.conf 
+# sudo cp {lightdm.conf,lightdm-gtk-greeter.conf} /etc/lightdm/
+# sudo cp ~/.config/herbstluftwm/background.jpg /etc/lightdm/
+# cd ~
 
-# install herbstluftwm and dependencies
-sudo apt-get -y install acpi  # for showing battery status
-sudo apt-get -y install sysstat  # for showing CPU percentages
-sudo apt-get -y install herbstluftwm
+# # install herbstluftwm and dependencies
+# sudo apt-get -y install acpi  # for showing battery status
+# sudo apt-get -y install sysstat  # for showing CPU percentages
+# sudo apt-get -y install herbstluftwm
 
-# install compositor (compton)
-sudo apt-get -y install compton
+# # install compositor (compton)
+# sudo apt-get -y install compton
 
-# install additional layout management programs
-sudo apt-get install -y polybar rofi feh lxappearance
+# # install additional layout management programs
+# sudo apt-get install -y polybar rofi feh lxappearance
 
-### install alacritty terminal ###
+# ### install alacritty terminal ###
 
-sudo apt-get -y install cmake pkg-config libfreetype6-dev libfontconfig1-dev \
-	libxcb-xfixes0-dev libxkbcommon-dev python3
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-git clone https://github.com/alacritty/alacritty.git
-cd alacritty
-source ~/.cargo/env
-rustup override set stable
-rustup update stable
-cargo build --release
-sudo cp target/release/alacritty /usr/local/bin
-sudo cp extra/logo/alacritty-term.svg /usr/share/pixmaps/Alacritty.svg
+# sudo apt-get -y install cmake pkg-config libfreetype6-dev libfontconfig1-dev \
+# 	libxcb-xfixes0-dev libxkbcommon-dev python3
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# git clone https://github.com/alacritty/alacritty.git
+# cd alacritty
+# source ~/.cargo/env
+# rustup override set stable
+# rustup update stable
+# cargo build --release
+# sudo cp target/release/alacritty /usr/local/bin
+# sudo cp extra/logo/alacritty-term.svg /usr/share/pixmaps/Alacritty.svg
 
-# bash completions
-echo "source $(pwd)/extra/completions/alacritty.bash" >> ~/.bashrc_ext
+# # bash completions
+# echo "source $(pwd)/extra/completions/alacritty.bash" >> ~/.bashrc_ext
 
-## INSTALL SNAP ###
-sudo apt-get -y install snapd
+# ## INSTALL SNAP ###
+# sudo apt-get -y install snapd
 
-### INSTALL HELM ###
-sudo snap install -g --classic helm
+# ### INSTALL HELM ###
+# sudo snap install --classic helm
 
 ### INSTALL NPM ###
-sudo snap install -g node
+sudo snap install --classic node
 sudo ln -s "$(which npm)" /usr/local/bin/
 
 # wait a little for it to take
@@ -162,4 +163,7 @@ sudo apt-get -y install conda
 source /opt/conda/etc/profile.d/conda.sh
 conda config --set changeps1 False
 
+# done
+echo
+echo "DONE!!!"
 #
