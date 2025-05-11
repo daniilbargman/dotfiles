@@ -408,24 +408,24 @@ targets."
 
   ;; open company popup on any command in insert state, disable otherwise
   (setq company-begin-commands
-	;; this works for auto-toggle but slows down emacs
-	'(self-insert-command
-	  org-self-insert-command
-	  evil-insert
-	  evil-insert-line
-	  evil-insert-newline-above
-	  evil-insert-newline-below
-	  evil-insert-state
-	  evil-append
-	  evil-append-line
-	  evil-substitute
-	  evil-replace-state
-	  evil-change
-	  evil-change-line
-	  evil-change-whole-line
-	  backward-delete-char-untabify)
-	;; ;; run company via keypress only
-	;; nil
+	;; ;; this works for auto-toggle but slows down emacs
+	;; '(self-insert-command
+	;;   org-self-insert-command
+	;;   evil-insert
+	;;   evil-insert-line
+	;;   evil-insert-newline-above
+	;;   evil-insert-newline-below
+	;;   evil-insert-state
+	;;   evil-append
+	;;   evil-append-line
+	;;   evil-substitute
+	;;   evil-replace-state
+	;;   evil-change
+	;;   evil-change-line
+	;;   evil-change-whole-line
+	;;   backward-delete-char-untabify)
+	;; run company via keypress only
+	nil
 	); t)
   ;; (add-hook 'evil-insert-state-entry-hook
   ;; 	    (lambda ()
@@ -762,7 +762,7 @@ targets."
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (setq lsp-idle-delay 0.5)
+  (setq lsp-idle-delay 0.1)
 
   ;; ;; lsp-ivy
   ;; (use-package lsp-ivy
@@ -908,7 +908,7 @@ targets."
 
   ;; highlight matching/mismatching parentheses
   (show-smartparens-global-mode t)
-  (setq sp-show-pair-delay 0)
+  (setq sp-show-pair-delay 0.25)
 
   ;; load default config
   (require 'smartparens-config))
@@ -1222,11 +1222,12 @@ targets."
 (use-package hl-todo
   :custom
   (hl-todo-keyword-faces
-      '(("TODO"   . "#FF7500")
-        ("FIXME"  . "#FF0000")
-        ("DEBUG"  . "#A020F0")
-        ("GOTCHA" . "#FF4500")
-        ("STUB"   . "#1E90FF")))
+   '(("TODO"   . "#FF7500")
+     ("NOTE"   . "#00A300")
+     ("FIXME"  . "#FF0000")
+     ("DEBUG"  . "#A020F0")
+     ("GOTCHA" . "#FF4500")
+     ("STUB"   . "#1E90FF")))
   :config
   (global-hl-todo-mode))
 

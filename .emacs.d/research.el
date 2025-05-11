@@ -328,6 +328,13 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 	("\\paragraph{%s}" . "\\paragraph*{%s}")
 	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
 	)
+       ("econometrica" "\\documentclass[ecta,nameyear,draft]{econsocart}"
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	("\\paragraph{%s}" . "\\paragraph*{%s}")
+	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+	)
        )
      )
    )

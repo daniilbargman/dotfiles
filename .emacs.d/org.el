@@ -224,6 +224,7 @@ Opens the new node in 'other window' mode by default."
  '(org-priority-highest 1)
  '(org-priority-lowest 7)
  '(org-priority-default 1)
+ '(org-latex-default-packages-alist nil)
  )
 
 
@@ -245,6 +246,16 @@ Opens the new node in 'other window' mode by default."
   `(("^[ \t]*\\(- \\[X\\] .+\\(?:\n.+\\)*?\\)\n\\(?:$\\|[ \t]*- \\[[ -X]\\]\\)"
      1 'org-headline-done prepend)) 'append)
 (advice-add 'org-toggle-checkbox :after #'font-lock-fontify-block)
+
+;; ;; delete title and date from latex template if explicitly set to nil
+(defun dbargman/org-latex-remove-title-with-trailing-dash (str)
+  (replace-regexp-in-string "^\\\\title{.*-}$" "" str))
+(advice-add
+ 'org-latex-template :filter-return
+ 'dbargman/org-latex-remove-title-with-trailing-dash
+ )
+;; (advice-remove 'org-latex-template
+;; 	    'dbargman/org-latex-maybe-remove-headers)
 
 ;;; FUNCTIONALITY
 

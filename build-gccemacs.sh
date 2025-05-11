@@ -23,8 +23,9 @@ sudo apt-get install -y libc6-dev libjpeg62-turbo libpng-dev \
      libgccjit-14-dev cmake libtool libtool-bin librsvg2-dev \
      build-essential libgtk-3-dev libgnutls28-dev libjpeg-dev libxpm-dev \
      libncurses-dev autoconf make texinfo texlive texlive-latex-extra \
-     latexmk gnutls-bin gcc libxpm-dev libmagickcore-dev libmagick++-dev \
-     libgif-dev fonts-firacode mailutils libsqlite3-dev
+     texlive-bibtex-extra texlive-lang-engligh latexmk gnutls-bin gcc \
+     libxpm-dev libmagickcore-dev libmagick++-dev libgif-dev fonts-firacode \
+     mailutils libsqlite3-dev
 
 # install pinentry-gnome3 to get a decent-looking passphrase popup in emacs
 # when updating something that requires access to the pass store

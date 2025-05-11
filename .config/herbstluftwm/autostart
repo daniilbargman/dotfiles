@@ -27,13 +27,13 @@ Mod=Mod4   # Use the super key as the main modifier
 hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-x close_or_remove
-hc keybind $Mod-Shift-q close_or_remove
+# hc keybind $Mod-Shift-q close_or_remove
 hc keybind $Mod-Return chain , spawn alacritty , use_index "2"
 hc keybind $Mod-b chain , spawn firefox , use_index "1"
 hc keybind $Mod-e chain , spawn emacs -bg 'gray10' -fg 'white' , use_index "0"
 hc keybind $Mod-t spawn thunar
 hc keybind $Mod-space spawn rofi -show combi
-hc keybind $Mod-Escape spawn /home/daniil/executables/scratchpad
+# hc keybind $Mod-Escape spawn /home/daniil/executables/scratchpad
 
 # basic movement
 # focusing clients
@@ -104,7 +104,7 @@ hc keybind $Mod-Shift-Tab  use_index -1 --skip-visible
 # layouting
 hc keybind $Mod-r remove
 hc keybind $Mod-s floating toggle
-hc keybind $Mod-f fullscreen toggle
+hc keybind $Mod-Shift-o fullscreen toggle
 hc keybind $Mod-Shift-f set_attr clients.focus.floating toggle
 hc keybind $Mod-Shift-d set_attr clients.focus.decorated toggle
 hc keybind $Mod-Shift-m set_attr clients.focus.minimized true
@@ -128,7 +128,7 @@ hc mousebind $Mod-Button3 resize
 hc keybind $Mod-BackSpace   cycle_monitor
 # hc keybind $Mod-Tab         cycle_all +1
 # hc keybind $Mod-Shift-Tab   cycle_all -1
-hc keybind $Mod-c cycle
+hc keybind $Mod-c cycle_all
 hc keybind $Mod-i jumpto urgent
 
 # theme

@@ -374,7 +374,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
        ;; list of org-roam project filetags to add to org-agenda
        (setq
 	dbargman/org-roam-node-agenda-tags
-	'("inbox" "PhD" "PhD1" "PhD2" "PhD3" "research" "philosophy" "misc")
+	'("inbox" "PhD" "PhD0" "PhD1" "PhD2" "PhD3"
+	  "research" "philosophy" "misc")
 	)
 
        ;; org agenda files
@@ -638,6 +639,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	    "^res: ?" "research" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^phd: ?" "research:PhD:UCL" t t)
+	  ,(dbargman/capture-rules-by-subject-prefix
+	    "^PhD0: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^sttospr: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
