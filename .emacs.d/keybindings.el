@@ -793,6 +793,24 @@
     (define-key org-mode-map (kbd "C-c c n") 'citar-open-notes)
     (define-key org-mode-map (kbd "C-c n c") 'citar-open-notes)
 
+    ;; we use "n" as prefix for notes, "f" as prefix for files
+    (defvar-keymap dbargman/citar-embark-notes-map
+      :doc "Keymap for opening bibliographic notes in split frames"
+      "l" #'dbargman/citar-notes-right
+      "h" #'dbargman/citar-notes-left
+      "k" #'dbargman/citar-notes-above
+      "j" #'dbargman/citar-notes-below)
+    (defvar-keymap dbargman/citar-embark-files-map
+      :doc "Keymap for opening reference pdf files in split frames"
+      "l" #'dbargman/citar-files-right
+      "h" #'dbargman/citar-files-left
+      "k" #'dbargman/citar-files-above
+      "j" #'dbargman/citar-files-below)
+    (define-key citar-embark-citation-map (kbd "n")
+		dbargman/citar-embark-notes-map)
+    (define-key citar-embark-citation-map (kbd "f")
+		dbargman/citar-embark-files-map)
+
     ;; open node at point in org-noter 
     (define-key org-mode-map (kbd "C-c c o") 'org-noter)
 
@@ -813,8 +831,7 @@
 		'org-babel-execute-src-block-maybe)
     
     )
-
-
+    
   )
 
 (provide 'keybindings)

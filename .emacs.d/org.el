@@ -192,6 +192,17 @@ Opens the new node in 'other window' mode by default."
 ;; do not confirm before each evaluation
 (setq org-confirm-babel-evaluate nil)
 
+;; helper function: get name of element at point, e.g., for exporting a
+;; figure under the name of the element using an org-babel variable
+(defun dbargman/org-element-name ()
+  "get name of element at point in an org mode buffer.
+
+This is useful for creating files in org-babel with dynamic names.
+Setting a header arg ':var save_name=(dbargman/org-element-name)' and
+using 'save_name' as the target file name inside the code block with the
+tag '#+NAME: <element-name>' will export the file under the name
+'<element-name>'."
+  (org-element-property :name (org-element-at-point)))
 
 ;;; AESTHETICS
 
@@ -273,9 +284,15 @@ Opens the new node in 'other window' mode by default."
     )
   )
 
-;; restart org mode after capturing from template
+;; ;; DEPRECATED: restart org mode after capturing from template
+;; (add-hook 'org-capture-after-finalize-hook
+;; 	  'dbargman/global-org-mode-restart)
+
+;; make sure the database is refreshed when a node is captured
 (add-hook 'org-capture-after-finalize-hook
-	  'dbargman/global-org-mode-restart)
+	  'org-roam-db-sync)
+(add-hook 'org-capture-after-finalize-hook
+	  'org-mode-restart)
 
 ;; helper: get string from file
 (defun dbargman/contents-of-file (filePath)

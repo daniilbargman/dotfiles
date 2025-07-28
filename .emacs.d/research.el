@@ -212,7 +212,12 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
     :custom
     (org-noter-highlight-selected-text t)
     (org-noter-auto-save-last-location t)
-    (org-noter-window-location 'vertical-split)
+    (org-noter-always-create-frame t)
+    (org-noter-disable-narrowing t)
+    (org-noter-hide-other nil)
+    (org-noter-insert-note-no-questions t)
+    (org-noter-kill-frame-at-session-end nil)
+    (org-noter-arrow-delay 0.2)
     )
 
 
@@ -231,18 +236,6 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
     ;; go with org-cite
     (orb-roam-ref-format 'org-cite)
 
-    ;; ;; NOTE: these values are required for org-noter integration in
-    ;; ;; org-roam notes as per the orb manual but are the defaults anyway
-    ;; (orb-process-file-keyword t)
-    ;; (orb-attached-file-extensions '("pdf"))
-
-    ;; :config
-
-    ;; ;; NOTE: this has been commented out because the same can be
-    ;; ;; achieved with 'citar-org-roam-template-keys'
-    ;; ;; need to add keywords if using them as filetags in roam template
-    ;; (add-to-list 'orb-preformat-keywords "keywords")
-
     )
 
   ;; org-roam and citar integration
@@ -250,49 +243,67 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
     :after (citar org-roam org-roam-bibtex)
 
-    ;; :hook (org-roam-bibtex-mode . citar-org-roam-mode)
+    ;; :hook (org-roam-mode . citar-org-roam-mode)
 
     :custom
 
     ;; make sure citar creates notes as roam nodes
-    (citar-open-note-function 'orb-citar-edit-note)
+    (citar-open-entry-function 'orb-citar-edit-note)
 
+    ;; add keywords to citar template keys
+    (citar-org-roam-template-fields
+     '(
+       (:citar-title "title") (:citar-author "author" "editor")
+       (:citar-date "date" "year" "issued") (:citar-pages "pages")
+       (:citar-type "=type=")
+       (:citar-document-title "title")
+       (:citar-citekey "citekey")
+       (:citar-keywords "keywords")
+       (:citar-file "file")
+       (:citar-url "url")
+       )
+     )
+
+    ;; note title template (can be overridden in personalizations too)
+    (citar-org-roam-note-title-template
+     "NOTES | ${citar-citekey}: ${citar-title}")
 
     :config
 
-    (citar-org-roam-setup)
+    ;; change roam directory for notes per individual session config
+    (advice-add
+     'ecm-session-init
+     :after
+     #'(lambda (&rest _)
+	 (custom-set-variables
+	  `(citar-notes-paths (list org-roam-directory))
+	  )
+	 (citar-org-roam-mode)
+	 )
+     )
+
+    ;; give embark the ability to open notes and files in split frames
+    (defun dbargman/citar-notes-at-point ()
+      "Open notes for citation at point."
+      (interactive)
+      (citar-open-notes (citar-citation-at-point)))
+    (defun dbargman/citar-files-at-point ()
+      "Open notes for citation at point."
+      (interactive)
+      (citar-open-files (citar-citation-at-point)))
+
+    (dbargman/splitfunc citar-notes above 'dbargman/citar-notes-at-point)
+    (dbargman/splitfunc citar-notes below 'dbargman/citar-notes-at-point)
+    (dbargman/splitfunc citar-notes right 'dbargman/citar-notes-at-point)
+    (dbargman/splitfunc citar-notes left  'dbargman/citar-notes-at-point)
+
+    (dbargman/splitfunc citar-files above 'dbargman/citar-files-at-point)
+    (dbargman/splitfunc citar-files below 'dbargman/citar-files-at-point)
+    (dbargman/splitfunc citar-files right 'dbargman/citar-files-at-point)
+    (dbargman/splitfunc citar-files left  'dbargman/citar-files-at-point)
 
     )
 
-  ;; add keywords to citar template keys
-  (setq citar-org-roam-template-fields
-	'(
-	  (:citar-title "title") (:citar-author "author" "editor")
-	  (:citar-date "date" "year" "issued") (:citar-pages "pages")
-	  (:citar-type "type")
-	  (:citar-document-title "title")
-	  (:citar-citekey "citekey")
-	  (:citar-keywords "keywords")
-	  (:citar-file "file")
-	  (:citar-url "url")
-	  )
-	)
-
-  ;; note title template (can be overridden in personalizations too)
-  (setq citar-org-roam-note-title-template
-	"${author editor} (${year})")
-
-
-  ;; change roam directory for notes per individual session config
-  (advice-add
-   'ecm-session-init
-   :after
-   #'(lambda (&rest _)
-       (custom-set-variables
-	`(citar-notes-paths (list org-roam-directory))
-	)
-       )
-   )
 
 
   ;; LATEX CONFIGURATION FOR RESEARCH EXPORT
@@ -321,14 +332,21 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 	("\\subsection{%s}" . "\\subsection*{%s}")
 	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
 	)
-       ("elsarticle" "\\documentclass[preprint,12pt]{elsarticle}"
+       ("elsarticle" "\\documentclass[preprint,3p]{elsarticle}"
 	("\\section{%s}" . "\\section*{%s}")
 	("\\subsection{%s}" . "\\subsection*{%s}")
 	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
 	("\\paragraph{%s}" . "\\paragraph*{%s}")
 	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
 	)
-       ("econometrica" "\\documentclass[ecta,nameyear,draft]{econsocart}"
+       ("econsocart-ecta" "\\documentclass[ecta,nameyear,draft]{econsocart}"
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	("\\paragraph{%s}" . "\\paragraph*{%s}")
+	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+	)
+       ("econsocart-qe" "\\documentclass[qe,nameyear,draft]{econsocart}"
 	("\\section{%s}" . "\\section*{%s}")
 	("\\subsection{%s}" . "\\subsection*{%s}")
 	("\\subsubsection{%s}" . "\\subsubsection*{%s}")

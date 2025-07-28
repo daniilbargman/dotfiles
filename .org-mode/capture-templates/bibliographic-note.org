@@ -1,11 +1,6 @@
-#+TITLE: | ${citar-citekey} | ${citar-document-title}
-#+FILETAGS: ${project-tag}
-#+CATEGORY: reference
+#+TITLE: NOTES | ${citar-citekey}: ${citar-title}
 #+PROPERTY: Custom_ID ${citar-citekey}
-#+PROPERTY: type ${citar-type}
-#+PROPERTY: author ${citar-author}
-#+PROPERTY: URL ${citar-url}
-#+PROPERTY: Agenda_Text ${citar-citekey}: ${citar-document-title}
+#+CATEGORY: reference
 
 * Summary
 :PROPERTIES:

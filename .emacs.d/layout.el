@@ -164,10 +164,11 @@
 
 Also runs tab-bar-post-switch-hooks function defined below."
   (interactive)
-  (let ((new-tab-name
-	 (read-buffer "Name of the new tab: " (buffer-name) nil)))
-    (tab-rename new-tab-name)
-    (tab-bar-post-switch-hooks)))
+  (when (> (length (tab-bar-tabs)) 1)
+    (let ((new-tab-name
+	   (read-buffer "Name of the new tab: " (buffer-name) nil)))
+      (tab-rename new-tab-name)
+      (tab-bar-post-switch-hooks))))
 (with-eval-after-load "init"
   (add-to-list 'tab-bar-tab-post-open-functions 'auto-rename-new-tabs))
 

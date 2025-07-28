@@ -132,11 +132,15 @@ alias emacs-keys='ibus-daemon --xim -d -r'
 if [ "$(which kubectl)" ]; then
 
     # alias to enable/disable/reset kubernetes
-    function disable-k8s {
-        sudo echo "draining node and stopping services..."
+    function cordon-k8s-node {
+        sudo echo "draining node"
         kubectl drain $(hostname) --disable-eviction=true --force=true \
             --ignore-daemonsets \
             --delete-emptydir-data # --skip-wait-for-delete-timeout=300
+    }
+    function disable-k8s {
+        cordon-k8s-node
+        echo "stopping services..."
         sudo service kubelet stop
         sudo service docker stop
         sudo service containerd stop
@@ -148,26 +152,21 @@ if [ "$(which kubectl)" ]; then
         sleep 60
         kubectl uncordon $(hostname)
     }
-    function import-images {
-        img_dir="/mnt/projects/statosphere/_aux/containerd-image-backup"
-        all_tars=$(ls ${img_dir})
-        for i in ${all_tars[@]}; do
-        sudo ctr -n k8s.io image import ${img_dir}/$i
-        done
-    }
-    export -f disable-k8s
-    export -f enable-k8s
-    export -f import-images
-    alias kd='disable-k8s'
-    alias ke='enable-k8s'
-    alias kun='kubectl uncordon $(hostname)'
-    alias kr='sudo ctr -n k8s.io c rm $(sudo ctr -n k8s.io c ls -q) && sudo ctr -n k8s.io i rm $(sudo ctr -n k8s.io i ls -q)'
-    alias ki='import-images'
-    alias km='sudo ctr -n k8s.io c ls'
     function kns {
         kubectl config set-context --current --namespace=$1
     }
     export -f kns
+    export -f cordon-k8s-node
+    export -f disable-k8s
+    export -f enable-k8s
+
+    # define shorthand aliases for k8s commands
+    alias kd='disable-k8s'
+    alias ke='enable-k8s'
+    alias kc='cordon-k8s-node'
+    alias ku='kubectl uncordon $(hostname)'
+    alias kw='k get pods --watch'
+    alias kwa='k get pods --all-namespaces --watch'
 
     # kubectl completion and alias
     source <(kubectl completion bash)
@@ -188,6 +187,9 @@ export MANPATH="${MANPATH-$(manpath)}:$NPM_GLOBAL/share/man"
 
 # source conda script
 source /opt/conda/etc/profile.d/conda.sh
+
+# install brew
+[ -d /home/linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 ###############################################################################
 source /home/daniil/alacritty/extra/completions/alacritty.bash
