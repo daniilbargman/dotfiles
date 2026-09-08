@@ -10,9 +10,9 @@ class ${1:name}:
     """
 
     ${2:$(unless (string-empty-p yas-text) (concat "# slots for " (yas-field-value 1)))}
-    ${2:$(unless (string-empty-p yas-text) "__slots__ = [")}
+    ${2:$(unless (string-empty-p yas-text) "__slots__ = (")}
 	${2:slots}
-    ${2:$(unless (string-empty-p yas-text) "]")}
+    ${2:$(unless (string-empty-p yas-text) ")")}
 
     def __init__(self${3:$(unless (string-empty-p yas-text) ", ")}${3:arguments}):
 	"""Initialize $1...

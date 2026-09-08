@@ -73,8 +73,11 @@
      )
  )
 
-;; indent automaticall
+;; indent automatically
 (add-hook 'org-mode-hook #'org-indent-mode)
+(add-hook 'org-mode-hook #'flyspell-mode)
+
+;; check spelling
 
 ;; evil keybindings
 (use-package evil-org
@@ -110,7 +113,7 @@
   :ensure t
   :custom
   (org-roam-directory
-   "~/dotfile-notes/roam")
+   "~/.dotfile-notes/roam")
   (org-roam-dailies-directory
    "journal/")
   (org-roam-db-location
@@ -203,6 +206,18 @@ using 'save_name' as the target file name inside the code block with the
 tag '#+NAME: <element-name>' will export the file under the name
 '<element-name>'."
   (org-element-property :name (org-element-at-point)))
+
+;; helper: "cycle" (fold/unfold) org element by first jumping to the top
+(defun dbargman/org-cycle-from-inside ()
+  (interactive)
+
+  ;; if inside source block, go to the top of the source block.
+  ;; otherwise go to the element's heading
+  (if (org-in-src-block-p)
+      (org-babel-goto-src-block-head)
+    (outline-previous-heading))
+  (org-cycle)
+  )
 
 ;;; AESTHETICS
 

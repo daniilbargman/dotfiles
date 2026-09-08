@@ -13,11 +13,11 @@
 % UCL banner template
 \defbeamertemplate*{banner}{ucl}[1][1]{%
   \uclcolorname{banner.bg}{\ucl@bannercolorname}%
-  \includegraphics[width=\paperwidth,trim=\bannerimagetrim{} 0 0 0]% 
+  \includegraphics[width=\paperwidth]% 
   {banners/uclbanner\ucl@bannercolorname}%
 }
 [action]{% set lengths when loading template
-  \setlength\bannerimagetrim{363bp-363bp/\real{#1}}
+  \setlength\bannerimagetrim{362bp-363bp/\real{#1}}
   \settoheight\bannerheight{\usebeamertemplate*{banner}}  
   \setlength\stripeheight{0.1875\bannerheight}
 }
@@ -113,14 +113,14 @@
 {
   \leavevmode%
   \hbox{%
-  \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+  \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.25ex,dp=1ex,left]{author in head/foot}%
     \usebeamerfont{author in head/foot}\insertshortauthor\expandafter\beamer@ifempty\expandafter{\beamer@shortinstitute}{}{~~(\insertshortinstitute)}
   \end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+  \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
     \usebeamerfont{title in head/foot}\insertshorttitle%
   \end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
-    \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+  \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{1em}
     \usebeamertemplate*{slide counter}\hspace*{2ex}
   \end{beamercolorbox}}%
   \vskip0pt%
@@ -144,9 +144,9 @@
 % make everything rectangle-y
 \useinnertheme{rectangles}
 
-% % use the Helvetica font
+% use the Helvetica font
 \usepackage[scaled]{helvet}
-% \usepackage{eulervm}
+\usepackage{eulervm}
 
 %%% the UCL font is actually Arial, if you want to use it, you should install
 %%% the font using the getnonfreefonts script, then it can be loaded by the

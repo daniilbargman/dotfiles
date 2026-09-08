@@ -20,10 +20,10 @@ sudo apt-get update && sudo apt-get -y upgrade
 # additional dependencies are for GCCEmacs and vterm-mode
 sudo apt-get install -y libc6-dev libjpeg62-turbo libpng-dev \
      libtiff5-dev libgif-dev xaw3dg-dev zlib1g-dev libx11-dev \
-     libgccjit-14-dev cmake libtool libtool-bin librsvg2-dev \
+     libgccjit-15-dev cmake libtool libtool-bin librsvg2-dev \
      build-essential libgtk-3-dev libgnutls28-dev libjpeg-dev libxpm-dev \
      libncurses-dev autoconf make texinfo texlive texlive-latex-extra \
-     texlive-bibtex-extra texlive-lang-engligh latexmk gnutls-bin gcc \
+     texlive-bibtex-extra texlive-lang-english latexmk gnutls-bin gcc \
      libxpm-dev libmagickcore-dev libmagick++-dev libgif-dev fonts-firacode \
      mailutils libsqlite3-dev
 
@@ -53,8 +53,8 @@ sudo ldconfig
 
 # emacs itself
 cd ~/.git-clones
-sudo rm -rf emacs
-git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
+# sudo rm -rf emacs
+# git clone --depth 1 https://git.savannah.gnu.org/git/emacs.git
 
 # configure with considerations from StackOverflow
 # note: xwidgets is broken in latest emacs - see

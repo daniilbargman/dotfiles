@@ -1,11 +1,14 @@
+;; -*- lexical-binding: t; -*-
+
 (TeX-add-style-hook
  "beamerthemeucl"
  (lambda ()
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("helvet" "scaled")))
+                     '(("calc" "") ("helvet" "scaled") ("eulervm" "")))
    (TeX-run-style-hooks
     "calc"
-    "helvet")
+    "helvet"
+    "eulervm")
    (LaTeX-add-lengths
     "bannerheight"
     "stripeheight"

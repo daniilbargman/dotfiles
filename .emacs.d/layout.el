@@ -240,6 +240,19 @@ Uses winner-mode-undo."
     (evil-window-left 1)
     )
   )
+(defun dbargman/move-buffer-to-split-other ()
+  "Move buffer to `other' window."
+  (let (
+	(current (current-buffer))
+	)
+    (other-window 1)
+    (switch-to-buffer current)
+    (other-window -1)
+    (previous-buffer)
+    )
+  )
+
+(let ((current (current-buffer))) (evil-window-prev 0) (switch-to-buffer current))
 
 ;; macro: create function that opens an object in a buffer then moves it
 (defmacro dbargman/splitfunc (funcname direction object-open-func)
@@ -263,16 +276,19 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
 (dbargman/splitfunc open-file below 'find-file)
 (dbargman/splitfunc open-file right 'find-file)
 (dbargman/splitfunc open-file left 'find-file)
+(dbargman/splitfunc open-file other 'find-file)
 (dbargman/splitfunc open-buffer above 'consult-buffer)
 (dbargman/splitfunc open-buffer below 'consult-buffer)
 (dbargman/splitfunc open-buffer right 'consult-buffer)
 (dbargman/splitfunc open-buffer left 'consult-buffer)
+(dbargman/splitfunc open-buffer other 'consult-buffer)
 
 ;; open symbol definitions in various window splits
 (dbargman/splitfunc lsp-find-definition above 'lsp-find-definition)
 (dbargman/splitfunc lsp-find-definition below 'lsp-find-definition)
 (dbargman/splitfunc lsp-find-definition right 'lsp-find-definition)
 (dbargman/splitfunc lsp-find-definition left  'lsp-find-definition)
+(dbargman/splitfunc lsp-find-definition other  'lsp-find-definition)
 
 ;; do not live-preview buffers
 (consult-customize
@@ -281,16 +297,18 @@ in a buffer, such as 'find-file, 'consult-buffer, or similar."
   dbargman/open-buffer-below
   dbargman/open-buffer-right
   dbargman/open-buffer-left
+  dbargman/open-buffer-other
   :preview-key nil
   )
 
 ;;; support for tabs and tab groups via awesome-tab
 
-;; add support for icons
-(use-package all-the-icons
-  :config
-  (unless all-the-icons-font-names (all-the-icons-install-fonts))
-  )
+;; ;; add support for icons
+;; (use-package all-the-icons
+;;   :config
+;;   (unless all-the-icons-font-names (all-the-icons-install-fonts))
+;;   )
+(use-package nerd-icons)
 
 ;; load package (from github as melpa doesn't have it yet)
 (use-package centaur-tabs
@@ -536,10 +554,13 @@ tab's grouping collage."
           treemacs-workspace-switch-cleanup      nil)
 
     ;; use all-the-icons with treemacs
-    (use-package treemacs-all-the-icons
-      :after (treemacs all-the-icons)
-      :config (treemacs-load-theme "treemacs-all-the-icons")
-      )
+    ;; (use-package treemacs-all-the-icons
+    ;;   :after (treemacs all-the-icons)
+    ;;   :config (treemacs-load-theme "treemacs-all-the-icons")
+    ;;   )
+    (use-package treemacs-nerd-icons
+      :config
+      (treemacs-load-theme "nerd-icons"))
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.

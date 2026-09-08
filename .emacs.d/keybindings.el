@@ -364,8 +364,10 @@
   ;; keybinding to open term buffer in emacs state in new window
   (global-set-key
    (kbd "M-s s")
-   '(lambda (p) (interactive "P")
-      (get-or-create-terminal p nil nil t)))
+   #'(lambda (p) (interactive "P")
+       (get-or-create-terminal p nil nil t)
+       )
+   )
 
   ;; keybinding to send text region as commands to a terminal buffer
   (global-set-key
@@ -479,17 +481,17 @@
   (evil-define-key 'normal 'global (kbd "C-e") 'dbargman/format-parens)
 
   ;; find symbol definitions in arbitrady window splits
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d w") 'lsp-find-definition)
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d j") 'dbargman/lsp-find-definition-below)
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d k") 'dbargman/lsp-find-definition-above)
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d l") 'dbargman/lsp-find-definition-right)
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d h") 'dbargman/lsp-find-definition-left)
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal 'prog-mode-map
     (kbd "C-c C-l d o") 'xref-find-definitions-other-window)
 
   ;; leader key mappings
@@ -615,7 +617,6 @@
 
     )
 
-
   ;; preserve window movement commands; jump around headings differently
   (define-key org-mode-map (kbd "C-j") nil)
   (define-key org-mode-map (kbd "C-k") nil)
@@ -626,6 +627,10 @@
       'org-forward-heading-same-level)
     (evil-define-key 'normal org-mode-map (kbd "C-p")
       'org-backward-heading-same-level)
+
+    ;; link the folding of elements from inside to ,<tab>
+    (evil-leader/set-key-for-mode 'org-mode
+      "<tab>" 'dbargman/org-cycle-from-inside)
 
     ;; ;; NOTE: going with yasnippet for this instead so that there are
     ;; ;; no hitches when trying to insert actual square brackets
@@ -638,7 +643,7 @@
 
   ;; insert a new checkbox item with C-<return>
   (evil-define-key 'insert org-mode-map (kbd "C-<return>")
-	      #'(lambda () (interactive) (org-insert-item t)))
+    #'(lambda () (interactive) (org-insert-item t)))
 
   ;; toggle checkboxes more easily
   (define-key org-mode-map (kbd "C-c x") 'org-toggle-checkbox)
@@ -701,14 +706,17 @@
 (with-eval-after-load "python"
 
   ;; keybinding to open python shell buffer in emacs state in new window
-  (define-key python-mode-map
-    (kbd "M-s p") 'my-python-run-shell-in-terminal)
+  (define-key python-mode-map (kbd "M-s p")
+	      #'(lambda (p) (interactive "P")
+		  (my-python-run-shell-in-terminal p)
+		  )
+	      )
 
   ;; keybinding to send visual selection or code section to shell
   (define-key python-mode-map
     (kbd "M-s M-p") 'my-python-execute-code-block)
   (define-key python-mode-map
-    (kbd "M-s M-<return>") '(lambda (p) (interactive "P")
+    (kbd "M-s M-<return>") #'(lambda (p) (interactive "P")
 			      (my-python-execute-code-block p)
 			      (python-forward-fold-or-section)))
 
@@ -799,16 +807,20 @@
       "l" #'dbargman/citar-notes-right
       "h" #'dbargman/citar-notes-left
       "k" #'dbargman/citar-notes-above
-      "j" #'dbargman/citar-notes-below)
+      "j" #'dbargman/citar-notes-below
+      "o" #'dbargman/citar-notes-other)
     (defvar-keymap dbargman/citar-embark-files-map
       :doc "Keymap for opening reference pdf files in split frames"
       "l" #'dbargman/citar-files-right
       "h" #'dbargman/citar-files-left
       "k" #'dbargman/citar-files-above
-      "j" #'dbargman/citar-files-below)
+      "j" #'dbargman/citar-files-below
+      "o" #'dbargman/citar-files-other)
     (define-key citar-embark-citation-map (kbd "n")
 		dbargman/citar-embark-notes-map)
     (define-key citar-embark-citation-map (kbd "f")
+		dbargman/citar-embark-files-map)
+    (define-key citar-citation-map (kbd "f")
 		dbargman/citar-embark-files-map)
 
     ;; open node at point in org-noter 
@@ -827,8 +839,10 @@
 		'dbargman/org-latex-export-to-pdf)
 
     ;; org-babel keybinding for executing a single code block
-    (define-key org-mode-map (kbd "C-c C-v b")
-		'org-babel-execute-src-block-maybe)
+    (define-key org-mode-map (kbd "C-c C-v b") 'org-babel-execute-maybe)
+
+    ;; org-babel keybinding for editing a source block
+    (define-key org-mode-map (kbd "C-c C-v e") 'org-edit-src-code)
     
     )
     

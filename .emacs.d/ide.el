@@ -638,6 +638,7 @@ targets."
      vterm-mode
      special-mode
      messages-buffer-mode))
+  (flycheck-disabled-checkers '(org-lint))
   )
 
 ;; use which-key for emacs function completion
@@ -762,7 +763,7 @@ targets."
   ;; performance optimization settings
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (setq lsp-idle-delay 0.1)
+  (setq lsp-idle-delay 0.5)
 
   ;; ;; lsp-ivy
   ;; (use-package lsp-ivy
@@ -863,6 +864,9 @@ targets."
 
   :config
 
+  ;; load default config
+  (require 'smartparens-config)
+
   ;; add hook to indent according to context
   (defun indent-to-context (id action mode)
     "indent closing paren according to context."
@@ -894,6 +898,7 @@ targets."
   (sp-local-pair 'org-mode "=" "=" :actions '(rem))
   (sp-local-pair 'org-mode "\\[" "\\]")
   (sp-local-pair 'org-mode "\\[ " " \\]")
+  (sp-local-pair 'org-mode "\\( " " \\)")
   (sp-local-pair 'org-mode "$" "$")
   (sp-local-pair 'org-mode "`" "'")
   (sp-local-pair 'org-mode "\\left\\{" "\\right\\}")
@@ -902,6 +907,7 @@ targets."
   (sp-local-pair 'org-mode "\\left( " " \\right)")
   (sp-local-pair 'org-mode "\\left[" "\\right]")
   (sp-local-pair 'org-mode "\\left[ " " \\right]")
+  ;; (eval-after-load 'org '(require 'smartparens-latex))
 
   ;; enable globally
   (smartparens-global-mode t)
@@ -910,8 +916,7 @@ targets."
   (show-smartparens-global-mode t)
   (setq sp-show-pair-delay 0.25)
 
-  ;; load default config
-  (require 'smartparens-config))
+  )
 
 
 ;; functions for formatting expressions inside braces
@@ -1224,9 +1229,11 @@ targets."
   (hl-todo-keyword-faces
    '(("TODO"   . "#FF7500")
      ("NOTE"   . "#00A300")
+     ("END NOTE"   . "#00A300")
      ("FIXME"  . "#FF0000")
      ("DEBUG"  . "#A020F0")
      ("GOTCHA" . "#FF4500")
+     ("WARNING" . "#FF4500")
      ("STUB"   . "#1E90FF")))
   :config
   (global-hl-todo-mode))

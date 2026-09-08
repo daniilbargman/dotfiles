@@ -1,35 +1,62 @@
+
+# main metadata
 #+CATEGORY: presentation
 #+FILETAGS: ${project-tag}
-#+AUTHOR: Daniil Bargman
-#+STARTUP: beamer
-#+LATEX_CLASS: beamer
-#+LATEX_CLASS_OPTIONS: [8pt]
 #+EXPORT_FILE_NAME: %(expand-file-name ".tmp/${slug}.tex" dbargman/research-export-dir)
 #+PROPERTY: Agenda_Text ${title}
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+# beamer settings
+#+STARTUP: beamer
+#+LATEX_CLASS: beamer
 #+OPTIONS: H:1 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS: TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+BEAMER_THEME: ucl
-#+BEAMER_FONT_THEME: structurebold
-#+BEAMER_HEADER: \addtobeamertemplate{title}{\pgfsetfillopacity{0.7}}{\pgfsetfillopacity{1}}
-#+BEAMER_HEADER: \setbeamercolor{banner}{bg=brightpurple}
-#+BEAMER_HEADER: \usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight]{/home/daniil/Research/exports/submissions/UCL_title_slide_bg.jpg}}
-#+BEAMER_HEADER: \addtobeamertemplate{background canvas}{\pgfsetfillopacity{0.2}}{\pgfsetfillopacity{1}}
-#+BEAMER_HEADER: \definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
-#+BEAMER_HEADER: \definecolor{ao(english)}{rgb}{0.0, 0.5, 0.0}
-#+BEAMER_HEADER: \setbeamercolor{block title}{bg=,fg=black}
-#+BEAMER_HEADER: \setbeamercolor{block body}{bg=,fg=black}
-#+BEAMER_HEADER: \addtobeamertemplate{example begin}{\setbeamercolor{block title}{fg=white,bg=ao(english)}\setbeamercolor{block body}{fg=black, bg=ao(english)!25}}{}
-#+BEAMER_HEADER: \addtobeamertemplate{navigation symbols}{}{\usebeamerfont{footline}\usebeamercolor[fg]{brightpurple}\hspace{1em}\hspace{1em}\large\insertframenumber/\inserttotalframenumber}
-#+BEAMER_HEADER: \setbeamerfont{block title}{size=\large}
+
+# title slide settings
+#+BEAMER_HEADER: \setbeamertemplate{background canvas}{\includegraphics[width=\paperwidth]{/home/daniil/Research/exports/templates/UCL/UCL_title_slide_bg.jpg}}
+#+BEAMER_HEADER: \definecolor{brightpurple}{cmyk}{0.24,0.99,0.31,0.15}
+#+BEAMER_HEADER: \setbeamercolor{banner}{bg=black}
+#+BEAMER_HEADER: \useinnertheme[rounded]{tcolorbox}
+#+BEAMER_HEADER: \tcbthemeset{opacityfill=0.7}
+#+BEAMER_HEADER: \setbeamercolor{author}{bg=white}
+#+BEAMER_HEADER: \institute[UCL]{Institute of Finance and Technology}
+#+BEAMER_HEADER: \setbeamertemplate{footline}[author title date]
+#+BEAMER_HEADER: \setbeamertemplate{navigation symbols}{}
+#+BEAMER_HEADER: \setbeamerfont{author}{size=\large}
+#+BEAMER_HEADER: \setbeamerfont{institute}{size=\large}
+#+BEAMER_HEADER: \setbeamerfont{date}{size=\large}
 #+BEAMER_HEADER: \setbeamertemplate{itemize items}[default]
 #+BEAMER_HEADER: \setbeamertemplate{enumerate items}[default]
 #+BEAMER_HEADER: \usefonttheme{serif}
-#+BEAMER_HEADER: \setbeamerfont{frametitle}{size=\huge,series=\bfseries}
-#+BEAMER_HEADER: \setbeamercolor{frametitle}{fg=brightpurple}
-#+BEAMER_HEADER: \addtobeamertemplate{frametitle}{\vspace{-0.75\baselineskip}}{\vspace{0\baselineskip}}
+
+# presentation theme
+#+BEAMER_THEME: ucl
+#+LATEX_CLASS_OPTIONS: [aspectratio=32, 9pt, t]
+
+# frame titles
+#+BEAMER_HEADER: \addtobeamertemplate{frametitle}{\vspace{-1.7\baselineskip}}{\vspace{0\baselineskip}}
+#+BEAMER_HEADER: \setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+#+BEAMER_HEADER: \setbeamercolor{frametitle}{fg=white}
+
+# blocks inside slides
+#+BEAMER_HEADER: \setbeamercolor{block title}{bg=black,fg=white}
+#+BEAMER_HEADER: \setbeamercolor{block title alerted}{bg=white,fg=black}
+#+BEAMER_HEADER: \setbeamercolor{block body}{bg=white,fg=black}
+#+BEAMER_HEADER: \setbeamerfont{block title}{series=\bfseries}
+#+BEAMER_HEADER: \setbeamerfont{block title alerted}{series=\bfseries}
+#+BEAMER_HEADER: \makeatletter
+#+BEAMER_HEADER: \let\old@rule\@rule
+#+BEAMER_HEADER: \def\@rule[#1]#2#3{\textcolor{rulecolor}{\old@rule[#1]{#2}{#3}}}
+#+BEAMER_HEADER: \makeatother
+#+BEAMER_HEADER: \definecolor{rulecolor}{named}{white}
+
+# packages for formatting graphics
+#+LATEX_HEADER: \usepackage{caption}
+#+LATEX_HEADER: \captionsetup{justification=raggedright,singlelinecheck=false}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \hypersetup{colorlinks=false,pdfborder=(0 0 0)}
 
 
 * Summary
@@ -55,7 +82,10 @@
 :BEAMER_col: 0.02
 :END:
 
-#+BEAMER: \rule{.1mm}{0.7\textheight}
+#+BEGIN_EXPORT latex
+\vspace{\baselineskip}
+\hspace{.002\paperwidth} \rule{.5mm}{0.9\textheight}
+#+END_EXPORT
 
 
 *** Agenda                                                  :B_block:BMCOL:

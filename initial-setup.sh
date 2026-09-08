@@ -26,7 +26,7 @@ set -Eeuo pipefail
 sudo apt-get update && sudo apt-get -y upgrade
 
 # install common dependencies
-sudo apt-get install -y grub2 iwd curl keyutils s3cmd
+sudo apt-get install -y grub2 iwd curl keyutils s3cmd yq ripgrep
 
 # source .bashrc_ext from .bashrc
 cat >> ~/.bashrc <<EOF
@@ -58,15 +58,15 @@ rm -rf vim && git clone https://github.com/vim/vim.git && cd vim
 make && sudo make install
 make clean && make distclean
 
-# # set vim as default editor
-# sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
-# sudo update-alternatives --set editor /usr/local/bin/vim
-# sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
-# sudo update-alternatives --set vi /usr/local/bin/vim
+# set vim as default editor
+sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
+sudo update-alternatives --set editor /usr/local/bin/vim
+sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
+sudo update-alternatives --set vi /usr/local/bin/vim
 
-# # vim plugin manager: vim-plug
-# curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-#     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+# vim plugin manager: vim-plug
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # # install fonts
 # git clone --depth=1 https://github.com/ryanoasis/nerd-fonts
@@ -162,6 +162,10 @@ sudo apt-get -y install conda
 # do not modify PS1 as this is handled in .bashrc_ext
 source /opt/conda/etc/profile.d/conda.sh
 conda config --set changeps1 False
+
+# make sure it can be updated without root permissions and update conda
+sudo chown -R $(id -u):$(id -g) /opt/conda/
+conda update -n base conda
 
 # done
 echo

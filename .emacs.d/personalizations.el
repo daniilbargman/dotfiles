@@ -185,7 +185,9 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
     `(
       (match-func
        . (lambda (msg)
-	   (string-match ,prefix (mu4e-message-field msg :subject))))
+	   (string-match ,prefix (mu4e-message-field msg :subject))
+	   )
+       )
       (capture-func
        . (lambda ()
 	   (dbargman/org-roam-capture-in-background
@@ -340,8 +342,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  )
 	)
 
-       ;; refresh org-mode buffers
-       (dbargman/global-org-mode-restart)
+       ;; ;; refresh org-mode buffers
+       ;; (dbargman/global-org-mode-restart)
 
        )
     )
@@ -492,12 +494,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	   (file+head
 	    "%<%Y%m%d%H%M%S>-${slug}.org"
 	    ,(concat
-	      "#+EXPORT_FILE_NAME: "
-	      (
-	       expand-file-name
-	       ".tmp/${project-tag-lower}-${slug}.tex"
-	       dbargman/research-export-dir
-	       )
+	      "#+TITLE: ${title}\n"
+	      "#+AUTHOR: Daniil Bargman"
 	      )
 	    )
 	   :unnarrowed t
@@ -605,6 +603,10 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^PhD0: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
+	    "^PhD1: ?" "research:PhD:UCL" t t)
+	  ,(dbargman/capture-rules-by-subject-prefix
+	    "^PhD2: ?" "research:PhD:UCL" t t)
+	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^sttospr: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^UCL: ?" "research:UCL" t t)
@@ -613,8 +615,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  )
 	)
 
-       ;; refresh org-mode buffers
-       (dbargman/global-org-mode-restart)
+       ;; ;; refresh org-mode buffers
+       ;; (dbargman/global-org-mode-restart)
 
        )
     )
@@ -837,8 +839,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  )
 	)
 
-       ;; refresh org-mode buffers
-       (dbargman/global-org-mode-restart)
+       ;; ;; refresh org-mode buffers
+       ;; (dbargman/global-org-mode-restart)
 
        )
     )

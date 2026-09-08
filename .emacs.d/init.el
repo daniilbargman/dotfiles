@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(setq package-install-upgrade-built-in t)
 
 ;; add to exec-path
 (setq exec-path (append exec-path '("/usr/sbin" "/snap/bin")))
@@ -149,10 +150,10 @@
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
 
-;; auto-save files at a minimal interval, but don't create backup files
-;; (undo-fu is good enough to go back to previous versions)
+;; auto-save files at a reasonable interval, but don't create backups
+;; (vundo is good enough to go back to previous versions)
 (setq auto-save-default t)
-(setq auto-save-interval 20)
+(setq auto-save-interval 300)
 (setq make-backup-files nil)
 
 ;; enable minibuffer history with a reasonable history length
@@ -168,8 +169,29 @@
 
 ;;; global packages
 
+; ;; depedency for a number of other packages
+; (use-package compat)
+; (use-package transient
+;  :after (compat)
+;  )
+
 ;; add magit
-(use-package magit)
+(use-package magit
+					; :after (transient)
+  :config
+
+  ;; make sure that the pre-commit hooks get executed
+  (advice-add
+   'magit
+   :before
+   #'(lambda (&rest _args)
+       (save-excursion
+	 (shell-command "git hook run pre-commit &")
+	 )
+       )
+   )
+
+ )
 
 ;; add rainbow mode
 (use-package rainbow-mode
@@ -269,6 +291,11 @@
 
 (use-package doom-themes
   :config
+
+  ;; workaround to prevent cyclical refernce error in company box
+  (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
+          '(:inherit 'gnus-group-mail-1-empty :weight 'normal))
+
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold nil    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled

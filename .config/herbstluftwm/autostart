@@ -28,10 +28,10 @@ hc keybind $Mod-Control-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-x close_or_remove
 # hc keybind $Mod-Shift-q close_or_remove
-hc keybind $Mod-Return chain , spawn alacritty , use_index "2"
-hc keybind $Mod-b chain , spawn firefox , use_index "1"
-hc keybind $Mod-e chain , spawn emacs -bg 'gray10' -fg 'white' , use_index "0"
-hc keybind $Mod-t spawn thunar
+hc keybind $Mod-Return chain , spawn alacritty , use_index "3"
+hc keybind $Mod-b chain , spawn firefox , use_index "2"
+hc keybind $Mod-e chain , spawn emacs -bg 'gray10' -fg 'white' , use_index "1"
+hc keybind $Mod-t spawn nautilus
 hc keybind $Mod-space spawn rofi -show combi
 # hc keybind $Mod-Escape spawn /home/daniil/executables/scratchpad
 
@@ -76,10 +76,10 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
 tag_names=( \
+  'Main' \
   'Emacs' \
   'Firefox' \
   'Terminals' \
-  'Workspace4' \
   'Workspace5' \
   'Workspace6' \
 )

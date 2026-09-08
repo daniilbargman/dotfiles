@@ -39,10 +39,12 @@ function error_exit {
 cfg=/tmp/daniilbargman-backups.s3cfg
 pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
+# compress the .git project directory into a single file
+tar -czf .git.tar ./.git
+
 # run sync command
 s3cmd -c $cfg --recursive --follow-symlinks --delete-removed \
-      --exclude="**/.tmp/" --exclude="**/results/" \
-      --exclude="**/__pycache__/" \
+      --exclude-from ~/sync/documents/.s3ignore \
       sync ~/sync/documents/* "s3://daniilbargman-backups/"
 
 # delete config file

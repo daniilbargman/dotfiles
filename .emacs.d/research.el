@@ -225,6 +225,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 
   ;; add org-roam integration for org-roam-bibtex for cite integration
   (use-package org-roam-bibtex
+    :after (transient)
     ;; :hook (org-mode . org-roam-bibtex-mode)
 
     :custom
@@ -296,11 +297,13 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
     (dbargman/splitfunc citar-notes below 'dbargman/citar-notes-at-point)
     (dbargman/splitfunc citar-notes right 'dbargman/citar-notes-at-point)
     (dbargman/splitfunc citar-notes left  'dbargman/citar-notes-at-point)
+    (dbargman/splitfunc citar-notes other  'dbargman/citar-notes-at-point)
 
     (dbargman/splitfunc citar-files above 'dbargman/citar-files-at-point)
     (dbargman/splitfunc citar-files below 'dbargman/citar-files-at-point)
     (dbargman/splitfunc citar-files right 'dbargman/citar-files-at-point)
     (dbargman/splitfunc citar-files left  'dbargman/citar-files-at-point)
+    (dbargman/splitfunc citar-files other  'dbargman/citar-files-at-point)
 
     )
 
@@ -319,7 +322,7 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 	("\\paragraph{%s}" . "\\paragraph*{%s}")
 	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
 	)
-       ("report" "\\documentclass[11pt,bibliography=numbered]{report}"
+       ("report" "\\documentclass[12pt]{report}"
 	("\\chapter{%s}" . "\\chapter*{%s}")
 	("\\section{%s}" . "\\section*{%s}")
 	("\\subsection{%s}" . "\\subsection*{%s}")
@@ -333,6 +336,13 @@ Created as a subfolder inside 'org-roam-directory', unless an absolute
 	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
 	)
        ("elsarticle" "\\documentclass[preprint,3p]{elsarticle}"
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	("\\paragraph{%s}" . "\\paragraph*{%s}")
+	("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+	)
+       ("elsarticle-twocol" "\\documentclass[preprint,twocolumn,3p]{elsarticle}"
 	("\\section{%s}" . "\\section*{%s}")
 	("\\subsection{%s}" . "\\subsection*{%s}")
 	("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -404,8 +414,7 @@ vertical split on the right, whereas running without a prefix places it
 in the 'other window'."
     (interactive "P")
     (let* (
-	   ;; this command exports to PDF asynchronously and returns the
-	   ;; file name
+	   ;; this command exports to PDF and returns the file name
 	   (pdf-preview-file
 	    (if (and (boundp 'org-beamer-mode) org-beamer-mode)
 		(org-beamer-export-to-pdf)
