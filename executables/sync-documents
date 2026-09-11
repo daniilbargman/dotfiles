@@ -40,7 +40,8 @@ cfg=/tmp/daniilbargman-backups.s3cfg
 pass show private/S3/daniilbargman-backups.s3cfg > $cfg
 
 # compress the .git project directory into a single file
-tar -czf .git.tar ./.git
+tar -czf ~/Research/code/.git.tar ~/Research/code/.git
+echo "archived ~/Research/code/.git for backup"
 
 # run sync command
 s3cmd -c $cfg --recursive --follow-symlinks --delete-removed \

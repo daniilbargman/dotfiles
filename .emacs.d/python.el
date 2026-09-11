@@ -119,6 +119,18 @@ This variable is only used if `my-python-shell-program' is `k8s'."
   :local t
   :safe (lambda (_) t))
 
+;; python virtual environment
+(defcustom my-conda-env nil
+  "An optional name for a conda virtual environment for conda.el.
+
+This variable is only useful for activating conda virtual environments
+inside Emacs shells with the help of the conda.el package."
+
+  :group 'my-python
+  :type 'string
+  :local t
+  :safe (lambda (_) t))
+
 ;; set sane buffer-local configurations
 (add-hook
  'python-mode-hook
@@ -238,12 +250,32 @@ Prefix P works like in get-or-create-terminal from terminal.el."
 
 ;; add conda.el to make Org mode work nicely with virtual environments
 (use-package conda
+
+  :init
+  (conda-env-deactivate)
+
   ;; :custom
   ;; (conda-anaconda-home "/opt/conda/bin/conda")
   :config
   (setq conda-env-executables-dir "/opt/conda/bin")
   (conda-env-autoactivate-mode -1)
   ;; (setq conda-env-home-directory (expand-file-name "~/.conda"))
+
+  ;; make sure we don't end up activating the same environment many
+  ;; times
+
+  ;; activate conda environment if set by an environment variable
+  (defun dbargman/conda-env-activate-maybe (_)
+    "Activate conda environment if `my-conda-env' is set."
+    (when (and
+	  my-conda-env
+	  (not (string-equal conda-env-current-name my-conda-env)))
+      (conda-env-activate my-conda-env)
+      )
+    )
+  (add-to-list 'window-selection-change-functions
+	    #'dbargman/conda-env-activate-maybe)
+
   )
 
 (provide 'python)

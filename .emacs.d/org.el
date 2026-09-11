@@ -60,7 +60,7 @@
 ;; (custom-set-variables
 ;;  `(straight-built-in-pseudo-packages ,(add-to-list 'straight-built-in-pseudo-packages 'org))
 ;;  )
-(use-package org)
+(straight-use-package '(org :type built-in))
 
 ;; prettify check boxes
 (add-hook

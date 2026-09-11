@@ -599,6 +599,8 @@ MARK-READ and REFILE are passed on to 'dbargman/email-org-capture'."
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^res: ?" "research" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
+	    "^research: ?" "research" t t)
+	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^phd: ?" "research:PhD:UCL" t t)
 	  ,(dbargman/capture-rules-by-subject-prefix
 	    "^PhD0: ?" "research:PhD:UCL" t t)
