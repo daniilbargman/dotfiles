@@ -78,8 +78,8 @@
 (setq use-dialog-box nil)
 (setq confirm-kill-processes nil)
 
-;; start scratch buffer in fundamental mode
-(setq initial-major-mode 'fundamental-mode
+;; start scratch buffer in Org mode
+(setq initial-major-mode 'org-mode
       initial-scratch-message nil)
 
 ;; add line numbers and highlight current line in minibuffer
@@ -142,10 +142,11 @@
 ;; enable built-in fill-column indicator
 (global-display-fill-column-indicator-mode)
 
-;; enable text folding via hideshow
-(load-library "hideshow")
-(add-hook 'prog-mode-hook 'hs-minor-mode)
-(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
+;; ;; NOTE: trying outline-indent instead - see ide.el
+;; ;; enable text folding via hideshow
+;; (load-library "hideshow")
+;; (add-hook 'prog-mode-hook 'hs-minor-mode)
+;; (add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
 
 ;; don't use system clipboard
 (setq select-enable-clipboard nil)
@@ -176,8 +177,7 @@
 ;  )
 
 ;; add magit
-(use-package magit
-					; :after (transient)
+(use-package magit ; :after (transient)
   :config
 
   ;; make sure that the pre-commit hooks get executed
@@ -423,6 +423,9 @@
 
 ;; customizations for research functionality
 (load-config-file "research.el")
+
+;; AI integrations
+(load-config-file "ai.el")
 
 ;; user-specific / pc-specific / session-specific configurations
 (load-config-file "personalizations.el")

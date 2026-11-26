@@ -40,6 +40,9 @@
 ;; toggle syntax type for a character between symbol and word
 (bind-key* "C-c s" 'toggle-syntax-entry)
 
+;; map universal argument to C-space
+(global-set-key (kbd "C-SPC") 'universal-argument)
+
 ;; unset some keys for which we don't need the defaults
 (global-unset-key (kbd "C-l"))
 
@@ -239,15 +242,11 @@
     (kbd "C-s") #'rg-menu)
 
   ;; fold everything using zA
-  (evil-define-key 'normal 'global (kbd "zA") 'hs-hide-all)
-
-  ;; fold level using zz
-  (evil-define-key 'normal 'global (kbd "zz") 'hs-hide-level)
+  (evil-define-key 'normal 'global (kbd "zA")
+    'outline-indent-close-folds)
 
   ;; open vundo tree
   (evil-define-key 'normal 'global (kbd "C-x u") 'vundo)
-  
-
 
   ;; function and mapping to add line below and return to normal mode
   (defun evil-newline-after ()
@@ -311,6 +310,16 @@
   (evil-define-key 'insert 'global
     (kbd "C-<return>") 'comment-indent-new-line)
 
+  ;; patch for outline indent mode
+  (defun my-evil-define-key-outline-indent-minor-mode ()
+    ;; Open and close folds
+    (evil-define-key '(normal visual) 'local
+      (kbd "C-j") 'evil-window-down)
+    (evil-define-key '(normal visual) 'local
+      (kbd "C-k") 'evil-window-up)
+    )
+  (add-hook 'outline-indent-minor-mode-hook
+	    #'my-evil-define-key-outline-indent-minor-mode)
 
   ))
 
@@ -358,6 +367,10 @@
   (evil-define-key 'emacs vterm-mode-map
     (kbd "<escape>") 'evil-normal-state)
 
+  ;; re-bind escape key to switch modes in vim inside terminal
+  (evil-define-key '(normal insert visual emacs) vterm-mode-map
+    (kbd "C-<escape>") 'vterm-send-escape)
+
   ;; prefix and command sequence bindings for opening terminal shells
   (global-unset-key (kbd "M-s"))
 
@@ -373,22 +386,22 @@
   (global-set-key
    (kbd "M-s M-s")
    #'(lambda (p) (interactive "P")
-      (get-or-create-terminal
-       p nil nil nil 'evil-send-region-to-terminal)
-      )
+       (get-or-create-terminal
+	p nil nil nil 'evil-send-region-to-terminal)
+       )
    )
 
   ;; keybinding for pasting text from default register
   (evil-define-key 'normal vterm-mode-map
     (kbd "p") #'(lambda () (interactive)
-		 (forward-char) (vterm-yank)))
+		  (forward-char) (vterm-yank)))
 
   ;; keybinding for pasting text from clipboard
   (evil-define-key '(insert emacs) vterm-mode-map
-    (kbd "M-v") 'vterm-yank-primary)
+    (kbd "M-v") 'dbargman/clipboard-to-vterm-via-evil)
   (evil-define-key 'normal vterm-mode-map
-    (kbd "M-v") #'(lambda () (interactive)
-		   (forward-char) (vterm-yank-primary)))
+    (kbd "M-v") #'(lambda () (interactive) (forward-char)
+		    (dbargman/clipboard-to-vterm-via-evil)))
 
   ;; keybinding for pasting text from kill ring
   (evil-define-key '(insert emacs) vterm-mode-map
@@ -712,13 +725,25 @@
 		  )
 	      )
 
+  ;; fold all second levels using zz
+  (evil-define-key 'normal python-mode-map (kbd "zz")
+    (lambda ()
+      (interactive)
+      (save-excursion
+	(python-nav-backward-up-list 10)
+	(evil-toggle-fold)
+	(evil-toggle-fold)
+	)
+      )
+    )
+
   ;; keybinding to send visual selection or code section to shell
   (define-key python-mode-map
-    (kbd "M-s M-p") 'my-python-execute-code-block)
+	      (kbd "M-s M-p") 'my-python-execute-code-block)
   (define-key python-mode-map
-    (kbd "M-s M-<return>") #'(lambda (p) (interactive "P")
-			      (my-python-execute-code-block p)
-			      (python-forward-fold-or-section)))
+	      (kbd "M-s M-<return>") #'(lambda (p) (interactive "P")
+					 (my-python-execute-code-block p)
+					 (python-forward-fold-or-section)))
 
   ;; navigate code statements
   (evil-define-key 'normal python-mode-map
@@ -741,9 +766,9 @@
   ;; with the current function.
   (evil-define-key 'normal python-mode-map
     (kbd "C-M-p") '(lambda () (interactive)
-		   (python-nav-backward-defun)
-		   (python-nav-backward-defun)
-		   (python-nav-forward-defun)))
+		     (python-nav-backward-defun)
+		     (python-nav-backward-defun)
+		     (python-nav-forward-defun)))
 
   ;; jump code sections with C-M-j / C-M-k
   (evil-define-key 'normal python-mode-map
@@ -765,7 +790,7 @@
 
     )
 
-    )
+  )
 
 ;;; YAML keybindings
 
@@ -845,7 +870,43 @@
     (define-key org-mode-map (kbd "C-c C-v e") 'org-edit-src-code)
     
     )
-    
+  
+  )
+
+;; AI integration
+
+(with-eval-after-load "ai"
+
+  ;; use "C-c C-a" as prefix for AI functionality
+  (define-prefix-command 'dbargman/ai-keymap)
+  (global-unset-key (kbd "C-c C-a"))
+  (with-eval-after-load 'org
+    (keymap-unset org-mode-map "C-c C-a"))
+  (global-set-key (kbd "C-c C-a") 'dbargman/ai-keymap)
+  (evil-define-key nil dbargman/ai-keymap
+	      (kbd "<return>") 'gptel
+	      (kbd "s") 'gptel-send-with-options
+	      (kbd "r") 'gptel-rewrite
+	      (kbd "a") 'gptel-add
+	      )
+
+  ;; integrate gptel with embark under "a" key
+  (defvar-keymap dbargman/embark-ai-map
+    :doc "Keymap for Embark actions sending the region to gptel."
+    "r" #'gptel-rewrite
+    "a" #'gptel-add
+    "s" #'gptel-send-with-options
+    )
+  (fset 'dbargman/embark-ai-map dbargman/embark-ai-map)
+  (keymap-set embark-region-map "a" 'dbargman/embark-ai-map)
+  (keymap-set embark-file-map "a" #'gptel-add-file)
+
+  ;; when in gptel buffer, don't use plain "return" key to send stuff to
+  ;; the LLM because sometimes we just want a newline. Reserve C-c
+  ;; <return> for talking to LLMs.
+  (evil-define-key 'normal gptel-mode-map (kbd "<return>")
+    'evil-newline-after)
+
   )
 
 (provide 'keybindings)

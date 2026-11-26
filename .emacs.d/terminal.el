@@ -318,5 +318,11 @@ execution of python code if the python-x package is installed."
   ;; exit visual mode
   (evil-normal-state))
 
+;; send clipboard contents to vterm using evil register, bypassing emacs
+(defun dbargman/clipboard-to-vterm-via-evil ()
+  "Paste to vterm from clipboard using evil \"+\" register."
+  (interactive)
+  (vterm-send-string (evil-get-register 43)))
+
 (provide 'terminal)
 ;;; terminal.el ends here

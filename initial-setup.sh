@@ -124,15 +124,18 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 # sudo snap install --classic helm
 
 ### INSTALL NPM ###
-sudo snap install --classic node
-sudo ln -s "$(which npm)" /usr/local/bin/
+
+# Download and install nvm:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
+
+# in lieu of restarting the shell
+\. "$HOME/.config/nvm/nvm.sh"
+
+# Download and install Node.js:
+nvm install 26
 
 # wait a little for it to take
 sleep 10
-
-# make global packages directory-local
-mkdir "${HOME}/.npm-global"  # NOTE: this folder is added to PATH in .bashrc_ext
-npm config set prefix "${HOME}/.npm-global"
 
 ### INSTALL MINICONDA ###
 
@@ -166,6 +169,10 @@ conda config --set changeps1 False
 # make sure it can be updated without root permissions and update conda
 sudo chown -R $(id -u):$(id -g) /opt/conda/
 conda update -n base conda
+
+### install cline for agentic development
+
+npm i -g cline
 
 # done
 echo

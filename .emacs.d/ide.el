@@ -604,16 +604,45 @@ targets."
   (custom-set-faces
    '(avy-lead-face
      ((t (:foreground "red" :background "gray10")))
-    )
+     )
    '(avy-lead-face-0
      ((t (:foreground "red" :background "gray10")))
-    )
+     )
    '(avy-lead-face-2
      ((t (:foreground "red" :background "gray10")))
-    )
+     )
    )
   )
 
+;; try out outline-indent
+(use-package outline-indent
+
+  :commands outline-indent-minor-mode
+
+  :custom
+
+  (outline-indent-ellipsis " ▼")
+
+  :hook ((prog-mode . outline-indent-minor-mode)
+	 (org-mode . outline-indent-minor-mode)
+	 (yaml-mode . outline-indent-minor-mode)
+	 )
+
+  :config
+
+  (define-key outline-indent-minor-mode-map (kbd "C-j") nil)
+
+  ;; in emacs lisp mode, set indent to 2
+  (add-hook 'emacs-lisp-mode-hook
+	    #'(lambda () (setq-local
+			  outline-indent-default-offset 2)
+		)
+	    )
+
+  )
+
+;; (straight-use-package
+;;   '(outshine :type git :host github :repo "alphapapa/outshine"))
 
 ;; code folding with origami mode and lsp-origami (instead of hideshow)
 ;; NOTE: this package is way too slow for large python files, especially
@@ -646,6 +675,7 @@ targets."
   :init
   (setq which-key-popup-type 'minibuffer)
   (which-key-mode)
+
   )
 
 ;;; END NOTE
@@ -801,9 +831,9 @@ targets."
   ;;   :commands lsp-origami-try-enable
   ;;   :hook (lsp-after-open . 'lsp-origami-try-enable))
 
-;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
-;;; 'lsp-completion-provider' to :none as described in
-;;; https://github.com/emacs-lsp/lsp-mode/issues/3173
+  ;;; NOTE: TRYING TO REPLACE WITH HACK BY SETTING
+  ;;; 'lsp-completion-provider' to :none as described in
+  ;;; https://github.com/emacs-lsp/lsp-mode/issues/3173
 
   ;; ;; make sure to enable yasnippet support in lsp completion
   ;; (with-eval-after-load 'lsp-mode
@@ -1206,17 +1236,37 @@ targets."
 
   )
 
-;; highlight indent lines
-;; (use-package highlight-indentation)
-(use-package highlight-indent-guides
-  :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+;; trying out indent-bars instead of highlight-indent-guides
+(use-package indent-bars
+  :ensure t
+  :commands indent-bars-mode
+  :straight (indent-bars
+             :type git
+             :host github
+             :repo "jdtsmith/indent-bars")
+  :hook ((yaml-mode . indent-bars-mode)
+         (yaml-ts-mode . indent-bars-mode)
+         (python-mode . indent-bars-mode)
+         (emacs-lisp-mode . indent-bars-mode)
+         (python-ts-mode . indent-bars-mode))
   :custom
-  (highlight-indent-guides-method 'character)
-  (highlight-indent-guides-responsive nil)
-  (highlight-indent-guides-auto-character-face-perc 20)
-  ;; (highlight-indent-guides-delay 0.4)
-  :config
+  (indent-bars-treesit-support t)
+  (indent-bars-prefer-character t)
+  (indent-bars-display-on-blank-lines nil)
   )
+
+;; ;; NOTE: tryihng out indent-bars instead
+;; ;; highlight indent lines
+;; ;; (use-package highlight-indentation)
+;; (use-package highlight-indent-guides
+;;   :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+;;   :custom
+;;   (highlight-indent-guides-method 'character)
+;;   (highlight-indent-guides-responsive nil)
+;;   (highlight-indent-guides-auto-character-face-perc 20)
+;;   (highlight-indent-guides-delay 0.4)
+;;   :config
+;;   )
 
 ;; better modeline
 (use-package telephone-line

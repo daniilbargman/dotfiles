@@ -181,6 +181,12 @@ fi
 export PATH="$PATH:$HOME/.config/rofi/scripts"
 
 # add user-specific NPM global package directory to path
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+nvm use node &>/dev/null
+ln -s $(which node) ~/.local/bin/node &>/dev/null
+ln -s $(which npm) ~/.local/bin/npm &>/dev/null
 NPM_GLOBAL="${HOME}/.npm-global"
 export PATH="$PATH:$NPM_GLOBAL/bin"
 export MANPATH="${MANPATH-$(manpath)}:$NPM_GLOBAL/share/man"
